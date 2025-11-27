@@ -138,19 +138,11 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     }
 
     private fun handleVehicleParkedOnWrongParkingSpot(event: VehicleParkedOnWrongParkingSpotEvent) {
-        parkVehicle(event.parkingSpot, event.vehicle)
-        if (isParkingSpotRented(event.parkingSpot) == false) {
-            parkingSpots[event.parkingSpot.parkingSpotId]?.reservedForVehicle = event.vehicle.plateNumber
+        parkVehicle(event.parkingSpotId, event.parkingVehicle)
+        if (isParkingSpotRented(event.parkingSpotId) == false) {
+            parkingSpots[event.parkingSpotId]?.reservedForVehicle = event.parkingVehicle
         }
-        cancelOldReservation(event.vehicle)
-    }
-
-    private fun parkVehicle(
-        parkingSpot: ParkingSpot,
-        vehicle: Vehicle,
-    ) {
-        parkingSpots[parkingSpot.parkingSpotId]?.parkingVehicle = vehicle.plateNumber
-        vehicles[vehicle.plateNumber]?.state = VehicleAction.OnParkingSpot(parkingSpot.parkingSpotId)
+        cancelOldReservation(event.parkingVehicle)
     }
 
     private fun parkVehicle(
@@ -161,12 +153,12 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
         vehicles[plateNumber]?.state = VehicleAction.OnParkingSpot(parkingSpotId)
     }
 
-    private fun cancelOldReservation(vehicle: Vehicle) {
+    private fun cancelOldReservation(plateNumber: PlateNumber) {
         parkingSpots.values
-            .forEach { if (it.reservedForVehicle == vehicle.plateNumber) it.reservedForVehicle = null }
+            .forEach { if (it.reservedForVehicle == plateNumber) it.reservedForVehicle = null }
     }
 
-    private fun isParkingSpotRented(parkingSpot: ParkingSpot) = parkingSpots[parkingSpot.parkingSpotId]?.isRented()
+    private fun isParkingSpotRented(parkingSpotId: ParkingSpotId) = parkingSpots[parkingSpotId]?.isRented()
 
     private fun handleVehicleParkedOnEvent(event: VehicleParkedOnEvent) {
         parkVehicle(event.parkingSpotId, event.plateNumber)
@@ -181,11 +173,11 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     }
 
     private fun handleEnteredEvent(event: VehicleEnteredParkingLotEvent) {
-        vehicles.remove(event.plateNumber)
+        vehicles[event.plateNumber]?.state = VehicleAction.DrivingAround
     }
 
     private fun handleLeavedEvent(event: VehicleLeavedParkingLotEvent) {
-        vehicles[event.plateNumber]?.state = VehicleAction.DrivingAround
+        vehicles.remove(event.plateNumber)
     }
 
     private fun handleVehicleParkedOffEvent(event: VehicleParkedOffEvent) {
@@ -274,9 +266,9 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
         apply(
             VehicleParkedOnWrongParkingSpotEvent(
                 aggregateId,
-                vehicle,
+                vehicle.plateNumber,
                 parkingSpot.reservedForVehicle,
-                parkingSpot,
+                parkingSpot.parkingSpotId,
             ),
         )
         if (parkingSpot.reservedForVehicle != null) {

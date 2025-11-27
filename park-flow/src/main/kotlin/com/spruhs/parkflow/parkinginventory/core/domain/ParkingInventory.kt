@@ -55,7 +55,6 @@ class ParkingInventoryProjection(
 
     fun existsParkingSpotName(name: ParkingSpotName) = parkingSpots.any { it.name == name.value }
 
-
     private fun updateGate(
         gateId: String,
         transform: (GateProjection) -> GateProjection,

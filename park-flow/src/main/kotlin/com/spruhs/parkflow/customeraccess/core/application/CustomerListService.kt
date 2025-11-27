@@ -72,12 +72,12 @@ class CustomerListService(private val repository: CustomerListRepositoryPort) {
         parkingSpotId: ParkingSpotId,
         plateNumber: PlateNumber,
     ): Boolean {
-
-        val vehicle = repository
-            .findByPlateNumber(plateNumber.value)
-            ?.vehicles
-            ?.find { it.rentedParkingSpotId == parkingSpotId.value }
-            ?: return false
+        val vehicle =
+            repository
+                .findByPlateNumber(plateNumber.value)
+                ?.vehicles
+                ?.find { it.rentedParkingSpotId == parkingSpotId.value }
+                ?: return false
 
         val rentedFrom = vehicle.rentedFrom?.let(LocalDate::parse) ?: return false
         val rentedTo = vehicle.rentedTo?.let(LocalDate::parse)

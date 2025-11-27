@@ -36,8 +36,7 @@ class CustomerListQueryPort(
 ) {
     suspend fun getCustomerList(): CustomerListProjection = service.getCustomerList()
 
-    suspend fun isPlateNumberRegistered(plateNumber: PlateNumber) =
-        plateNumberService.existsPlateNumber(plateNumber)
+    suspend fun isPlateNumberRegistered(plateNumber: PlateNumber) = plateNumberService.existsPlateNumber(plateNumber)
 
     suspend fun isParkingSpotRented(
         parkingSpotId: ParkingSpotId,

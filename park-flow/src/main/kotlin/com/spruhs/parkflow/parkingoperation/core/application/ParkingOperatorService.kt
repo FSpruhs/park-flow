@@ -30,7 +30,6 @@ class ParkingOperatorService(
     eventExecutionStrategy: EventExecutionStrategy,
 ) {
     private val log = getLogger(javaClass)
-
     private lateinit var actor: ParkingOperatorActor
 
     init {

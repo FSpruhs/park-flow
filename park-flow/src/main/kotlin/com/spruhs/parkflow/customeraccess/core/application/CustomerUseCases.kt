@@ -55,7 +55,10 @@ class CustomerCommandPort(
         handle(command.customerId) { it.rentParkingSpot(command.parkingSpotId, command.plateNumber) }
     }
 
-    private suspend fun reserveParkingSpot(parkingSpotId: ParkingSpotId, plateNumber: PlateNumber) {
+    private suspend fun reserveParkingSpot(
+        parkingSpotId: ParkingSpotId,
+        plateNumber: PlateNumber,
+    ) {
         parkingSpotCatalogService.reserve(parkingSpotId, plateNumber)
     }
 

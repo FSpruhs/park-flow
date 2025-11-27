@@ -24,7 +24,6 @@ import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRemovedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesAddedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesRemovedEvent
-import com.spruhs.parkflow.parkingoperation.core.domain.ParkingSpot
 import com.spruhs.parkflow.parkingoperation.core.domain.Vehicle
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -69,9 +68,9 @@ data class ParkingSpotProvidedEvent(
 
 data class VehicleParkedOnWrongParkingSpotEvent(
     override val aggregateId: String,
-    val vehicle: Vehicle,
-    val reservedForCar: PlateNumber?,
-    val parkingSpot: ParkingSpot,
+    val parkingVehicle: PlateNumber,
+    val reservedForVehicle: PlateNumber?,
+    val parkingSpotId: ParkingSpotId,
     val time: Instant = Instant.now(),
 ) : BaseEvent(aggregateId)
 
