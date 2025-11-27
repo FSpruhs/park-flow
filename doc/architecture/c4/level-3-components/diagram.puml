@@ -14,7 +14,6 @@ SystemQueue_Ext(rabbitMQ, "RabbitMQ", "Receives IoT sensor events")
 ContainerDb_Ext(mongoDb, "MongoDB", "Read models")
 ContainerDb_Ext(postgresDb, "Postgres Event Store", "Event store")
 
-' Event Flow between bounded contexts
 Rel(parkingInventory, parkingOperation, "Sends domain events")
 Rel(parkingInventory, customerAccess, "Sends domain events")
 Rel(customerAccess, parkingOperation, "Sends domain events")
@@ -22,7 +21,6 @@ Rel(parkingOperation, billing, "Sends domain events")
 Rel(customerAccess, billing, "Sends domain events")
 
 
-' External interactions at container level
 Rel_R(rabbitMQ, modulith, "Sends IoT events")
 Rel_D(modulith, mongoDb, "Reads/Writes")
 Rel_D(modulith, postgresDb, "Event storage")

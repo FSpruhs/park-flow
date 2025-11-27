@@ -2,7 +2,6 @@ package com.spruhs.parkflow.common.es
 
 import com.spruhs.parkflow.common.helper.getLogger
 import com.spruhs.parkflow.common.metrics.EventMetrics
-import com.spruhs.parkflow.common.metrics.ParkMetrics
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 

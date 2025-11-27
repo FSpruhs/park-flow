@@ -14,7 +14,7 @@ This repository contains a Spring Boot application (Gradle) and a local infrastr
  |-- docker-compose.yml
  |-- park-flow/                  <- Spring Boot main application root folder (Gradle project)
  |-- park-flow-simulator/        <- Spring Boot test application root folder (Gradle project)
- |-- park-flow-simulator/        <- Lib with sensor mock events (Gradle project)
+ |-- park-sensor-mock/           <- Lib with sensor mock events (Gradle project)
  |-- doc/                        <- Documentation folder
  |-- settings.gradle.kts         <- Gradle Multi Module Settings
 ```

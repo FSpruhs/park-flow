@@ -1,0 +1,76 @@
+@startuml
+title Parking Inventory
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "API" as api {
+    [ParkingInventoryAPI] <<interface>>
+    [ParkingInventoryEvents]
+    [ParkingInventoryValueObjects]
+}
+
+package "Common" as common {
+    [AggregateStore] <<interface>>
+    [EventPublisher] <<interface>>
+    [EventPublisherImpl]
+    [AggregateStoreImpl]
+}
+
+package "Core" as core {
+
+    package "Domain" as domain {
+        [GateAggregate]
+        [ParkingSpotAggregate]
+        [ParkingInventoryProjection]
+    }
+
+    package "Primary Adapters" as inAdapters {
+        [GateRestAdapter]
+        [ParkingSpotRestAdapter]
+        [ParkingInventoryRestAdapter]
+        [ParkingInventoryApiAdapter]
+        [ParkingInventoryListenerAdapter]
+    }
+
+    package "Secondary Adapters" as outAdapters {
+        [ParkingInventoryRepositoryAdapter]
+        [ParkingInventoryRepository]
+    }
+
+    package "Application" as app {
+        [GateCommandPort]
+        [ParkingSpotCommandPort]
+        [ParkingInventoryService]
+        [ParkingInventoryQueryPort]
+        [ParkingInventoryCommandPort]
+        [ParkingInventoryRepositoryPort] <<interface>>
+    }
+}
+
+[AggregateStoreImpl] ..|> [AggregateStore] : implements
+[EventPublisherImpl] ..|> [EventPublisher] : implements
+[AggregateStoreImpl] --> [EventPublisher] : uses
+
+[ParkingInventoryApiAdapter] ..|> [ParkingInventoryAPI] : implements
+
+[GateRestAdapter] --> [GateCommandPort] : uses
+[ParkingInventoryApiAdapter] --> [ParkingInventoryQueryPort] : uses
+[ParkingInventoryListenerAdapter] --> [ParkingInventoryCommandPort] : uses
+[ParkingInventoryRestAdapter] --> [ParkingInventoryQueryPort]
+[ParkingSpotRestAdapter] --> [ParkingSpotCommandPort] : uses
+
+[ParkingInventoryRepositoryAdapter] ..|> [ParkingInventoryRepositoryPort] : implements
+[ParkingInventoryRepositoryAdapter] --> [ParkingInventoryRepository] : uses
+
+[GateCommandPort] --> [AggregateStore] : uses
+[GateCommandPort] --> [ParkingInventoryService] : uses
+[ParkingInventoryService] --> [ParkingInventoryRepositoryPort] : uses
+[ParkingInventoryQueryPort] --> [ParkingInventoryService] : uses
+[ParkingInventoryCommandPort] --> [ParkingInventoryService] : uses
+[ParkingSpotCommandPort] --> [AggregateStore] : uses
+[ParkingSpotCommandPort] --> [ParkingInventoryService] : uses
+
+app --> domain : imports
+
+@enduml
