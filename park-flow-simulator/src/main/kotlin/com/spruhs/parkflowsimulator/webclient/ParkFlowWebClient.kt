@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 
 @Service
-open class ParkflowWebClientService(private val webClient: WebClient) {
+class ParkFlowWebClientService(private val webClient: WebClient) {
 
     suspend fun createParkingSpot(parkingSpot: ParkingSpotInfo) = webClient.post()
         .uri("/parking-inventory/parking-spots")

@@ -1,6 +1,6 @@
 package com.spruhs.parkflowsimulator.scenario
 
-import com.spruhs.parkflowsimulator.webclient.ParkflowWebClientService
+import com.spruhs.parkflowsimulator.webclient.ParkFlowWebClientService
 import com.spruhs.parkflowsimulator.webclient.VehicleResponse
 import kotlinx.coroutines.coroutineScope
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -13,7 +13,7 @@ import java.time.LocalDate
     havingValue = "simple-customer-access",
     matchIfMissing = false
 )
-class SimpleCustomerAccessScenario(webClient: ParkflowWebClientService) :
+class SimpleCustomerAccessScenario(webClient: ParkFlowWebClientService) :
     Scenario(webClient) {
 
     private val parkingSpots = listOf(
@@ -40,64 +40,70 @@ class SimpleCustomerAccessScenario(webClient: ParkflowWebClientService) :
         "K-B3"
     )
 
-    override suspend fun start(): Unit = coroutineScope {
-        runActions(
-            listOf(
-                *parkingSpots.map { ScenarioAction.CreateParkingSpot(it) }.toTypedArray(),
-                *customers.map { ScenarioAction.CreateCustomer(it) }.toTypedArray(),
+    private val actionList = listOf(
+        *parkingSpots.map { ScenarioAction.CreateParkingSpot(it) }.toTypedArray(),
+        *customers.map { ScenarioAction.CreateCustomer(it) }.toTypedArray(),
 
-                ScenarioAction.Custom { changePaymentMethod(customers[0], "Mastercard") },
-                ScenarioAction.Custom { addVehicle(customers[1], newPlates[0]) },
-                ScenarioAction.Custom { addVehicle(customers[2], newPlates[1]) },
-                ScenarioAction.Custom { addVehicle(customers[2], newPlates[2]) },
+        ScenarioAction.Custom { changePaymentMethod(customers[0], "Mastercard") },
+        ScenarioAction.Custom { addVehicle(customers[1], newPlates[0]) },
+        ScenarioAction.Custom { addVehicle(customers[2], newPlates[1]) },
+        ScenarioAction.Custom { addVehicle(customers[2], newPlates[2]) },
 
-                ScenarioAction.ExpectError(400) { addVehicle(customers[0], newPlates[0]) },
-                ScenarioAction.ExpectError(404) { webClient.addVehicle("does not exists", "X-X1") },
+        ScenarioAction.ExpectError(400) { addVehicle(customers[0], newPlates[0]) },
+        ScenarioAction.ExpectError(404) { webClient.addVehicle("does not exists", "X-X1") },
 
-                ScenarioAction.Custom { removeVehicle(customers[1], customers[1].plateNumber) },
-                ScenarioAction.Custom { rentParkingSpot(customers[2], parkingSpots[3], newPlates[1]) },
+        ScenarioAction.Custom { removeVehicle(customers[1], customers[1].plateNumber) },
+        ScenarioAction.Custom { rentParkingSpot(customers[2], parkingSpots[3], newPlates[1]) },
 
-                ScenarioAction.ExpectError(400) {
-                    rentParkingSpot(
-                        customers[0],
-                        parkingSpots[2],
-                        customers[0].plateNumber
-                    )
-                },
-                ScenarioAction.ExpectError(400) { rentParkingSpot(customers[2], parkingSpots[4], newPlates[1]) },
-
-                ScenarioAction.Custom { rentParkingSpot(customers[1], parkingSpots[2], newPlates[0]) },
-                ScenarioAction.Custom { cancelParkingSpot(customers[2], parkingSpots[3]) },
-
-                ScenarioAction.ExpectError(400) { rentParkingSpot(customers[2], parkingSpots[0], newPlates[2]) },
-
-                ScenarioAction.Custom { deactivateParkingSpot(parkingSpots[5]) },
-                ScenarioAction.Custom { deactivateParkingSpot(parkingSpots[8]) },
-                ScenarioAction.Custom { removeParkingSpot(parkingSpots[7]) },
-                ScenarioAction.Custom { removeParkingSpotType(parkingSpots[6], listOf("ELECTRIC")) },
-                ScenarioAction.Custom { addParkingSpotType(parkingSpots[8], listOf("ELECTRIC")) },
-                ScenarioAction.Custom { activateParkingSpot(parkingSpots[5]) },
-
-                ScenarioAction.ExpectError(400) {
-                    rentParkingSpot(
-                        customers[0],
-                        parkingSpots[8],
-                        customers[0].plateNumber
-                    )
-                },
-                ScenarioAction.ExpectError(400) {
-                    rentParkingSpot(
-                        customers[0],
-                        parkingSpots[7],
-                        customers[0].plateNumber
-                    )
-                }
+        ScenarioAction.ExpectError(400) {
+            rentParkingSpot(
+                customers[0],
+                parkingSpots[2],
+                customers[0].plateNumber
             )
-        )
+        },
+        ScenarioAction.ExpectError(400) { rentParkingSpot(customers[2], parkingSpots[4], newPlates[1]) },
+
+        ScenarioAction.Custom { rentParkingSpot(customers[1], parkingSpots[2], newPlates[0]) },
+        ScenarioAction.Custom { cancelParkingSpot(customers[2], parkingSpots[3]) },
+
+        ScenarioAction.ExpectError(400) { rentParkingSpot(customers[2], parkingSpots[0], newPlates[2]) },
+
+        ScenarioAction.Custom { deactivateParkingSpot(parkingSpots[5]) },
+        ScenarioAction.Custom { deactivateParkingSpot(parkingSpots[8]) },
+        ScenarioAction.Custom { removeParkingSpot(parkingSpots[7]) },
+        ScenarioAction.Custom { removeParkingSpotType(parkingSpots[6], listOf("ELECTRIC")) },
+        ScenarioAction.Custom { addParkingSpotType(parkingSpots[8], listOf("ELECTRIC")) },
+        ScenarioAction.Custom { activateParkingSpot(parkingSpots[5]) },
+
+        ScenarioAction.ExpectError(400) {
+            rentParkingSpot(
+                customers[0],
+                parkingSpots[8],
+                customers[0].plateNumber
+            )
+        },
+        ScenarioAction.ExpectError(400) {
+            rentParkingSpot(
+                customers[0],
+                parkingSpots[7],
+                customers[0].plateNumber
+            )
+        }
+    )
+
+    override suspend fun start(): Unit = coroutineScope {
+        runActions(actionList)
 
         log.info("------ Scenario ended ------")
         log.info("------ Start validating scenario ------")
 
+        validateScenario()
+
+        log.info("------ Scenario validation correct ------")
+    }
+
+    private suspend fun validateScenario() {
         val parkingCatalog = webClient.getParkingSpotCatalog()
         val customerList = webClient.getCustomerList()
 
@@ -144,7 +150,5 @@ class SimpleCustomerAccessScenario(webClient: ParkflowWebClientService) :
 
         validateAll(parkingCatalog.parkingSpots, parkingSpotCatalogValidators) { it.parkingSpotId }
         validateAll(customerList.customers, customerListValidators) { it.id }
-
-        log.info("------ Scenario validation correct ------")
     }
 }

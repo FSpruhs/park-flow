@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RestController
 class NotificationRestController(private val scenario: Scenario) {
 
     @PostMapping("/reprovide/{plateNumber}/{parkingSpotId}")
-    suspend fun reprovideNotification(@PathVariable plateNumber: String, @PathVariable parkingSpotId: String) {
+    suspend fun reprovideNotification(
+        @PathVariable plateNumber: String,
+        @PathVariable parkingSpotId: String
+    ) {
         scenario.notifyReprovideParkingSpot(plateNumber, parkingSpotId)
     }
 }

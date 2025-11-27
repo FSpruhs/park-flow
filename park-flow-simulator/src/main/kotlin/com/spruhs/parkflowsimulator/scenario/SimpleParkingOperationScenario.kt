@@ -1,7 +1,7 @@
 package com.spruhs.parkflowsimulator.scenario
 
 import com.spruhs.parkflowsimulator.publisher.VehicleEventPublisher
-import com.spruhs.parkflowsimulator.webclient.ParkflowWebClientService
+import com.spruhs.parkflowsimulator.webclient.ParkFlowWebClientService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
@@ -12,10 +12,9 @@ import org.springframework.stereotype.Component
     matchIfMissing = false
 )
 class SimpleParkingOperationScenario(
-    webclient: ParkflowWebClientService,
+    webclient: ParkFlowWebClientService,
     vehicleEventPublisher: VehicleEventPublisher
-) :
-    Scenario(webclient, vehicleEventPublisher) {
+) : Scenario(webclient, vehicleEventPublisher) {
 
     private val parkingSpots = listOf(
         ParkingSpotInfo("P-1"),
@@ -39,15 +38,13 @@ class SimpleParkingOperationScenario(
         CustomerInfo("K-B3"),
     )
 
-    override suspend fun start() {
-        runActions(
-            listOf(
-                *parkingSpots.map { ScenarioAction.CreateParkingSpot(it) }.toTypedArray(),
-                *gates.map { ScenarioAction.CreateGate(it) }.toTypedArray(),
-                *customers.map { ScenarioAction.CreateCustomer(it) }.toTypedArray(),
-            )
-        )
+    private val actionList = listOf(
+        *parkingSpots.map { ScenarioAction.CreateParkingSpot(it) }.toTypedArray(),
+        *gates.map { ScenarioAction.CreateGate(it) }.toTypedArray(),
+        *customers.map { ScenarioAction.CreateCustomer(it) }.toTypedArray(),
+    )
 
+    private suspend fun createQueue() {
         createGateQueue(gates[0].id())
         for (customer in customers) {
             enqueue(
@@ -57,6 +54,14 @@ class SimpleParkingOperationScenario(
             log.info("Added customer: ${customer.plateNumber} to queue")
         }
         closeQueue(gates[0].id())
+    }
+
+    override suspend fun start() {
+        runActions(actionList)
+
+        createQueue()
+
+        log.info("------ Start gate queue ------")
 
         startProcessing(
             name = gates[0].id(),
@@ -69,6 +74,12 @@ class SimpleParkingOperationScenario(
         log.info("------ Scenario ended ------")
         log.info("------ Start validating scenario ------")
 
+        validateScenario()
+
+        log.info("------ Scenario validated correct ------")
+    }
+
+    private suspend fun validateScenario() {
         val histories = customers.map { getVehicleHistory(it.plateNumber) }
 
         if (histories.count() != 6) error("vehicle history count should be 6 and is actual ${histories.count()}")
@@ -144,7 +155,5 @@ class SimpleParkingOperationScenario(
             ),
         )
         validateAll(histories, historyValidators) { it.plateNumber }
-
-        log.info("------ Scenario validated correct ------")
     }
 }

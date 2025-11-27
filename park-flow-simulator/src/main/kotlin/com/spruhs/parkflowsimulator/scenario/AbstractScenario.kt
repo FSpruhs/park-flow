@@ -2,7 +2,7 @@ package com.spruhs.parkflowsimulator.scenario
 
 import com.spruhs.parkflowsimulator.getLogger
 import com.spruhs.parkflowsimulator.publisher.VehicleEventPublisher
-import com.spruhs.parkflowsimulator.webclient.ParkflowWebClientService
+import com.spruhs.parkflowsimulator.webclient.ParkFlowWebClientService
 import com.spruhs.parksensormock.events.CarArrivedSensorEvent
 import com.spruhs.parksensormock.events.CarDroveThroughSensorEvent
 import com.spruhs.parksensormock.events.CarParkedOffSensorEvent
@@ -24,7 +24,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.time.Instant
 
 abstract class Scenario(
-    protected val webClient: ParkflowWebClientService,
+    protected val webClient: ParkFlowWebClientService,
     protected val vehicleEventPublisher: VehicleEventPublisher? = null,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
@@ -35,19 +35,20 @@ abstract class Scenario(
     private val jobs = mutableListOf<Job>()
     private val queueJobs = mutableListOf<Job>()
     private val simulationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     protected val parkingSpotsIdLookup: MutableMap<String, String> = mutableMapOf()
     protected val gatesIdLookup: MutableMap<String, String> = mutableMapOf()
     protected val customersIdLookup: MutableMap<String, String> = mutableMapOf()
 
-    suspend fun openEntranceGate(gateId: String, plateNumber: String, parkingSpotId: String) {
+    suspend fun openEntranceGate(plateNumber: String, parkingSpotId: String) {
         vehicleChannels[plateNumber]?.send(VehicleAction.DroveThroughEntrance(parkingSpotId))
     }
 
-    suspend fun openExitGate(gateId: String, plateNumber: String) {
+    suspend fun openExitGate(plateNumber: String) {
         vehicleChannels[plateNumber]?.send(VehicleAction.DroveThroughExit)
     }
 
-    suspend fun errorGate(gateId: String, plateNumber: String) {
+    suspend fun errorGate(plateNumber: String) {
         vehicleChannels[plateNumber]?.send(VehicleAction.GateError)
     }
 
@@ -318,7 +319,7 @@ abstract class Scenario(
     }
 
     protected suspend fun runActions(actions: List<ScenarioAction>, delay: Long = 500) = coroutineScope {
-        val jobss = actions.map { action ->
+        val actionJobs = actions.map { action ->
             launch {
                 when (action) {
                     is ScenarioAction.CreateParkingSpot -> createParkingSpot(action.info)
@@ -329,7 +330,7 @@ abstract class Scenario(
                 }
             }.also { delay(delay) }
         }
-        jobs.addAll(jobss)
+        jobs.addAll(actionJobs)
     }
 
     protected abstract suspend fun start()

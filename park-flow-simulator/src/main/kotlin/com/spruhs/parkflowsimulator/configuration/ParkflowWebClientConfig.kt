@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient
 class ParkflowWebClientConfig {
 
     @Bean
-    fun parkflowWebClient(): WebClient =
+    fun parkFlowWebClient(): WebClient =
         WebClient.builder()
             .baseUrl("http://localhost:8080/api/v1")
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

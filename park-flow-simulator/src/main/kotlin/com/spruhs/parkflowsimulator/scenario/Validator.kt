@@ -98,7 +98,11 @@ data class CustomerValidator(
     }
 }
 
-fun <T> validateAll(actualList: List<T>, validators: List<Validator<T>>, findById: (T) -> String) {
+fun <T> validateAll(
+    actualList: List<T>,
+    validators: List<Validator<T>>,
+    findById: (T) -> String
+) {
     validators.forEach { validator ->
         val actual = actualList.find { findById(it) == validator.id }
             ?: error("${validator.id} not found")
