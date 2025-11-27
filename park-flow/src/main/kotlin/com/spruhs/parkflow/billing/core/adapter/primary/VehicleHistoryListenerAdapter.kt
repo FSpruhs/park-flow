@@ -10,7 +10,7 @@ import com.spruhs.parkflow.parkingoperation.api.VehicleEnteredParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleLeavedParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOffEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnEvent
-import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongParkingSpotEvent
+import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
@@ -24,7 +24,7 @@ class VehicleHistoryListenerAdapter(
         VehicleLeavedParkingLotEvent::class,
         VehicleParkedOnEvent::class,
         VehicleParkedOffEvent::class,
-        VehicleParkedOnWrongParkingSpotEvent::class,
+        VehicleParkedOnWrongEvent::class,
         CustomerCreatedEvent::class,
         CustomerVehicleAddedEvent::class,
         CustomerVehicleRemovedEvent::class,

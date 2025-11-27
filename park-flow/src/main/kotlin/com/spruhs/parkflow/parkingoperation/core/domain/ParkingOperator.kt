@@ -31,7 +31,7 @@ import com.spruhs.parkflow.parkingoperation.api.VehicleEnteredParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleLeavedParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOffEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnEvent
-import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongParkingSpotEvent
+import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongEvent
 import java.time.LocalDate
 
 class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot(aggregateId, TYPE) {
@@ -51,7 +51,7 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
             is VehicleParkedOnEvent -> handleVehicleParkedOnEvent(event)
             is VehicleParkedOffEvent -> handleVehicleParkedOffEvent(event)
             is ParkingSpotProvidedEvent -> handleParkingSpotProvidedEvent(event)
-            is VehicleParkedOnWrongParkingSpotEvent -> handleVehicleParkedOnWrongParkingSpot(event)
+            is VehicleParkedOnWrongEvent -> handleVehicleParkedOnWrongParkingSpot(event)
             is ParkingSpotReprovidedEvent -> handleParkingSpotReprovidedEvent(event)
 
             is ParkingSpotCreatedEvent -> handleParkingSpotCreatedEvent(event)
@@ -137,7 +137,7 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
         parkingSpots[event.parkingSpotId]?.reservedForVehicle = event.plateNumber
     }
 
-    private fun handleVehicleParkedOnWrongParkingSpot(event: VehicleParkedOnWrongParkingSpotEvent) {
+    private fun handleVehicleParkedOnWrongParkingSpot(event: VehicleParkedOnWrongEvent) {
         parkVehicle(event.parkingSpotId, event.parkingVehicle)
         if (isParkingSpotRented(event.parkingSpotId) == false) {
             parkingSpots[event.parkingSpotId]?.reservedForVehicle = event.parkingVehicle
@@ -264,7 +264,7 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     ) {
         val vehicle = vehicles[plateNumber] ?: return
         apply(
-            VehicleParkedOnWrongParkingSpotEvent(
+            VehicleParkedOnWrongEvent(
                 aggregateId,
                 vehicle.plateNumber,
                 parkingSpot.reservedForVehicle,

@@ -66,7 +66,7 @@ data class ParkingSpotProvidedEvent(
     val parkingSpotId: ParkingSpotId,
 ) : BaseEvent(aggregateId)
 
-data class VehicleParkedOnWrongParkingSpotEvent(
+data class VehicleParkedOnWrongEvent(
     override val aggregateId: String,
     val parkingVehicle: PlateNumber,
     val reservedForVehicle: PlateNumber?,
@@ -87,7 +87,7 @@ enum class ParkingOperationEvent {
     VEHICLE_PARKED_ON_V1,
     VEHICLE_PARKED_OFF_V1,
     PARKING_SPOT_PROVIDED_V1,
-    VEHICLE_PARKED_ON_WRONG_PARKING_SPOT_V1,
+    VEHICLE_PARKED_ON_WRONG_V1,
     PARKING_SPOT_REPROVIDED_V1,
 }
 
@@ -102,8 +102,8 @@ class ParkingOperationEventSerializer : Serializer {
             VehicleParkedOnEvent::class.java to ParkingOperationEvent.VEHICLE_PARKED_ON_V1.name,
             VehicleParkedOffEvent::class.java to ParkingOperationEvent.VEHICLE_PARKED_OFF_V1.name,
             ParkingSpotProvidedEvent::class.java to ParkingOperationEvent.PARKING_SPOT_PROVIDED_V1.name,
-            VehicleParkedOnWrongParkingSpotEvent::class.java to
-                ParkingOperationEvent.VEHICLE_PARKED_ON_WRONG_PARKING_SPOT_V1.name,
+            VehicleParkedOnWrongEvent::class.java to
+                ParkingOperationEvent.VEHICLE_PARKED_ON_WRONG_V1.name,
             ParkingSpotReprovidedEvent::class.java to ParkingOperationEvent.PARKING_SPOT_REPROVIDED_V1.name,
             // Gate events (imported)
             GateCreatedEvent::class.java to GateEvent.GATE_CREATED_V1.name,

@@ -10,7 +10,7 @@ import com.spruhs.parkflow.parkingoperation.api.VehicleEnteredParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleLeavedParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOffEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnEvent
-import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongParkingSpotEvent
+import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongEvent
 import org.springframework.stereotype.Component
 
 @Component
@@ -21,7 +21,7 @@ class VehicleHistoryCommandPort(private val service: VehicleHistoryService) {
             is VehicleEnteredParkingLotEvent -> service.handleVehicleEntered(event)
             is VehicleParkedOnEvent -> service.handleCarParkedOn(event)
             is VehicleParkedOffEvent -> service.handleCarParkedOff(event)
-            is VehicleParkedOnWrongParkingSpotEvent -> service.handleVehicleParkedOnWrongSpot(event)
+            is VehicleParkedOnWrongEvent -> service.handleVehicleParkedOnWrongSpot(event)
             is CustomerCreatedEvent -> service.handleCustomerCreated(event)
             is CustomerVehicleAddedEvent -> service.handleVehicleAdded(event)
             is CustomerVehicleRemovedEvent -> service.handleVehicleRemoved(event)

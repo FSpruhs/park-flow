@@ -18,7 +18,7 @@ import com.spruhs.parkflow.parkingoperation.api.VehicleEnteredParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleLeavedParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOffEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnEvent
-import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongParkingSpotEvent
+import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnWrongEvent
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -33,7 +33,7 @@ class VehicleHistoryService(
     suspend fun handleCarParkedOff(event: VehicleParkedOffEvent) =
         handle(event.plateNumber) { it.parkOff(event.time, event.parkingSpotId) }
 
-    suspend fun handleVehicleParkedOnWrongSpot(event: VehicleParkedOnWrongParkingSpotEvent) =
+    suspend fun handleVehicleParkedOnWrongSpot(event: VehicleParkedOnWrongEvent) =
         handle(event.parkingVehicle) { it.parkOnIncorrect(event.time, event.parkingSpotId) }
 
     suspend fun handleCustomerCreated(event: CustomerCreatedEvent) {
