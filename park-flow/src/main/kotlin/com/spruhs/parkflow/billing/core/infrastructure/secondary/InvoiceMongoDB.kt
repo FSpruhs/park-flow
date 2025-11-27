@@ -34,25 +34,25 @@ class InvoiceRepositoryAdapter(private val repository: InvoiceRepository) : Invo
             .map { it.toInvoice() }
             .collectList()
             .awaitSingle()
-
 }
 
 @Repository
 interface InvoiceRepository : ReactiveMongoRepository<InvoiceDocument, String>
 
+private fun Invoice.toDocument() =
+    InvoiceDocument(
+        id = invoiceId.value,
+        customerId = customerId.value,
+        plateNumber = plateNumber.value,
+        totalAmount = totalAmount.toString(),
+        items = items,
+    )
 
-private fun Invoice.toDocument() = InvoiceDocument(
-    id = invoiceId.value,
-    customerId = customerId.value,
-    plateNumber = plateNumber.value,
-    totalAmount = totalAmount.toString(),
-    items = items
-)
-
-private fun InvoiceDocument.toInvoice() = Invoice(
-    invoiceId = InvoiceId(id),
-    customerId = CustomerId(customerId),
-    plateNumber = PlateNumber(plateNumber),
-    totalAmount = totalAmount.toBigDecimal(),
-    items = items.toMutableList()
-)
+private fun InvoiceDocument.toInvoice() =
+    Invoice(
+        invoiceId = InvoiceId(id),
+        customerId = CustomerId(customerId),
+        plateNumber = PlateNumber(plateNumber),
+        totalAmount = totalAmount.toBigDecimal(),
+        items = items.toMutableList(),
+    )

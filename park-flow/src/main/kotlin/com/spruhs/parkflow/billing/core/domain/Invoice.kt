@@ -48,13 +48,14 @@ sealed class FeePosition(open val price: BigDecimal) {
 
     data class ParkingPerHour(val duration: Duration) : FeePosition(BigDecimal("10"))
 
-    fun name() = when (this) {
-        is ParkingPerHour ->  "Parking per hour"
-        ParkingOnWrongSpot -> "Parking on wrong spot"
-        UnauthorizedParkingOnDisabledSpot -> "Unauthorized parking on disabled spot"
-        UnauthorizedParkingOnElectricSpot -> "Unauthorized parking on electric spot"
-        UnauthorizedParkingOnRentedSpot -> "Unauthorized parking on rented spot"
-    }
+    fun name() =
+        when (this) {
+            is ParkingPerHour -> "Parking per hour"
+            ParkingOnWrongSpot -> "Parking on wrong spot"
+            UnauthorizedParkingOnDisabledSpot -> "Unauthorized parking on disabled spot"
+            UnauthorizedParkingOnElectricSpot -> "Unauthorized parking on electric spot"
+            UnauthorizedParkingOnRentedSpot -> "Unauthorized parking on rented spot"
+        }
 }
 
 @JvmInline

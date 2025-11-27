@@ -159,8 +159,6 @@ data class RentedParkingSpot(
     val start: LocalDate,
 )
 
-
-
 data class CustomerNotFoundException(val id: CustomerId) : RuntimeException("Could not find customer with id: $id")
 
 data class VehicleAlreadyRentedParkingSpotException(val plateNumber: PlateNumber) : RuntimeException(

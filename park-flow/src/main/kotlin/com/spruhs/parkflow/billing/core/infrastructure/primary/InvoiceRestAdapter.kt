@@ -19,7 +19,7 @@ data class InvoiceMessage(
     val customerId: String,
     val plateNumber: String,
     val totalAmount: String,
-    val items: List<InvoiceItemMessage>
+    val items: List<InvoiceItemMessage>,
 )
 
 data class InvoiceItemMessage(
@@ -27,15 +27,17 @@ data class InvoiceItemMessage(
     val amount: String,
 )
 
-private fun Invoice.toMessage() = InvoiceMessage(
-    invoiceId = invoiceId.value,
-    customerId = customerId.value,
-    plateNumber = plateNumber.value,
-    totalAmount = totalAmount.toString(),
-    items = items.map { it.toMessage() }
-)
+private fun Invoice.toMessage() =
+    InvoiceMessage(
+        invoiceId = invoiceId.value,
+        customerId = customerId.value,
+        plateNumber = plateNumber.value,
+        totalAmount = totalAmount.toString(),
+        items = items.map { it.toMessage() },
+    )
 
-private fun InvoiceItem.toMessage() = InvoiceItemMessage(
-    feePosition = feePosition.name(),
-    amount = amount.toString(),
-)
+private fun InvoiceItem.toMessage() =
+    InvoiceItemMessage(
+        feePosition = feePosition.name(),
+        amount = amount.toString(),
+    )

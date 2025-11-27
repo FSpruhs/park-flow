@@ -61,12 +61,12 @@ class InvoiceService(
         history: VehicleHistoryReflection,
         leaveTime: Instant,
     ): Invoice {
-
-        val invoice = Invoice(
-            InvoiceId(generateId()),
-            CustomerId(history.customerId),
-            history.plateNumber,
-        )
+        val invoice =
+            Invoice(
+                InvoiceId(generateId()),
+                CustomerId(history.customerId),
+                history.plateNumber,
+            )
 
         var tempHistoryItem: HistoryItem? = null
         val enterTime = sortedHistory[lastEnterIndex].time
@@ -101,7 +101,10 @@ class InvoiceService(
         return invoice
     }
 
-    private fun isBufferTimeExpired(start: Instant, end: Instant) = Duration.between(end, start).toMinutes() > 5
+    private fun isBufferTimeExpired(
+        start: Instant,
+        end: Instant,
+    ) = Duration.between(end, start).toMinutes() > 5
 
     private suspend fun isElectrical(history: VehicleHistoryReflection) = history.plateNumber.isElectrical()
 
@@ -160,5 +163,6 @@ fun interface PaymentPort {
 
 interface InvoiceRepositoryPort {
     suspend fun save(invoice: Invoice)
+
     suspend fun getAll(): List<Invoice>
 }
