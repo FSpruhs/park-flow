@@ -3,9 +3,9 @@ package com.spruhs.parkflow.customeraccess.core.application
 import com.spruhs.parkflow.common.es.AggregateNotFoundException
 import com.spruhs.parkflow.common.es.AggregateStore
 import com.spruhs.parkflow.common.helper.getLogger
+import com.spruhs.parkflow.customeraccess.api.CustomerId
 import com.spruhs.parkflow.customeraccess.api.PlateNumber
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerAggregate
-import com.spruhs.parkflow.customeraccess.core.domain.CustomerId
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerNotFoundException
 import com.spruhs.parkflow.customeraccess.core.domain.PaymentMethodId
 import com.spruhs.parkflow.customeraccess.core.domain.VehicleNotElectricalException

@@ -1,11 +1,11 @@
 package com.spruhs.parkflow.customeraccess.core.adapter.primary
 
 import com.spruhs.parkflow.common.helper.getLogger
+import com.spruhs.parkflow.customeraccess.api.CustomerId
 import com.spruhs.parkflow.customeraccess.api.PlateNumber
 import com.spruhs.parkflow.customeraccess.core.application.CreateCustomerCommand
 import com.spruhs.parkflow.customeraccess.core.application.CustomerCommandPort
 import com.spruhs.parkflow.customeraccess.core.application.RentParkingSpotCommand
-import com.spruhs.parkflow.customeraccess.core.domain.CustomerId
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerNotFoundException
 import com.spruhs.parkflow.customeraccess.core.domain.PaymentMethodId
 import com.spruhs.parkflow.customeraccess.core.domain.VehicleAlreadyExistsException

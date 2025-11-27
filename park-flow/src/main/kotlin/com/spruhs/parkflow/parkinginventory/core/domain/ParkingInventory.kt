@@ -36,7 +36,7 @@ class ParkingInventoryProjection(
         price: String? = null,
     ) = updateParkingSpot(parkingSpotId) { spot ->
         spot.copy(
-            types = spot.types + types,
+            types = spot.types + types.map { it.toValue() }.toSet(),
             price = if (ParkingSpotType.Rentable in types) price else spot.price,
         )
     }
@@ -44,10 +44,10 @@ class ParkingInventoryProjection(
     fun removeParkingSpotType(
         parkingSpotId: String,
         types: Set<ParkingSpotType>,
-    ) = updateParkingSpot(parkingSpotId) {
-        it.copy(
-            types = it.types - types,
-            price = if (ParkingSpotType.Rentable in types) null else it.price,
+    ) = updateParkingSpot(parkingSpotId) { spot ->
+        spot.copy(
+            types = spot.types - types.map { it.toValue() }.toSet(),
+            price = if (ParkingSpotType.Rentable in types) null else spot.price,
         )
     }
 
@@ -86,7 +86,7 @@ data class GateProjection(
 data class ParkingSpotProjection(
     val parkingSpotId: String,
     val name: String,
-    val types: List<ParkingSpotType>,
+    val types: List<String>,
     val state: ActivationState = ActivationState.ACTIVE,
     val price: String?,
 )

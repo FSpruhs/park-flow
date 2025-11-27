@@ -55,7 +55,7 @@ private fun ParkingSpotProjection.toMessage() =
     ParkingSpotMessage(
         id = this.parkingSpotId,
         name = this.name,
-        types = this.types.map { it.toValue() },
+        types = this.types,
         state = this.state,
         price = this.price,
     )

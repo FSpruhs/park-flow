@@ -12,6 +12,7 @@ import com.spruhs.parkflow.parkinginventory.api.ParkingSpotDeactivatedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRemovedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRenamedEvent
+import com.spruhs.parkflow.parkinginventory.api.ParkingSpotType
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesAddedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesRemovedEvent
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingInventoryProjection
@@ -23,7 +24,10 @@ class ParkingInventoryQueryPort(private val service: ParkingInventoryService) {
     suspend fun getInventory(): ParkingInventoryProjection = service.getInventory()
 
     suspend fun getParkingSpotTypes(parkingSpotId: ParkingSpotId) =
-        getInventory().parkingSpots.find(parkingSpotId)?.types ?: emptyList()
+        getInventory().parkingSpots.find(parkingSpotId)
+            ?.types
+            ?.map { ParkingSpotType.fromString(it) }
+            ?: emptyList()
 
     private fun List<ParkingSpotProjection>.find(parkingSpotId: ParkingSpotId) =
         firstOrNull { it.parkingSpotId == parkingSpotId.value }

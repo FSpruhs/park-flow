@@ -125,7 +125,7 @@ private fun ParkingSpotCreatedEvent.toProjection() =
     ParkingSpotProjection(
         parkingSpotId = aggregateId,
         name = parkingSpotName.value,
-        types = spotTypes.toList(),
+        types = spotTypes.map { it.toValue() },
         price = price?.value?.toString(),
     )
 

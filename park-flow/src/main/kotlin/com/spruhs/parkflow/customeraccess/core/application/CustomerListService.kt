@@ -1,13 +1,13 @@
 package com.spruhs.parkflow.customeraccess.core.application
 
 import com.spruhs.parkflow.customeraccess.api.CustomerCreatedEvent
+import com.spruhs.parkflow.customeraccess.api.CustomerId
 import com.spruhs.parkflow.customeraccess.api.CustomerParkingSpotCanceledEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerParkingSpotRentedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerPaymentMethodChangedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerVehicleAddedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerVehicleRemovedEvent
 import com.spruhs.parkflow.customeraccess.api.PlateNumber
-import com.spruhs.parkflow.customeraccess.core.domain.CustomerId
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerListProjection
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerNotFoundException
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerProjection
