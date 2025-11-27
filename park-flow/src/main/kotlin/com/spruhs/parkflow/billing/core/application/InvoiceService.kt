@@ -71,11 +71,13 @@ class InvoiceService(
                 tempHistoryItem = actualItem
             }
 
-            if (actualItem.type == HistoryType.PARKED_OFF && tempHistoryItem != null) {
-                val minutesBetween = Duration.between(tempHistoryItem.time, actualItem.time).toMinutes()
-                if (minutesBetween > 5) {
-                    extraCharges(tempHistoryItem, isElectrical(history), hasDisabilityCard)
-                        .also { invoice.addExtraCharges(it) }
+            if (actualItem.type == HistoryType.PARKED_OFF) {
+                tempHistoryItem?.let { temp ->
+                    val minutesBetween = Duration.between(temp.time, actualItem.time).toMinutes()
+                    if (minutesBetween > 5) {
+                        extraCharges(temp, isElectrical(history), hasDisabilityCard)
+                            .also { invoice.addExtraCharges(it) }
+                    }
                 }
                 tempHistoryItem = null
             }

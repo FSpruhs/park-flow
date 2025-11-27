@@ -2,7 +2,7 @@ package com.spruhs.parkflow.common.es
 
 import com.spruhs.parkflow.common.helper.getLogger
 import com.spruhs.parkflow.common.metrics.EventMetrics
-import com.spruhs.parkflow.common.metrics.ParkMetics
+import com.spruhs.parkflow.common.metrics.ParkMetrics
 import com.spruhs.parkflow.parkingoperation.api.VehicleEnteredParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleLeavedParkingLotEvent
 import com.spruhs.parkflow.parkingoperation.api.VehicleParkedOnEvent
@@ -18,7 +18,7 @@ fun interface EventPublisher {
 class EventPublisherImpl(
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val eventMetrics: EventMetrics,
-    private val parkMetrics: ParkMetics
+    private val parkMetrics: ParkMetrics
 ) : EventPublisher {
     private val log = getLogger(javaClass)
 

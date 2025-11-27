@@ -17,6 +17,7 @@ import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRemovedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesAddedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesRemovedEvent
+import com.spruhs.parkflow.parkingoperation.api.ParkingSpotReprovidedEvent
 import org.springframework.stereotype.Service
 
 @Service
@@ -37,6 +38,8 @@ class ParkingOperationCommandPort(private val service: ParkingOperatorService) {
 
             is CustomerParkingSpotRentedEvent -> service.importEvent(event)
             is CustomerParkingSpotCanceledEvent -> service.importEvent(event)
+
+            is ParkingSpotReprovidedEvent -> service.handleParkingSpotReprovided(event)
 
             else -> UnknownEventTypeException(event)
         }

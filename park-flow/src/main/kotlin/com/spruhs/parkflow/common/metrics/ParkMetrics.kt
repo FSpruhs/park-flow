@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 
 @Component
-class ParkMetics(registry: MeterRegistry) {
+class ParkMetrics(registry: MeterRegistry) {
 
     private val vehiclesInParkingLot = AtomicInteger(0)
     val correctParkedVehicles = registry.counter("vehicles_correct_parked")

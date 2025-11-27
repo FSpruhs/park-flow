@@ -45,7 +45,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
 
     testImplementation("org.assertj:assertj-core")
-    testImplementation("com.tngtech.archunit:archunit-junit5")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

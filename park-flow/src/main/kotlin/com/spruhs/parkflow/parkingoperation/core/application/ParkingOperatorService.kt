@@ -18,8 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import org.springframework.context.event.EventListener
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
 @Service
@@ -27,6 +25,7 @@ class ParkingOperatorService(
     private val store: AggregateStore,
     private val gateController: GateControllerPort,
     private val customerPort: CustomerOperationApiPort,
+    private val notificationPort: CustomerNotificationPort,
     eventExecutionStrategy: EventExecutionStrategy,
 ) {
     private val log = getLogger(javaClass)
@@ -100,21 +99,12 @@ class ParkingOperatorService(
         actor = ParkingOperatorActor(ParkingOperatorAggregate(PARKING_SPOT_OPERATOR_AGGREGATE_ID), store)
     }
 
+    suspend fun handleParkingSpotReprovided(event: ParkingSpotReprovidedEvent) {
+        notificationPort.notify(event)
+    }
+
     companion object {
         const val PARKING_SPOT_OPERATOR_AGGREGATE_ID = "parking-spot-operator-aggregate-id"
-    }
-}
-
-@Component
-class ParkingOperationListener(
-    private val eventExecutionStrategy: EventExecutionStrategy,
-    private val notificationPort: CustomerNotificationPort,
-) {
-    @EventListener(ParkingSpotReprovidedEvent::class)
-    fun onEvent(event: ParkingSpotReprovidedEvent) {
-        eventExecutionStrategy.execute {
-            notificationPort.notify(event)
-        }
     }
 }
 
