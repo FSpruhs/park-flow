@@ -33,27 +33,27 @@ enum class HistoryType {
 
 fun VehicleHistoryReflection.parkOn(
     time: Instant,
-    parkingSpotId: ParkingSpotId
-): VehicleHistoryReflection =
-    addHistoryItem(time, HistoryType.PARKED_ON_CORRECT, parkingSpotId = parkingSpotId)
+    parkingSpotId: ParkingSpotId,
+): VehicleHistoryReflection = addHistoryItem(time, HistoryType.PARKED_ON_CORRECT, parkingSpotId = parkingSpotId)
 
 fun VehicleHistoryReflection.parkOnIncorrect(
     time: Instant,
-    parkingSpotId: ParkingSpotId
-): VehicleHistoryReflection =
-    addHistoryItem(time, HistoryType.PARKED_ON_CORRECT, parkingSpotId = parkingSpotId)
+    parkingSpotId: ParkingSpotId,
+): VehicleHistoryReflection = addHistoryItem(time, HistoryType.PARKED_ON_CORRECT, parkingSpotId = parkingSpotId)
 
-fun VehicleHistoryReflection.parkOff(time: Instant, parkingSpotId: ParkingSpotId): VehicleHistoryReflection =
-    addHistoryItem(time, HistoryType.PARKED_OFF, parkingSpotId = parkingSpotId)
+fun VehicleHistoryReflection.parkOff(
+    time: Instant,
+    parkingSpotId: ParkingSpotId,
+): VehicleHistoryReflection = addHistoryItem(time, HistoryType.PARKED_OFF, parkingSpotId = parkingSpotId)
 
-fun VehicleHistoryReflection.removeVehicle() =
-    addHistoryItem(Instant.now(), HistoryType.REMOVED)
+fun VehicleHistoryReflection.removeVehicle() = addHistoryItem(Instant.now(), HistoryType.REMOVED)
 
-fun VehicleHistoryReflection.vehicleEntered(time: Instant, hasDisabilityCard: Boolean) =
-    addHistoryItem(time, HistoryType.ENTER, hasDisabilityCard = hasDisabilityCard)
+fun VehicleHistoryReflection.vehicleEntered(
+    time: Instant,
+    hasDisabilityCard: Boolean,
+) = addHistoryItem(time, HistoryType.ENTER, hasDisabilityCard = hasDisabilityCard)
 
-fun VehicleHistoryReflection.vehicleLeaved(time: Instant) =
-    addHistoryItem(time, HistoryType.EXIT)
+fun VehicleHistoryReflection.vehicleLeaved(time: Instant) = addHistoryItem(time, HistoryType.EXIT)
 
 fun VehicleHistoryReflection.chargeInvoice(invoice: Invoice) =
     addHistoryItem(Instant.now(), HistoryType.INVOICED, amount = invoice.totalAmount.toString())
@@ -66,11 +66,13 @@ private fun VehicleHistoryReflection.addHistoryItem(
     hasDisabilityCard: Boolean? = null,
 ): VehicleHistoryReflection =
     copy(
-        history = history + HistoryItem(
-            time = time,
-            type = type,
-            parkingSpotId = parkingSpotId?.value,
-            amount = amount,
-            hasDisabilityCard = hasDisabilityCard,
-        )
+        history =
+            history +
+                HistoryItem(
+                    time = time,
+                    type = type,
+                    parkingSpotId = parkingSpotId?.value,
+                    amount = amount,
+                    hasDisabilityCard = hasDisabilityCard,
+                ),
     )

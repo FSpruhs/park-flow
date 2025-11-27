@@ -25,7 +25,7 @@ import java.time.Instant
 @Service
 class VehicleHistoryService(
     private val repository: VehicleHistoryRepositoryPort,
-    private val invoiceService: InvoiceService
+    private val invoiceService: InvoiceService,
 ) {
     suspend fun handleCarParkedOn(event: VehicleParkedOnEvent) =
         handle(event.plateNumber) { it.parkOn(event.time, event.parkingSpotId) }
@@ -44,7 +44,10 @@ class VehicleHistoryService(
         createVehicleHistory(event.plateNumber, event.aggregateId)
     }
 
-    private suspend fun createVehicleHistory(plateNumber: PlateNumber, customerId: String) {
+    private suspend fun createVehicleHistory(
+        plateNumber: PlateNumber,
+        customerId: String,
+    ) {
         VehicleHistoryReflection(
             plateNumber,
             customerId,
@@ -65,7 +68,6 @@ class VehicleHistoryService(
             val invoice = invoiceService.invoice(it, event)
             it.vehicleLeaved(event.time)
                 .chargeInvoice(invoice)
-
         }
 
     private suspend inline fun handle(

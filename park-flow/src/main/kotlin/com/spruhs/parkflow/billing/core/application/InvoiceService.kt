@@ -24,7 +24,6 @@ class InvoiceService(
     private val customerApi: CustomerApi,
     private val parkingInventoryApi: ParkingInventoryApi,
 ) {
-
     private val log = getLogger(javaClass)
 
     suspend fun invoice(
@@ -43,7 +42,7 @@ class InvoiceService(
             sortedHistory,
             lastEnterIndex,
             history,
-            event.time
+            event.time,
         ).also { paymentPort.charge(it) }
     }
 
@@ -51,7 +50,7 @@ class InvoiceService(
         sortedHistory: List<HistoryItem>,
         lastEnterIndex: Int,
         history: VehicleHistoryReflection,
-        leaveTime: Instant
+        leaveTime: Instant,
     ): Invoice {
         val invoice = Invoice()
 
@@ -65,9 +64,8 @@ class InvoiceService(
                 parkingSpotId = actualItem.parkingSpotId ?: "",
                 plateNumber = history.plateNumber,
                 enterTime = enterTime,
-                leaveTime = leaveTime
+                leaveTime = leaveTime,
             ).also { invoice.addParkingPerHour(it) }
-
 
             if (actualItem.type == HistoryType.PARKED_ON_WRONG) {
                 tempHistoryItem = actualItem
@@ -91,14 +89,13 @@ class InvoiceService(
     private suspend fun isParkingSpotRented(
         parkingSpotId: String,
         plateNumber: PlateNumber,
-
     ) = customerApi.isParkingSpotRented(ParkingSpotId(parkingSpotId), plateNumber)
 
     private suspend fun parkingTimeCharge(
         parkingSpotId: String,
         plateNumber: PlateNumber,
         enterTime: Instant,
-        leaveTime: Instant
+        leaveTime: Instant,
     ): FeePosition.ParkingPerHour {
         if (isParkingSpotRented(parkingSpotId, plateNumber)) {
             return FeePosition.ParkingPerHour(Duration.ZERO)
@@ -115,13 +112,22 @@ class InvoiceService(
         val types = historyItem.parkingSpotId?.let { fetchTypes(it) } ?: emptyList()
 
         return listOfNotNull(
-            if (types.contains(ParkingSpotType.Electric) && !isElectrical)
-                FeePosition.UnauthorizedParkingOnElectricSpot else null,
-            if (types.contains(ParkingSpotType.Rentable))
-                FeePosition.UnauthorizedParkingOnRentedSpot else null,
-            if (types.contains(ParkingSpotType.Disabled) && hasDisabilityCard)
-                FeePosition.UnauthorizedParkingOnDisabledSpot else null,
-            FeePosition.ParkingOnWrongSpot
+            if (ParkingSpotType.Electric in types && !isElectrical) {
+                FeePosition.UnauthorizedParkingOnElectricSpot
+            } else {
+                null
+            },
+            if (ParkingSpotType.Rentable in types) {
+                FeePosition.UnauthorizedParkingOnRentedSpot
+            } else {
+                null
+            },
+            if (ParkingSpotType.Disabled in types && hasDisabilityCard) {
+                FeePosition.UnauthorizedParkingOnDisabledSpot
+            } else {
+                null
+            },
+            FeePosition.ParkingOnWrongSpot,
         )
     }
 
@@ -132,5 +138,3 @@ class InvoiceService(
 fun interface PaymentPort {
     suspend fun charge(invoice: Invoice)
 }
-
-
