@@ -174,3 +174,7 @@ data class VehicleAlreadyRentedParkingSpotException(val plateNumber: PlateNumber
 data class VehicleAlreadyExistsException(val plateNumber: PlateNumber) : RuntimeException(
     "Vehicle with plate number ${plateNumber.value} already exists",
 )
+
+data class VehicleNotElectricalException(val plateNumber: PlateNumber) : RuntimeException(
+    "Vehicle with plate number ${plateNumber.value} is not electric",
+)

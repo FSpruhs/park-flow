@@ -112,11 +112,11 @@ class ParkingSpotCatalogService(private val repository: ParkingSpotCatalogReposi
             "Parking spot rented till"
         }
         if (parkingSpotToReserve.isElectrical) {
-            require(plateNumber.isElectrical())
+            require(plateNumber.isElectrical()) { "Vehicle must be electric" }
         }
     }
 
-    suspend fun isElectrical(parkingSpotId: ParkingSpotId): Boolean =
+    suspend fun isElectrical(parkingSpotId: ParkingSpotId) =
         loadCatalog().parkingSpotCatalogItems
             .find { it.parkingSpotId == parkingSpotId.value }
             ?.isElectrical

@@ -7,9 +7,16 @@ import com.spruhs.parkflow.customeraccess.api.CustomerPaymentMethodChangedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerVehicleAddedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerVehicleRemovedEvent
 import com.spruhs.parkflow.customeraccess.api.PlateNumber
+import com.spruhs.parkflow.customeraccess.core.domain.CustomerId
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerListProjection
+import com.spruhs.parkflow.customeraccess.core.domain.CustomerNotFoundException
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerProjection
 import com.spruhs.parkflow.customeraccess.core.domain.VehicleProjection
+import com.spruhs.parkflow.customeraccess.core.domain.addVehicle
+import com.spruhs.parkflow.customeraccess.core.domain.cancelParkingSpotRent
+import com.spruhs.parkflow.customeraccess.core.domain.removeVehicle
+import com.spruhs.parkflow.customeraccess.core.domain.rentParkingSpot
+import com.spruhs.parkflow.customeraccess.core.domain.updatePaymentMethod
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -31,51 +38,21 @@ class CustomerListService(private val repository: CustomerListRepositoryPort) {
     }
 
     suspend fun handlePaymentMethodChanged(event: CustomerPaymentMethodChangedEvent) =
-        handle(event.aggregateId) { it.copy(paymentMethodId = event.paymentMethodId.value) }
+        handle(event.aggregateId) { it.updatePaymentMethod(event.paymentMethodId.value) }
 
-    suspend fun handleVehicleAdded(event: CustomerVehicleAddedEvent) {
+    suspend fun handleVehicleAdded(event: CustomerVehicleAddedEvent) =
+        handle(event.aggregateId) { it.addVehicle(event.plateNumber.value) }
+
+    suspend fun handleVehicleRemoved(event: CustomerVehicleRemovedEvent) =
+        handle(event.aggregateId) { it.removeVehicle(event.plateNumber.value) }
+
+    suspend fun handleParkingSpotRented(event: CustomerParkingSpotRentedEvent) =
         handle(event.aggregateId) {
-            it.copy(vehicles = it.vehicles + VehicleProjection(event.plateNumber.value))
+            it.rentParkingSpot(event.parkingSpotId.value, event.plateNumber.value, event.rentedAt)
         }
-    }
 
-    suspend fun handleVehicleRemoved(event: CustomerVehicleRemovedEvent) {
-        handle(event.aggregateId) { customer ->
-            customer.copy(vehicles = customer.vehicles.filter { it.plateNumber != event.plateNumber.value })
-        }
-    }
-
-    suspend fun handleParkingSpotRented(event: CustomerParkingSpotRentedEvent) {
-        handle(event.aggregateId) { customer ->
-            val vehicle = customer.vehicles.find { it.plateNumber == event.plateNumber.value } ?: return
-
-            customer.copy(
-                vehicles =
-                    customer.vehicles - vehicle +
-                        VehicleProjection(
-                            plateNumber = event.plateNumber.value,
-                            rentedParkingSpotId = event.parkingSpotId.value,
-                            rentedFrom = event.rentedAt.toString(),
-                        ),
-            )
-        }
-    }
-
-    suspend fun handleParkingSpotCanceled(event: CustomerParkingSpotCanceledEvent) {
-        handle(event.aggregateId) { customer ->
-            val vehicle = customer.vehicles.find { it.rentedParkingSpotId == event.parkingSpotId.value } ?: return
-            customer.copy(
-                vehicles =
-                    customer.vehicles - vehicle +
-                        VehicleProjection(
-                            plateNumber = vehicle.plateNumber,
-                            rentedParkingSpotId = event.parkingSpotId.value,
-                            rentedFrom = vehicle.rentedFrom,
-                            rentedTo = event.endOfRental.toString(),
-                        ),
-            )
-        }
-    }
+    suspend fun handleParkingSpotCanceled(event: CustomerParkingSpotCanceledEvent) =
+        handle(event.aggregateId) { it.cancelParkingSpotRent(event.parkingSpotId.value, event.endOfRental) }
 
     private suspend inline fun handle(
         customerId: String,
@@ -89,29 +66,28 @@ class CustomerListService(private val repository: CustomerListRepositoryPort) {
     }
 
     private suspend fun loadCustomer(customerId: String): CustomerProjection =
-        repository.findById(customerId) ?: throw IllegalArgumentException("Customer with id $customerId not found")
+        repository.findById(customerId) ?: throw CustomerNotFoundException(CustomerId(customerId))
 
     suspend fun isParkingSpotRented(
         parkingSpotId: ParkingSpotId,
         plateNumber: PlateNumber,
     ): Boolean {
-        val vehicle =
-            repository.findByPlateNumber(
-                plateNumber.value,
-            )?.vehicles?.find { it.rentedParkingSpotId == parkingSpotId.value }
-        if (vehicle?.rentedParkingSpotId == null) return false
-        if (vehicle.rentedParkingSpotId != parkingSpotId.value) return false
-        if (vehicle.rentedFrom == null) return false
-        if (!LocalDate.now().isBefore(LocalDate.parse(vehicle.rentedFrom))) {
-            if (vehicle.rentedTo == null) return true
-            if (LocalDate.now().isBefore(LocalDate.parse(vehicle.rentedTo)) ||
-                LocalDate.now()
-                    .equals(LocalDate.parse(vehicle.rentedTo))
-            ) {
-                return true
-            }
-        }
-        return false
+
+        val vehicle = repository
+            .findByPlateNumber(plateNumber.value)
+            ?.vehicles
+            ?.find { it.rentedParkingSpotId == parkingSpotId.value }
+            ?: return false
+
+        val rentedFrom = vehicle.rentedFrom?.let(LocalDate::parse) ?: return false
+        val rentedTo = vehicle.rentedTo?.let(LocalDate::parse)
+
+        val today = LocalDate.now()
+
+        if (today.isBefore(rentedFrom)) return false
+        if (rentedTo == null) return true
+
+        return !today.isAfter(rentedTo)
     }
 }
 

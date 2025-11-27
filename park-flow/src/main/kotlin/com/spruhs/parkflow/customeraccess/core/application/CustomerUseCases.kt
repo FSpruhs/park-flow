@@ -8,6 +8,7 @@ import com.spruhs.parkflow.customeraccess.core.domain.CustomerAggregate
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerId
 import com.spruhs.parkflow.customeraccess.core.domain.CustomerNotFoundException
 import com.spruhs.parkflow.customeraccess.core.domain.PaymentMethodId
+import com.spruhs.parkflow.customeraccess.core.domain.VehicleNotElectricalException
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -49,20 +50,19 @@ class CustomerCommandPort(
 
     suspend fun rentParkingSpot(command: RentParkingSpotCommand) {
         validateElectricParkingSpot(command)
-        parkingSpotCatalogService.reserve(command.parkingSpotId, command.plateNumber)
+        reserveParkingSpot(command.parkingSpotId, command.plateNumber)
 
         handle(command.customerId) { it.rentParkingSpot(command.parkingSpotId, command.plateNumber) }
+    }
+
+    private suspend fun reserveParkingSpot(parkingSpotId: ParkingSpotId, plateNumber: PlateNumber) {
+        parkingSpotCatalogService.reserve(parkingSpotId, plateNumber)
     }
 
     private suspend fun validateElectricParkingSpot(command: RentParkingSpotCommand) {
         require(
             !(parkingSpotCatalogService.isElectrical(command.parkingSpotId) && !command.plateNumber.isElectrical()),
-        ) {
-            throw IllegalArgumentException(
-                "Vehicle with plate number ${command.plateNumber.value} is not electric and" +
-                    " cannot rent electric parking spot ${command.parkingSpotId.value}",
-            )
-        }
+        ) { throw VehicleNotElectricalException(command.plateNumber) }
     }
 
     suspend fun cancelParkingSpot(

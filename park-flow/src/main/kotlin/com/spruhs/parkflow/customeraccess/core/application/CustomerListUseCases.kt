@@ -36,11 +36,11 @@ class CustomerListQueryPort(
 ) {
     suspend fun getCustomerList(): CustomerListProjection = service.getCustomerList()
 
-    suspend fun isPlateNumberRegistered(plateNumber: PlateNumber): Boolean =
+    suspend fun isPlateNumberRegistered(plateNumber: PlateNumber) =
         plateNumberService.existsPlateNumber(plateNumber)
 
     suspend fun isParkingSpotRented(
         parkingSpotId: ParkingSpotId,
         plateNumber: PlateNumber,
-    ): Boolean = service.isParkingSpotRented(parkingSpotId, plateNumber)
+    ) = service.isParkingSpotRented(parkingSpotId, plateNumber)
 }

@@ -10,6 +10,7 @@ import com.spruhs.parkflow.customeraccess.core.domain.CustomerNotFoundException
 import com.spruhs.parkflow.customeraccess.core.domain.PaymentMethodId
 import com.spruhs.parkflow.customeraccess.core.domain.VehicleAlreadyExistsException
 import com.spruhs.parkflow.customeraccess.core.domain.VehicleAlreadyRentedParkingSpotException
+import com.spruhs.parkflow.customeraccess.core.domain.VehicleNotElectricalException
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -90,6 +91,11 @@ class CustomerExceptionHandler {
 
     @ExceptionHandler
     fun handleVehicleAlreadyExistsException(ex: VehicleAlreadyExistsException) =
+        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
+            .also { log.error(ex.message, it) }
+
+    @ExceptionHandler
+    fun handleVehicleNotElectricalException(ex: VehicleNotElectricalException) =
         ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
             .also { log.error(ex.message, it) }
 }
