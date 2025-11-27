@@ -10,3 +10,10 @@ value class PlateNumber(val value: String) {
 
     fun isElectrical(): Boolean = value.last() == 'E'
 }
+
+@JvmInline
+value class CustomerId(val value: String) {
+    init {
+        require(value.isNotBlank()) { "Identifier cannot be blank" }
+    }
+}

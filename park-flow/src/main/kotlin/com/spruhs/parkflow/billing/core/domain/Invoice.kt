@@ -1,9 +1,14 @@
 package com.spruhs.parkflow.billing.core.domain
 
+import com.spruhs.parkflow.customeraccess.api.CustomerId
+import com.spruhs.parkflow.customeraccess.api.PlateNumber
 import java.math.BigDecimal
 import java.time.Duration
 
 data class Invoice(
+    val invoiceId: InvoiceId,
+    val customerId: CustomerId,
+    val plateNumber: PlateNumber,
     val items: List<InvoiceItem> = emptyList(),
     val totalAmount: BigDecimal = BigDecimal.ZERO,
 )
@@ -20,7 +25,7 @@ fun Invoice.addExtraCharges(items: List<FeePosition>) {
 
 private fun Invoice.add(position: FeePosition): Invoice {
     val item = position.calculateInfoItem()
-    return Invoice(
+    return this.copy(
         items = this.items + item,
         totalAmount = this.totalAmount + item.amount,
     )
@@ -46,4 +51,19 @@ sealed class FeePosition(open val price: BigDecimal) {
     object UnauthorizedParkingOnElectricSpot : FeePosition(BigDecimal("50"))
 
     data class ParkingPerHour(val duration: Duration) : FeePosition(BigDecimal("10"))
+
+    fun name() = when (this) {
+        is ParkingPerHour ->  "Parking per hour"
+        ParkingOnWrongSpot -> "Parking on wrong spot"
+        UnauthorizedParkingOnDisabledSpot -> "Unauthorized parking on disabled spot"
+        UnauthorizedParkingOnElectricSpot -> "Unauthorized parking on electric spot"
+        UnauthorizedParkingOnRentedSpot -> "Unauthorized parking on rented spot"
+    }
+}
+
+@JvmInline
+value class InvoiceId(val value: String) {
+    init {
+        require(value.isNotBlank()) { "Identifier cannot be blank" }
+    }
 }

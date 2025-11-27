@@ -4,11 +4,14 @@ import com.spruhs.parkflow.billing.core.domain.FeePosition
 import com.spruhs.parkflow.billing.core.domain.HistoryItem
 import com.spruhs.parkflow.billing.core.domain.HistoryType
 import com.spruhs.parkflow.billing.core.domain.Invoice
+import com.spruhs.parkflow.billing.core.domain.InvoiceId
 import com.spruhs.parkflow.billing.core.domain.VehicleHistoryReflection
 import com.spruhs.parkflow.billing.core.domain.addExtraCharges
 import com.spruhs.parkflow.billing.core.domain.addParkingPerHour
+import com.spruhs.parkflow.common.helper.generateId
 import com.spruhs.parkflow.common.helper.getLogger
 import com.spruhs.parkflow.customeraccess.api.CustomerApi
+import com.spruhs.parkflow.customeraccess.api.CustomerId
 import com.spruhs.parkflow.customeraccess.api.PlateNumber
 import com.spruhs.parkflow.parkinginventory.api.ParkingInventoryApi
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
@@ -23,8 +26,11 @@ class InvoiceService(
     private val paymentPort: PaymentPort,
     private val customerApi: CustomerApi,
     private val parkingInventoryApi: ParkingInventoryApi,
+    private val repository: InvoiceRepositoryPort,
 ) {
     private val log = getLogger(javaClass)
+
+    suspend fun getAll() = repository.getAll()
 
     suspend fun invoice(
         history: VehicleHistoryReflection,
@@ -43,7 +49,10 @@ class InvoiceService(
             lastEnterIndex,
             history,
             event.time,
-        ).also { paymentPort.charge(it) }
+        ).also {
+            paymentPort.charge(it)
+            repository.save(it)
+        }
     }
 
     private suspend fun createInvoice(
@@ -52,7 +61,12 @@ class InvoiceService(
         history: VehicleHistoryReflection,
         leaveTime: Instant,
     ): Invoice {
-        val invoice = Invoice()
+
+        val invoice = Invoice(
+            InvoiceId(generateId()),
+            CustomerId(history.customerId),
+            history.plateNumber,
+        )
 
         var tempHistoryItem: HistoryItem? = null
         val enterTime = sortedHistory[lastEnterIndex].time
@@ -72,10 +86,9 @@ class InvoiceService(
             }
 
             if (actualItem.type == HistoryType.PARKED_OFF) {
-                tempHistoryItem?.let { temp ->
-                    val minutesBetween = Duration.between(temp.time, actualItem.time).toMinutes()
-                    if (minutesBetween > 5) {
-                        extraCharges(temp, isElectrical(history), hasDisabilityCard)
+                tempHistoryItem?.let { tempItem ->
+                    if (isBufferTimeExpired(actualItem.time, tempItem.time)) {
+                        extraCharges(tempItem, isElectrical(history), hasDisabilityCard)
                             .also { invoice.addExtraCharges(it) }
                     }
                 }
@@ -85,6 +98,8 @@ class InvoiceService(
 
         return invoice
     }
+
+    private fun isBufferTimeExpired(start: Instant, end: Instant) = Duration.between(end, start).toMinutes() > 5
 
     private suspend fun isElectrical(history: VehicleHistoryReflection) = history.plateNumber.isElectrical()
 
@@ -139,4 +154,9 @@ class InvoiceService(
 
 fun interface PaymentPort {
     suspend fun charge(invoice: Invoice)
+}
+
+interface InvoiceRepositoryPort {
+    suspend fun save(invoice: Invoice)
+    suspend fun getAll(): List<Invoice>
 }

@@ -5,6 +5,7 @@ import com.spruhs.parkflow.common.es.BaseEvent
 import com.spruhs.parkflow.common.es.UnknownEventTypeException
 import com.spruhs.parkflow.common.helper.generateId
 import com.spruhs.parkflow.customeraccess.api.CustomerCreatedEvent
+import com.spruhs.parkflow.customeraccess.api.CustomerId
 import com.spruhs.parkflow.customeraccess.api.CustomerParkingSpotCanceledEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerParkingSpotRentedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerPaymentMethodChangedEvent
@@ -158,12 +159,7 @@ data class RentedParkingSpot(
     val start: LocalDate,
 )
 
-@JvmInline
-value class CustomerId(val value: String) {
-    init {
-        require(value.isNotBlank()) { "Identifier cannot be blank" }
-    }
-}
+
 
 data class CustomerNotFoundException(val id: CustomerId) : RuntimeException("Could not find customer with id: $id")
 
