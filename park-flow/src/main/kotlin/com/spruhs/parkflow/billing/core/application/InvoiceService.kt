@@ -6,8 +6,8 @@ import com.spruhs.parkflow.billing.core.domain.HistoryType
 import com.spruhs.parkflow.billing.core.domain.Invoice
 import com.spruhs.parkflow.billing.core.domain.InvoiceId
 import com.spruhs.parkflow.billing.core.domain.VehicleHistoryReflection
-import com.spruhs.parkflow.billing.core.domain.addExtraCharges
-import com.spruhs.parkflow.billing.core.domain.addParkingPerHour
+import com.spruhs.parkflow.billing.core.domain.add
+import com.spruhs.parkflow.billing.core.domain.addAll
 import com.spruhs.parkflow.common.helper.generateId
 import com.spruhs.parkflow.common.helper.getLogger
 import com.spruhs.parkflow.customeraccess.api.CustomerApi
@@ -74,12 +74,14 @@ class InvoiceService(
 
         sortedHistory.subList(lastEnterIndex, sortedHistory.size).forEach { actualItem ->
 
-            parkingTimeCharge(
-                parkingSpotId = actualItem.parkingSpotId ?: "",
-                plateNumber = history.plateNumber,
-                enterTime = enterTime,
-                leaveTime = leaveTime,
-            ).also { invoice.addParkingPerHour(it) }
+            if (actualItem.type == HistoryType.PARKED_ON_CORRECT) {
+                parkingTimeCharge(
+                    parkingSpotId = actualItem.parkingSpotId ?: "",
+                    plateNumber = history.plateNumber,
+                    enterTime = enterTime,
+                    leaveTime = leaveTime,
+                ).also { invoice.add(it) }
+            }
 
             if (actualItem.type == HistoryType.PARKED_ON_WRONG) {
                 tempHistoryItem = actualItem
@@ -89,7 +91,7 @@ class InvoiceService(
                 tempHistoryItem?.let { tempItem ->
                     if (isBufferTimeExpired(actualItem.time, tempItem.time)) {
                         extraCharges(tempItem, isElectrical(history), hasDisabilityCard)
-                            .also { invoice.addExtraCharges(it) }
+                            .also { invoice.addAll(it) }
                     }
                 }
                 tempHistoryItem = null

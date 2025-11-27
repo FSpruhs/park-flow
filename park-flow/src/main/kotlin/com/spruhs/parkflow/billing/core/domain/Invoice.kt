@@ -9,32 +9,28 @@ data class Invoice(
     val invoiceId: InvoiceId,
     val customerId: CustomerId,
     val plateNumber: PlateNumber,
-    val items: List<InvoiceItem> = emptyList(),
-    val totalAmount: BigDecimal = BigDecimal.ZERO,
+    val items: MutableList<InvoiceItem> = mutableListOf(),
+    var totalAmount: BigDecimal = BigDecimal.ZERO,
 )
 
 data class InvoiceItem(val amount: BigDecimal, val feePosition: FeePosition)
 
-fun Invoice.addParkingPerHour(item: FeePosition.ParkingPerHour) {
-    this.add(item)
-}
-
-fun Invoice.addExtraCharges(items: List<FeePosition>) {
-    items.forEach { this.add(it) }
-}
-
-private fun Invoice.add(position: FeePosition): Invoice {
+fun Invoice.add(position: FeePosition) {
     val item = position.calculateInfoItem()
-    return this.copy(
-        items = this.items + item,
-        totalAmount = this.totalAmount + item.amount,
-    )
+    this.items.add(item)
+    this.totalAmount += item.amount
+}
+
+fun Invoice.addAll(position: List<FeePosition>) {
+    val items = position.map { it.calculateInfoItem() }
+    this.items.addAll(items)
+    this.totalAmount += items.sumOf { it.amount }
 }
 
 private fun FeePosition.calculateInfoItem(): InvoiceItem {
     return when (this) {
         FeePosition.ParkingOnWrongSpot -> InvoiceItem(this.price, this)
-        is FeePosition.ParkingPerHour -> InvoiceItem(this.price * this.duration.toHours().toBigDecimal(), this)
+        is FeePosition.ParkingPerHour -> InvoiceItem(this.price * maxOf(1, duration.toHours()).toBigDecimal(), this)
         FeePosition.UnauthorizedParkingOnDisabledSpot -> InvoiceItem(this.price, this)
         FeePosition.UnauthorizedParkingOnElectricSpot -> InvoiceItem(this.price, this)
         FeePosition.UnauthorizedParkingOnRentedSpot -> InvoiceItem(this.price, this)

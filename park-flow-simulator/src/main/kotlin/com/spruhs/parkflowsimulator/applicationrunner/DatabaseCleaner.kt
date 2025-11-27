@@ -28,7 +28,8 @@ class DatabaseCleaner(
             "plate_numbers",
             "parking_inventory",
             "customers",
-            "vehicle_history"
+            "vehicle_history",
+            "invoices"
         ).forEach { collection ->
             log.info("Cleaning mongo collection $collection")
             mongoTemplate.remove(Query(), collection)

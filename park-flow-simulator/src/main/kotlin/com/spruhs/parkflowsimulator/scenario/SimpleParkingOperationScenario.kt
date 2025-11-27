@@ -76,7 +76,7 @@ class SimpleParkingOperationScenario(
         val historyValidators = listOf(
             VehicleHistoryValidator(
                 customers[0].plateNumber,
-                5,
+                6,
                 mapOf(
                     HistoryType.CREATED to 1,
                     HistoryType.ENTER to 1,
@@ -88,47 +88,51 @@ class SimpleParkingOperationScenario(
             ),
             VehicleHistoryValidator(
                 customers[1].plateNumber,
-                5,
+                6,
                 mapOf(
                     HistoryType.CREATED to 1,
                     HistoryType.ENTER to 1,
                     HistoryType.PARKED_ON_CORRECT to 1,
                     HistoryType.PARKED_OFF to 1,
-                    HistoryType.EXIT to 1
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
                 ),
                 parkingSpots[2].id()
             ),
             VehicleHistoryValidator(
                 customers[2].plateNumber,
-                5,
+                6,
                 mapOf(
                     HistoryType.CREATED to 1,
                     HistoryType.ENTER to 1,
                     HistoryType.PARKED_ON_CORRECT to 1,
                     HistoryType.PARKED_OFF to 1,
-                    HistoryType.EXIT to 1
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
                 )
             ),
             VehicleHistoryValidator(
                 customers[3].plateNumber,
-                5,
+                6,
                 mapOf(
                     HistoryType.CREATED to 1,
                     HistoryType.ENTER to 1,
                     HistoryType.PARKED_ON_CORRECT to 1,
                     HistoryType.PARKED_OFF to 1,
-                    HistoryType.EXIT to 1
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
                 )
             ),
             VehicleHistoryValidator(
                 customers[4].plateNumber,
-                5,
+                6,
                 mapOf(
                     HistoryType.CREATED to 1,
                     HistoryType.ENTER to 1,
                     HistoryType.PARKED_ON_CORRECT to 1,
                     HistoryType.PARKED_OFF to 1,
-                    HistoryType.EXIT to 1
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
                 )
             ),
             VehicleHistoryValidator(

@@ -54,5 +54,5 @@ private fun InvoiceDocument.toInvoice() = Invoice(
     customerId = CustomerId(customerId),
     plateNumber = PlateNumber(plateNumber),
     totalAmount = totalAmount.toBigDecimal(),
-    items = items
+    items = items.toMutableList()
 )
