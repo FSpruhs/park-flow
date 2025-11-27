@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
-class HexagonaleArchitectureTests {
+class HexagonalArchitectureTests {
     private val basePackage = "com.spruhs.parkflow"
     private val importedClasses = ClassFileImporter().importPackages(basePackage)
 
@@ -48,12 +48,12 @@ class HexagonaleArchitectureTests {
         fun allowedNaming(): Stream<Arguments> =
             Stream.of(
                 Arguments.of("Aggregate", "..domain.."),
-                Arguments.of("Repository", "..adapter.secondary.."),
-                Arguments.of("Adapter", "..adapter.."),
+                Arguments.of("Repository", "..infrastructure.secondary.."),
+                Arguments.of("Adapter", "..infrastructure.."),
                 Arguments.of("Port", "..application.."),
                 Arguments.of("Command", "..application.."),
-                Arguments.of("Message", "..adapter.primary.."),
-                Arguments.of("Request", "..adapter.primary.."),
+                Arguments.of("Message", "..infrastructure.primary.."),
+                Arguments.of("Request", "..infrastructure.primary.."),
                 Arguments.of("Projection", "..domain.."),
             )
     }
