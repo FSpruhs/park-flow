@@ -1,0 +1,31 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(modulith, "Backend Modulith (Spring/Kotlin)") {
+
+    Component(parkingInventory, "Parking Inventory Context", "Kotlin Module")
+    Component(parkingOperation, "Parking Operation Context", "Kotlin Module")
+    Component(billing, "Billing Context", "Kotlin Module")
+    Component(customerAccess, "Customer Access Context", "Kotlin Module")
+    Component(commonLib, "common", "Kotlin Library")
+}
+
+SystemQueue_Ext(rabbitMQ, "RabbitMQ", "Receives IoT sensor events")
+ContainerDb_Ext(mongoDb, "MongoDB", "Read models")
+ContainerDb_Ext(postgresDb, "Postgres Event Store", "Event store")
+
+' Event Flow between bounded contexts
+Rel(parkingInventory, parkingOperation, "Sends domain events")
+Rel(parkingInventory, customerAccess, "Sends domain events")
+Rel(customerAccess, parkingOperation, "Sends domain events")
+Rel(parkingOperation, billing, "Sends domain events")
+Rel(customerAccess, billing, "Sends domain events")
+
+
+' External interactions at container level
+Rel_R(rabbitMQ, modulith, "Sends IoT events")
+Rel_D(modulith, mongoDb, "Reads/Writes")
+Rel_D(modulith, postgresDb, "Event storage")
+
+SHOW_LEGEND(false)
+@enduml

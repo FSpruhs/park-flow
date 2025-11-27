@@ -1,0 +1,32 @@
+spring.application.name: park-flow-simulator
+
+spring.data.mongodb:
+  uri: mongodb://admin:password123@localhost:6000/parkflow?authSource=admin
+  database: parkflow
+
+spring.jpa:
+  hibernate:
+    ddl-auto: none
+  show-sql: true
+
+spring.datasource:
+  url: jdbc:postgresql://localhost:5432/parkflow
+  username: admin
+  password: password123
+  driver-class-name: org.postgresql.Driver
+
+simulation.scenario: simple-parking-operation
+
+server:
+  port: 8081
+
+spring.rabbitmq:
+  host: localhost
+  port: 5672
+  username: user
+  password: password
+  virtual-host: /
+  listener:
+    simple:
+      concurrency: 3
+      max-concurrency: 10

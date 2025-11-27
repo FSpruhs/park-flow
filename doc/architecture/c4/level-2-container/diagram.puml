@@ -1,0 +1,39 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+AddElementTag("in_scope",  $fontColor="lightgreen", $borderColor="green")
+AddElementTag("out_of_scope", $fontColor="brown", $borderColor="red")
+
+
+Person(customer, "Customer", "Uses the app to reserve parking spots")
+Person(operator, "Parking Staff", "Manages the parking facility")
+
+System_Ext(authSystem, "Authentication System", "Authenticates customers", $tags="out_of_scope")
+System_Ext(paymentSystem, "External Payment System", "Provides payment-related services", $tags="out_of_scope")
+System_Ext(parkingSensors, "IoT Parking Sensors", "Detect occupancy and status of parking inventory", $tags="out_of_scope")
+
+System_Boundary(parkFlow, "Park Flow System") {
+    Container(frontendCustomer, "Customer Frontend", "Web/Mobile App", "Allows customers to view and reserve parking spots", $tags="out_of_scope")
+    Container(frontendStaff, "Staff Frontend", "Web App", "Allows operators to manage gates, spots, and inventory", $tags="out_of_scope")
+    Container(backend, "Backend (Spring/Kotlin Modulith)", "Spring Boot / Kotlin", "Processes business logic, consumes events, handles aggregates", $tags="in_scope")
+
+    ContainerDb(mongoDb, "MongoDB", "Stores current state of aggregates and read models", $tags="in_scope")
+    ContainerDb(postgresDb, "Postgres Event Store", "Stores all events for event sourcing", $tags="in_scope")
+
+    SystemQueue(rabbitMQ, "Event Queue (RabbitMQ)", "Handles IoT sensor events asynchronously", $tags="in_scope")
+}
+
+Rel_R(parkingSensors, rabbitMQ, "Send Sensor Events")
+Rel_D(customer, frontendCustomer, "Uses", "https")
+Rel_L(operator, frontendStaff, "Uses", "https")
+Rel_D(frontendCustomer, backend, "Sends API requests", "REST")
+Rel_D(frontendStaff, backend, "Sends API requests", "REST")
+Rel_R(rabbitMQ, backend, "Sends events to", "AMQP / JSON")
+Rel_D(backend, mongoDb, "Reads/Writes current state")
+Rel_D(backend, postgresDb, "Stores events")
+Rel_U(backend, frontendCustomer, "Push Information")
+Rel_R(backend, authSystem, "Authenticates customers and parking stuff")
+Rel_R(backend, paymentSystem, "Responds to requests")
+
+SHOW_LEGEND(false)
+@enduml

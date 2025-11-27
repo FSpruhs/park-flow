@@ -1,0 +1,24 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(customer, "Customer", "Uses the parking app")
+Person(operator, "Parking Staff", "Manages the parking system")
+System_Ext(otherApps, "Other Applications", "Potential external applications accessing the system")
+
+System(app, "Park Flow", "Manages parking spots, gates and cusomers")
+
+Boundary(externals, "External Systems") {
+    System_Ext(authSystem, "Authentication System", "Authenticates customers")
+    System_Ext(infoSystem, "External Payment System", "Provides payment-related services")
+    System_Ext(parkingSensors, "IoT Parking Sensors", "Detect occupancy and status of parking inventory")
+}
+
+Rel(customer, app, "Uses")
+Rel(operator, app, "Manages")
+Rel(app, authSystem, "Authenticates via")
+Rel(app, infoSystem, "Fetches data from")
+Rel(app, parkingSensors, "Reads occupancy/status from")
+Rel_R(otherApps, app, "May call APIs / interact with")
+
+SHOW_LEGEND(false)
+@enduml

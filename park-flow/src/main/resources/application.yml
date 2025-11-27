@@ -1,0 +1,44 @@
+spring.application.name: park-flow
+
+spring.r2dbc:
+  name: parkflow
+  password: password123
+  username: admin
+  url: r2dbc:postgresql://localhost:5432/parkflow
+  pool:
+    max-size: 20
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus, metrics, info
+  metrics:
+    enable:
+      all: true
+
+
+event-sourcing.snapshot-frequency: 20
+
+spring.flyway:
+  validate-on-migrate: true
+  user: admin
+  password: password123
+  url: jdbc:postgresql://localhost:5432/parkflow
+  schemas: [ "parkflow" ]
+
+spring.data.mongodb:
+  uri: mongodb://admin:password123@localhost:6000/parkflow?authSource=admin
+  database: parkflow
+  auto-index-creation: true
+
+spring.rabbitmq:
+  host: localhost
+  port: 5672
+  username: user
+  password: password
+  virtual-host: /
+  listener:
+    simple:
+      concurrency: 3
+      max-concurrency: 10
