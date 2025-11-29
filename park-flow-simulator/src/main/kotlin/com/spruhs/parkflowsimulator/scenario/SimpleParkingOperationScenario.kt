@@ -49,7 +49,7 @@ class SimpleParkingOperationScenario(
         for (customer in customers) {
             enqueue(
                 gates[0].id(),
-                VehicleSimulation(customer.plateNumber, gates[0], gates[1], 1000, 6000, 100, customer.hasDisabilityCard)
+                VehicleSimulation(customer.plateNumber, gates[0], gates[1], gates[0].id(), 1000, 6000, 100, customer.hasDisabilityCard)
             )
             log.info("Added customer: ${customer.plateNumber} to queue")
         }

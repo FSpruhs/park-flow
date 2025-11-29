@@ -15,7 +15,7 @@ class GateRestController(private val scenario: Scenario) {
         @PathVariable plateNumber: String,
         @PathVariable parkingSpotId: String
     ) {
-        scenario.openEntranceGate(gateId, plateNumber, parkingSpotId)
+        scenario.openEntranceGate(plateNumber, parkingSpotId)
     }
 
     @PostMapping("/{gateId}/exit/{plateNumber}")
@@ -23,7 +23,7 @@ class GateRestController(private val scenario: Scenario) {
         @PathVariable gateId: String,
         @PathVariable plateNumber: String,
     ) {
-        scenario.openExitGate(gateId, plateNumber)
+        scenario.openExitGate(plateNumber)
     }
 
     @PostMapping("/{gateId}/error/{plateNumber}")
@@ -31,6 +31,6 @@ class GateRestController(private val scenario: Scenario) {
         @PathVariable gateId: String,
         @PathVariable plateNumber: String,
     ) {
-        scenario.errorGate(gateId, plateNumber)
+        scenario.errorGate(plateNumber)
     }
 }

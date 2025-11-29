@@ -22,6 +22,7 @@ import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.time.Instant
+import kotlin.random.Random
 
 abstract class Scenario(
     protected val webClient: ParkFlowWebClientService,
@@ -30,6 +31,7 @@ abstract class Scenario(
 ) {
     protected val log = getLogger(javaClass)
 
+    private val rnd = Random(42)
     private val gateQueues = mutableMapOf<String, Pair<Channel<VehicleSimulation>, Channel<Unit>>>()
     private val vehicleChannels = mutableMapOf<String, Channel<VehicleAction>>()
     private val jobs = mutableListOf<Job>()
@@ -72,7 +74,8 @@ abstract class Scenario(
         when (receivedEntrance) {
             is VehicleAction.DroveThroughEntrance -> sendDroveThroughEntrance(
                 vehicle.entrance.id(),
-                vehicle.plateNumber
+                vehicle.plateNumber,
+                vehicle.gateQueueName
             )
 
             else -> {
@@ -120,6 +123,7 @@ abstract class Scenario(
         handler: suspend (VehicleSimulation) -> Unit
     ) {
         val gateQueue = gateQueues[name] ?: error("Queue not found")
+        log.info("Start processing queue $name")
 
         val job = simulationScope.launch {
             var intervalMs: Long
@@ -160,9 +164,9 @@ abstract class Scenario(
         log.info("$plateNumber arrived")
     }
 
-    suspend fun sendDroveThroughEntrance(gateId: String, plateNumber: String) {
+    suspend fun sendDroveThroughEntrance(gateId: String, plateNumber: String, gateQueueName: String) {
         sendDroveThrough(gateId, plateNumber)
-        gateQueues[gateId]?.second?.send(Unit)
+        gateQueues[gateQueueName]?.second?.send(Unit)
     }
 
     suspend fun sendDroveThroughExit(gateId: String, plateNumber: String) {
@@ -179,20 +183,20 @@ abstract class Scenario(
         log.info("$plateNumber drove through")
     }
 
-    suspend fun sendParkedOn(parkingspotId: String, plateNumber: String) {
+    suspend fun sendParkedOn(parkingSpotId: String, plateNumber: String) {
         vehicleEventPublisher?.sendParkedOn(
             CarParkedOnSensorEvent(
-                parkingspotId,
+                parkingSpotId,
                 plateNumber
             )
         )
         log.info("$plateNumber parked on")
     }
 
-    suspend fun sendParkedOff(parkingspotId: String, plateNumber: String) {
+    suspend fun sendParkedOff(parkingSpotId: String, plateNumber: String) {
         vehicleEventPublisher?.sendParkedOff(
             CarParkedOffSensorEvent(
-                parkingspotId,
+                parkingSpotId,
                 plateNumber
             )
         )
@@ -318,7 +322,7 @@ abstract class Scenario(
         }
     }
 
-    protected suspend fun runActions(actions: List<ScenarioAction>, delay: Long = 500) = coroutineScope {
+    protected suspend fun runActions(actions: List<ScenarioAction>, delay: Long = 300) = coroutineScope {
         val actionJobs = actions.map { action ->
             launch {
                 when (action) {
@@ -331,6 +335,10 @@ abstract class Scenario(
             }.also { delay(delay) }
         }
         jobs.addAll(actionJobs)
+    }
+
+    protected suspend fun runAction(action: ScenarioAction) {
+        runActions(listOf(action))
     }
 
     protected abstract suspend fun start()
@@ -351,6 +359,12 @@ abstract class Scenario(
 
     suspend fun notifyReprovideParkingSpot(plateNumber: String, parkingSpotId: String) {
         vehicleChannels[plateNumber]?.send(VehicleAction.ReprovideParkingSpot(parkingSpotId))
+    }
+
+    protected fun randomDelayMinuets(minMinutes: Double = 1.0, maxMinutes: Double = 3.0): Long {
+        require(minMinutes in 0.0..maxMinutes) { "minMinutes must be <= maxMinutes and >= 0" }
+        val minutes = rnd.nextDouble(minMinutes, maxMinutes)
+        return (minutes * 60_000.0).toLong()
     }
 }
 
@@ -383,6 +397,7 @@ data class VehicleSimulation(
     val plateNumber: String,
     val entrance: GateInfo,
     val exit: GateInfo,
+    val gateQueueName: String,
     val parkOnDelay: Long = 0,
     val parkOffDelay: Long = 0,
     val exitDelay: Long = 0,
