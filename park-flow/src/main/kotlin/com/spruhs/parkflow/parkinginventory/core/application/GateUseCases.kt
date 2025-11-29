@@ -2,14 +2,13 @@ package com.spruhs.parkflow.parkinginventory.core.application
 
 import com.spruhs.parkflow.common.es.AggregateNotFoundException
 import com.spruhs.parkflow.common.es.AggregateStore
+import com.spruhs.parkflow.common.helper.KeyedMutex
 import com.spruhs.parkflow.common.helper.getLogger
 import com.spruhs.parkflow.parkinginventory.api.GateId
 import com.spruhs.parkflow.parkinginventory.api.GateType
 import com.spruhs.parkflow.parkinginventory.core.domain.GateAggregate
 import com.spruhs.parkflow.parkinginventory.core.domain.GateName
 import com.spruhs.parkflow.parkinginventory.core.domain.GateNotFoundException
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,7 +17,7 @@ class GateCommandPort(
     private val parkingInventoryService: ParkingInventoryService,
 ) {
     private val log = getLogger(javaClass)
-    private val mutex = Mutex()
+    private val mutex = KeyedMutex<GateId>()
 
     suspend fun create(command: CreateGateCommand): String {
         parkingInventoryService.reserveGateName(command.gateName)
@@ -35,9 +34,9 @@ class GateCommandPort(
 
     private suspend inline fun handle(
         id: GateId,
-        block: (GateAggregate) -> Unit,
+        crossinline block: (GateAggregate) -> Unit,
     ) {
-        mutex.withLock {
+        mutex.withKeyLock(id) {
             loadGate(id).also {
                 block(it)
                 aggregateStore.save(it)

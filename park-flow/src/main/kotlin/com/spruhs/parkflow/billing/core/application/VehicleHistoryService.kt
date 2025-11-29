@@ -10,6 +10,7 @@ import com.spruhs.parkflow.billing.core.domain.parkOnIncorrect
 import com.spruhs.parkflow.billing.core.domain.removeVehicle
 import com.spruhs.parkflow.billing.core.domain.vehicleEntered
 import com.spruhs.parkflow.billing.core.domain.vehicleLeaved
+import com.spruhs.parkflow.common.helper.KeyedMutex
 import com.spruhs.parkflow.customeraccess.api.CustomerCreatedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerVehicleAddedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerVehicleRemovedEvent
@@ -27,6 +28,9 @@ class VehicleHistoryService(
     private val repository: VehicleHistoryRepositoryPort,
     private val invoiceService: InvoiceService,
 ) {
+
+    private val mutex = KeyedMutex<PlateNumber>()
+
     suspend fun handleCarParkedOn(event: VehicleParkedOnEvent) =
         handle(event.plateNumber) { it.parkOn(event.time, event.parkingSpotId) }
 
@@ -63,19 +67,23 @@ class VehicleHistoryService(
     suspend fun handleVehicleEntered(event: VehicleEnteredParkingLotEvent) =
         handle(event.plateNumber) { it.vehicleEntered(event.time, event.hasDisabilityCard) }
 
-    suspend fun handleVehicleLeaved(event: VehicleLeavedParkingLotEvent) =
-        handle(event.plateNumber) {
-            val invoice = invoiceService.invoice(it, event)
-            it.vehicleLeaved(event.time)
-                .chargeInvoice(invoice)
-        }
+    suspend fun handleVehicleLeaved(event: VehicleLeavedParkingLotEvent) {
+        val history = loadVehicleHistory(event.plateNumber)
+
+        val invoice = invoiceService.invoice(history, event)
+        history.vehicleLeaved(event.time)
+            .chargeInvoice(invoice)
+            .also { repository.save(it) }
+    }
 
     private suspend inline fun handle(
         plateNumber: PlateNumber,
-        block: (VehicleHistoryReflection) -> VehicleHistoryReflection,
+        crossinline block: (VehicleHistoryReflection) -> VehicleHistoryReflection,
     ) {
-        loadVehicleHistory(plateNumber).also { customer ->
-            block(customer).also { repository.save(it) }
+        mutex.withKeyLock(plateNumber) {
+            loadVehicleHistory(plateNumber).also { customer ->
+                block(customer).also { repository.save(it) }
+            }
         }
     }
 

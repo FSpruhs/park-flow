@@ -29,7 +29,6 @@ class InvoiceService(
     private val repository: InvoiceRepositoryPort,
 ) {
     private val log = getLogger(javaClass)
-
     suspend fun getAll() = repository.getAll()
 
     suspend fun invoice(

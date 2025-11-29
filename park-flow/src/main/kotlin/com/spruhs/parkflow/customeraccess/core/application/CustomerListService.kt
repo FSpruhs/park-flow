@@ -1,5 +1,6 @@
 package com.spruhs.parkflow.customeraccess.core.application
 
+import com.spruhs.parkflow.common.helper.KeyedMutex
 import com.spruhs.parkflow.customeraccess.api.CustomerCreatedEvent
 import com.spruhs.parkflow.customeraccess.api.CustomerId
 import com.spruhs.parkflow.customeraccess.api.CustomerParkingSpotCanceledEvent
@@ -18,14 +19,12 @@ import com.spruhs.parkflow.customeraccess.core.domain.removeVehicle
 import com.spruhs.parkflow.customeraccess.core.domain.rentParkingSpot
 import com.spruhs.parkflow.customeraccess.core.domain.updatePaymentMethod
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
 class CustomerListService(private val repository: CustomerListRepositoryPort) {
-    private val mutex = Mutex()
+    private val mutex = KeyedMutex<String>()
 
     suspend fun getCustomerList(): CustomerListProjection = repository.findAll()
 
@@ -56,9 +55,9 @@ class CustomerListService(private val repository: CustomerListRepositoryPort) {
 
     private suspend inline fun handle(
         customerId: String,
-        block: (CustomerProjection) -> CustomerProjection,
+        crossinline block: (CustomerProjection) -> CustomerProjection,
     ) {
-        mutex.withLock {
+        mutex.withKeyLock(customerId) {
             loadCustomer(customerId).also { customer ->
                 block(customer).also { repository.save(it) }
             }

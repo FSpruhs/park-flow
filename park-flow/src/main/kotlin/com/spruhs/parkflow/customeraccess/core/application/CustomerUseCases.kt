@@ -2,6 +2,7 @@ package com.spruhs.parkflow.customeraccess.core.application
 
 import com.spruhs.parkflow.common.es.AggregateNotFoundException
 import com.spruhs.parkflow.common.es.AggregateStore
+import com.spruhs.parkflow.common.helper.KeyedMutex
 import com.spruhs.parkflow.common.helper.getLogger
 import com.spruhs.parkflow.customeraccess.api.CustomerId
 import com.spruhs.parkflow.customeraccess.api.PlateNumber
@@ -10,8 +11,6 @@ import com.spruhs.parkflow.customeraccess.core.domain.CustomerNotFoundException
 import com.spruhs.parkflow.customeraccess.core.domain.PaymentMethodId
 import com.spruhs.parkflow.customeraccess.core.domain.VehicleNotElectricalException
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.springframework.stereotype.Service
 
 @Service
@@ -21,7 +20,7 @@ class CustomerCommandPort(
     private val parkingSpotCatalogService: ParkingSpotCatalogService,
 ) {
     private val log = getLogger(javaClass)
-    private val mutex = Mutex()
+    private val mutex = KeyedMutex<CustomerId>()
 
     suspend fun create(command: CreateCustomerCommand): String {
         reservePlateNumber(command.vehiclePlateNumber)
@@ -75,9 +74,9 @@ class CustomerCommandPort(
 
     private suspend inline fun handle(
         id: CustomerId,
-        block: (CustomerAggregate) -> Unit,
+        crossinline block: (CustomerAggregate) -> Unit,
     ) {
-        mutex.withLock {
+        mutex.withKeyLock(id) {
             loadCustomer(id).also {
                 block(it)
                 aggregateStore.save(it)

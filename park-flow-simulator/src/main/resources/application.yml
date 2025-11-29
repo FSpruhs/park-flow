@@ -15,7 +15,7 @@ spring.datasource:
   password: password123
   driver-class-name: org.postgresql.Driver
 
-simulation.scenario: realistic-small
+simulation.scenario: simple-parking-operation
 
 server:
   port: 8081

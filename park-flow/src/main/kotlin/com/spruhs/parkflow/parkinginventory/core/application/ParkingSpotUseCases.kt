@@ -2,6 +2,7 @@ package com.spruhs.parkflow.parkinginventory.core.application
 
 import com.spruhs.parkflow.common.es.AggregateNotFoundException
 import com.spruhs.parkflow.common.es.AggregateStore
+import com.spruhs.parkflow.common.helper.KeyedMutex
 import com.spruhs.parkflow.common.helper.getLogger
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotType
@@ -9,8 +10,6 @@ import com.spruhs.parkflow.parkinginventory.api.Price
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotAggregate
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotName
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotNotFoundException
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.springframework.stereotype.Component
 
 @Component
@@ -19,7 +18,7 @@ class ParkingSpotCommandPort(
     private val parkingInventoryService: ParkingInventoryService,
 ) {
     private val log = getLogger(javaClass)
-    private val mutex = Mutex()
+    private val mutex = KeyedMutex<ParkingSpotId>()
 
     suspend fun create(command: CreateParkingSpotCommand): String {
         parkingInventoryService.reserveParkingSpotName(command.parkingSpotName)
@@ -54,9 +53,9 @@ class ParkingSpotCommandPort(
 
     private suspend inline fun handle(
         id: ParkingSpotId,
-        block: (ParkingSpotAggregate) -> Unit,
+        crossinline block: (ParkingSpotAggregate) -> Unit,
     ) {
-        mutex.withLock {
+        mutex.withKeyLock(id) {
             loadParkingSpot(id).also {
                 block(it)
                 aggregateStore.save(it)
