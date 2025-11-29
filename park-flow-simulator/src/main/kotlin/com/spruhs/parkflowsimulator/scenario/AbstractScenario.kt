@@ -82,25 +82,34 @@ abstract class Scenario(
                 log.error("Vehicle ${vehicle.plateNumber} received unexpected action ${receivedEntrance::class.simpleName}")
                 vehicleChannels[vehicle.plateNumber]?.close()
                 vehicleChannels.remove(vehicle.plateNumber)
-                gateQueues[vehicle.entrance.id()]?.second?.send(Unit)
+                gateQueues[vehicle.gateQueueName]?.second?.send(Unit)
                 return
             }
         }
 
         val action = select {
-            vehicleChannels[vehicle.plateNumber]?.onReceive() { it }
+            vehicleChannels[vehicle.plateNumber]?.onReceive { it }
             onTimeout(vehicle.parkOnDelay) { null }
         }
 
         when (action) {
             null -> {
-                sendParkedOn(receivedEntrance.providedParkingSpot, vehicle.plateNumber)
-                delay(vehicle.parkOffDelay)
-                sendParkedOff(receivedEntrance.providedParkingSpot, vehicle.plateNumber)
+                if (vehicle.parkeOnWrongParkingSpot != null) {
+                    sendParkedOn(vehicle.parkeOnWrongParkingSpot.id(), vehicle.plateNumber)
+                    delay(vehicle.parkOffDelay)
+                    sendParkedOff(vehicle.parkeOnWrongParkingSpot.id(), vehicle.plateNumber)
+                } else {
+                    sendParkedOn(receivedEntrance.providedParkingSpot, vehicle.plateNumber)
+                    delay(vehicle.parkOffDelay)
+                    sendParkedOff(receivedEntrance.providedParkingSpot, vehicle.plateNumber)
+                }
+
             }
 
             is VehicleAction.ReprovideParkingSpot -> {
                 sendParkedOn(action.parkingSpotId, vehicle.plateNumber)
+                delay(vehicle.parkOffDelay)
+                sendParkedOff(action.parkingSpotId, vehicle.plateNumber)
             }
 
             else -> {
@@ -146,6 +155,11 @@ abstract class Scenario(
 
     fun closeQueue(name: String) {
         gateQueues[name]?.first?.close()
+    }
+
+    suspend fun joinActionJobs() {
+        jobs.joinAll()
+        jobs.clear()
     }
 
     suspend fun joinAllJobs() {
@@ -401,7 +415,8 @@ data class VehicleSimulation(
     val parkOnDelay: Long = 0,
     val parkOffDelay: Long = 0,
     val exitDelay: Long = 0,
-    val hasDisabilityCard: Boolean = false
+    val hasDisabilityCard: Boolean = false,
+    val parkeOnWrongParkingSpot: ParkingSpotInfo? = null
 )
 
 sealed class VehicleAction {

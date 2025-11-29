@@ -122,11 +122,11 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     }
 
     private fun handleCustomerParkingSpotRentedEvent(event: CustomerParkingSpotRentedEvent) {
-        fetchParkingSpot(event.aggregateId)?.rental = Rental(event.plateNumber, event.rentedAt)
+        fetchParkingSpot(event.parkingSpotId.value)?.rental = Rental(event.plateNumber, event.rentedAt)
     }
 
     private fun handleCustomerParkingSpotCanceledEvent(event: CustomerParkingSpotCanceledEvent) =
-        fetchParkingSpot(event.aggregateId)
+        fetchParkingSpot(event.parkingSpotId.value)
             ?.let { spot ->
                 spot.rental?.let { rental ->
                     spot.rental = rental.copy(to = event.endOfRental)
@@ -181,7 +181,6 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     }
 
     private fun handleVehicleParkedOffEvent(event: VehicleParkedOffEvent) {
-        vehicles[event.plateNumber]?.state = VehicleAction.DrivingAround
         if (parkingSpots[event.parkingSpotId]?.isRented() == false) {
             parkingSpots[event.parkingSpotId]?.reservedForVehicle = null
         }
@@ -241,7 +240,7 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     ) {
         val parkingSpot = parkingSpots[parkingSpotId] ?: return
         if (parkingSpot.parkingVehicle != null) {
-            log.error("CRASH on $parkingSpotId is already vehicle parked!")
+            log.error("CRASH $plateNumber on $parkingSpotId is already vehicle parked!")
         }
 
         if (parkingSpot.reservedForVehicle == plateNumber) {
@@ -263,26 +262,26 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
         parkingSpot: ParkingSpot,
     ) {
         val vehicle = vehicles[plateNumber] ?: return
+        val reservedFor = parkingSpot.reservedForVehicle
         apply(
             VehicleParkedOnWrongEvent(
                 aggregateId,
                 vehicle.plateNumber,
-                parkingSpot.reservedForVehicle,
+                reservedFor,
                 parkingSpot.parkingSpotId,
             ),
         )
-        if (parkingSpot.reservedForVehicle != null) {
-            reprovideParkingSpot(parkingSpot)
+        if (reservedFor != null) {
+            reprovideParkingSpot(reservedFor)
         }
     }
 
-    private fun reprovideParkingSpot(parkingSpot: ParkingSpot) {
-        val plateNumber = parkingSpot.reservedForVehicle ?: return
+    private fun reprovideParkingSpot(reservedFor: PlateNumber) {
 
-        val reservedFor = vehicles[plateNumber] ?: return
-        val newSpot = findParkingSpotFor(reservedFor) ?: return
+        val vehicle = vehicles[reservedFor] ?: return
+        val newSpot = findParkingSpotFor(vehicle) ?: return
 
-        apply(ParkingSpotReprovidedEvent(aggregateId, newSpot.parkingSpotId, plateNumber))
+        apply(ParkingSpotReprovidedEvent(aggregateId, newSpot.parkingSpotId, reservedFor))
     }
 
     private fun onExitArrival() = GateResponse.Action.LetVehicleOut
@@ -329,7 +328,7 @@ class DefaultParkingSpotProvider : ParkingSpotProvider {
             freeSpots.firstOrNull { it.types.containsAll(requiredTypes) }?.let { return it }
         }
 
-        return freeSpots.firstOrNull()
+        return freeSpots.firstOrNull { ParkingSpotType.Disabled !in it.types && ParkingSpotType.Electric !in it.types }
     }
 
     private fun buildPrioritizedTypesSets(vehicle: Vehicle): List<Set<ParkingSpotType>> {
@@ -350,7 +349,7 @@ class DefaultParkingSpotProvider : ParkingSpotProvider {
     private fun findRentedParkingSpot(
         parkingSpots: Map<ParkingSpotId, ParkingSpot>,
         vehicle: Vehicle,
-    ) = parkingSpots.values.firstOrNull { it.isRented() && it.reservedForVehicle == vehicle.plateNumber }
+    ) = parkingSpots.values.firstOrNull { it.isRented() && it.rental?.plateNumber == vehicle.plateNumber }
 
     private fun findFreeSpots(parkingSpots: Map<ParkingSpotId, ParkingSpot>) =
         parkingSpots.values

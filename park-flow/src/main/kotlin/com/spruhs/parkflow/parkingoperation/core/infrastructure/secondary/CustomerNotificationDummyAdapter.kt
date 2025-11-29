@@ -25,7 +25,7 @@ class CustomerNotificationDummyAdapter(private val webClient: WebClient) : Custo
         plateNumber: PlateNumber,
         parkingSpotId: ParkingSpotId,
     ) = webClient.post()
-        .uri("/api/v1/notification/reprovide/${plateNumber.value}/${parkingSpotId.value}")
+        .uri("/notification/reprovide/${plateNumber.value}/${parkingSpotId.value}")
         .retrieve()
         .awaitBody<Unit>()
 }

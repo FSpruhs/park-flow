@@ -66,18 +66,18 @@ data class ParkingSpotProvidedEvent(
     val parkingSpotId: ParkingSpotId,
 ) : BaseEvent(aggregateId)
 
+data class ParkingSpotReprovidedEvent(
+    override val aggregateId: String,
+    val parkingSpotId: ParkingSpotId,
+    val plateNumber: PlateNumber,
+) : BaseEvent(aggregateId)
+
 data class VehicleParkedOnWrongEvent(
     override val aggregateId: String,
     val parkingVehicle: PlateNumber,
     val reservedForVehicle: PlateNumber?,
     val parkingSpotId: ParkingSpotId,
     val time: Instant = Instant.now(),
-) : BaseEvent(aggregateId)
-
-data class ParkingSpotReprovidedEvent(
-    override val aggregateId: String,
-    val parkingSpotId: ParkingSpotId,
-    val plateNumber: PlateNumber,
 ) : BaseEvent(aggregateId)
 
 enum class ParkingOperationEvent {
