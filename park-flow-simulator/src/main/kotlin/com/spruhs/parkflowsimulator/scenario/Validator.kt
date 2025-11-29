@@ -15,7 +15,8 @@ data class VehicleHistoryValidator(
     override val id: String,
     val expectedHistorySize: Int,
     val expectedHistoryTypes: Map<HistoryType, Int>,
-    val expectedParkingSpotId: String? = null
+    val expectedParkingSpotId: String? = null,
+    val expectedPrice: String? = null
 ) : Validator<VehicleHistoryReflection> {
     override fun validate(actual: VehicleHistoryReflection) {
         require(actual.history.size == expectedHistorySize) { "Expected $expectedHistorySize history items but found ${actual.history.size}" }
@@ -24,7 +25,7 @@ data class VehicleHistoryValidator(
             require(actualCount == count) { "Expected $count entries of type $type but found $actualCount" }
         }
         if (expectedParkingSpotId != null) {
-            require(actual.history.any { it.parkingSpotId == expectedParkingSpotId }) { "Expected history entry for parking spot $expectedParkingSpotId" }
+            require(actual.history.any { it.parkingSpotId == expectedParkingSpotId }) { "Expected history entry for $id for parking spot $expectedParkingSpotId" }
         }
     }
 }

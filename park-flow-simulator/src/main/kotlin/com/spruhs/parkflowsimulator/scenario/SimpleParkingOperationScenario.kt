@@ -61,9 +61,9 @@ class SimpleParkingOperationScenario(
                         VehicleSimulation(customer.plateNumber, gates[0], gates[1], "1-${gates[0].id()}", 500, 500, 100, customer.hasDisabilityCard)
                     )
                 }
-                6 -> enqueue("2-${gates[0].id()}", VehicleSimulation(customer.plateNumber, gates[0], gates[1], "2-${gates[0].id()}", 10000, 6000, 100, customer.hasDisabilityCard))
-                7 -> enqueue("2-${gates[0].id()}", VehicleSimulation(customer.plateNumber, gates[0], gates[1], "2-${gates[0].id()}", 1000, 6000, 100, customer.hasDisabilityCard, parkingSpots[0]))
-                8 -> enqueue("2-${gates[0].id()}", VehicleSimulation(customer.plateNumber, gates[0], gates[1], "2-${gates[0].id()}", 1000, 6000, 100, customer.hasDisabilityCard))
+                6 -> enqueue("2-${gates[0].id()}", VehicleSimulation(customer.plateNumber, gates[0], gates[1], "2-${gates[0].id()}", 10000, 1000, 100, customer.hasDisabilityCard))
+                7 -> enqueue("2-${gates[0].id()}", VehicleSimulation(customer.plateNumber, gates[0], gates[1], "2-${gates[0].id()}", 1000, 1000, 100, customer.hasDisabilityCard, parkingSpots[0]))
+                8 -> enqueue("2-${gates[0].id()}", VehicleSimulation(customer.plateNumber, gates[0], gates[1], "2-${gates[0].id()}", 1000, 1000, 100, customer.hasDisabilityCard))
             }
         }
         closeQueue("1-${gates[0].id()}")
@@ -72,8 +72,6 @@ class SimpleParkingOperationScenario(
 
     override suspend fun start() {
         runActions(actionList)
-
-        joinActionJobs()
 
         createGateQueues()
 
@@ -84,9 +82,7 @@ class SimpleParkingOperationScenario(
             intervalProvider = { (100..200L).random() },
             handler = { processVehicle(it) }
         )
-        delay(1000)
-
-        joinActionJobs()
+        delay(3000)
 
         startProcessing(
             name = "2-${gates[0].id()}",
@@ -107,7 +103,7 @@ class SimpleParkingOperationScenario(
     private suspend fun validateScenario() {
         val histories = customers.map { getVehicleHistory(it.plateNumber) }
 
-        if (histories.count() != 6) error("vehicle history count should be 6 and is actual ${histories.count()}")
+        if (histories.count() != 9) error("vehicle history count should be 9 and is actual ${histories.count()}")
 
         val historyValidators = listOf(
             VehicleHistoryValidator(
@@ -120,7 +116,8 @@ class SimpleParkingOperationScenario(
                     HistoryType.PARKED_OFF to 1,
                     HistoryType.EXIT to 1
                 ),
-                parkingSpots[1].id()
+                parkingSpots[1].id(),
+                "10"
             ),
             VehicleHistoryValidator(
                 customers[1].plateNumber,
@@ -133,7 +130,8 @@ class SimpleParkingOperationScenario(
                     HistoryType.EXIT to 1,
                     HistoryType.INVOICED to 1
                 ),
-                parkingSpots[2].id()
+                parkingSpots[2].id(),
+                "10"
             ),
             VehicleHistoryValidator(
                 customers[2].plateNumber,
@@ -145,7 +143,9 @@ class SimpleParkingOperationScenario(
                     HistoryType.PARKED_OFF to 1,
                     HistoryType.EXIT to 1,
                     HistoryType.INVOICED to 1
-                )
+                ),
+                parkingSpots[0].id(),
+                "10"
             ),
             VehicleHistoryValidator(
                 customers[3].plateNumber,
@@ -157,7 +157,9 @@ class SimpleParkingOperationScenario(
                     HistoryType.PARKED_OFF to 1,
                     HistoryType.EXIT to 1,
                     HistoryType.INVOICED to 1
-                )
+                ),
+                parkingSpots[4].id(),
+                "10"
             ),
             VehicleHistoryValidator(
                 customers[4].plateNumber,
@@ -169,7 +171,9 @@ class SimpleParkingOperationScenario(
                     HistoryType.PARKED_OFF to 1,
                     HistoryType.EXIT to 1,
                     HistoryType.INVOICED to 1
-                )
+                ),
+                parkingSpots[3].id(),
+                "10"
             ),
             VehicleHistoryValidator(
                 customers[5].plateNumber,
@@ -177,6 +181,48 @@ class SimpleParkingOperationScenario(
                 mapOf(
                     HistoryType.CREATED to 1
                 )
+            ),
+            VehicleHistoryValidator(
+                customers[6].plateNumber,
+                6,
+                mapOf(
+                    HistoryType.CREATED to 1,
+                    HistoryType.ENTER to 1,
+                    HistoryType.PARKED_ON_CORRECT to 1,
+                    HistoryType.PARKED_OFF to 1,
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
+                ),
+                parkingSpots[3].id(),
+                "10"
+            ),
+            VehicleHistoryValidator(
+                customers[7].plateNumber,
+                6,
+                mapOf(
+                    HistoryType.CREATED to 1,
+                    HistoryType.ENTER to 1,
+                    HistoryType.PARKED_ON_WRONG to 1,
+                    HistoryType.PARKED_OFF to 1,
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
+                ),
+                parkingSpots[0].id(),
+                expectedPrice = "20"
+            ),
+            VehicleHistoryValidator(
+                customers[8].plateNumber,
+                6,
+                mapOf(
+                    HistoryType.CREATED to 1,
+                    HistoryType.ENTER to 1,
+                    HistoryType.PARKED_ON_CORRECT to 1,
+                    HistoryType.PARKED_OFF to 1,
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
+                ),
+                parkingSpots[5].id(),
+                expectedPrice = "0"
             ),
         )
         validateAll(histories, historyValidators) { it.plateNumber }

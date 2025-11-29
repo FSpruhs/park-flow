@@ -39,7 +39,7 @@ fun VehicleHistoryReflection.parkOn(
 fun VehicleHistoryReflection.parkOnIncorrect(
     time: Instant,
     parkingSpotId: ParkingSpotId,
-): VehicleHistoryReflection = addHistoryItem(time, HistoryType.PARKED_ON_CORRECT, parkingSpotId = parkingSpotId)
+): VehicleHistoryReflection = addHistoryItem(time, HistoryType.PARKED_ON_WRONG, parkingSpotId = parkingSpotId)
 
 fun VehicleHistoryReflection.parkOff(
     time: Instant,
