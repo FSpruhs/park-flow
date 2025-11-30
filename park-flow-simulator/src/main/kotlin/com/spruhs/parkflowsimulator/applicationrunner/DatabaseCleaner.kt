@@ -26,7 +26,8 @@ class DatabaseCleaner(
         listOf(
             "parking_spot_catalog",
             "plate_numbers",
-            "parking_inventory",
+            "gates",
+            "parking_spots",
             "customers",
             "vehicle_history",
             "invoices"

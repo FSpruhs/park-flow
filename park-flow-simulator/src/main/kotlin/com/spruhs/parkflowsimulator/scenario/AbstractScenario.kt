@@ -336,7 +336,7 @@ abstract class Scenario(
         }
     }
 
-    protected suspend fun runActions(actions: List<ScenarioAction>, delay: Long = 100) = coroutineScope {
+    protected suspend fun runActions(actions: List<ScenarioAction>, delay: Long = 200) = coroutineScope {
         val actionJobs = actions.map { action ->
             launch {
                 when (action) {

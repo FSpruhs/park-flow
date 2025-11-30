@@ -12,6 +12,7 @@ import com.spruhs.parkflow.parkinginventory.api.ParkingSpotDeactivatedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRemovedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRenamedEvent
+import com.spruhs.parkflow.parkinginventory.api.ParkingSpotType
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesAddedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesRemovedEvent
 import com.spruhs.parkflow.parkinginventory.core.domain.ActivationState
@@ -22,7 +23,6 @@ import com.spruhs.parkflow.parkinginventory.core.domain.ParkingInventoryProjecti
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotName
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotNotFoundException
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotProjection
-import com.spruhs.parkflow.parkinginventory.core.infrastructure.secondary.GateRepository
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -88,12 +88,16 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
     suspend fun handleParkingSpotTypesAdded(event: ParkingSpotTypesAddedEvent) =
         handleParkingSpot(event.aggregateId) { spot ->
-            spot.copy(types = spot.types + event.types.map { it.toValue() })
+            val newTypes = spot.types + event.types.map { it.toValue() }
+            val newPrice = if (ParkingSpotType.Rentable in event.types) event.price?.value.toString() else spot.price
+            spot.copy(types = newTypes, price = newPrice)
         }
 
     suspend fun handleParkingSpotTypesRemoved(event: ParkingSpotTypesRemovedEvent) =
         handleParkingSpot(event.aggregateId) { spot ->
-            spot.copy(types = spot.types - event.types.map { it.toValue() }.toSet())
+            val newTypes = spot.types - event.types.map { it.toValue() }.toSet()
+            val newPrice = if (ParkingSpotType.Rentable in event.types) null else spot.price
+            spot.copy(types = newTypes, price = newPrice)
         }
 
     suspend fun handleParkingSpotActivated(event: ParkingSpotActivatedEvent) =

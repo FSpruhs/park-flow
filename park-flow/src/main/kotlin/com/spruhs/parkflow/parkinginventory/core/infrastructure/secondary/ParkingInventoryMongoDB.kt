@@ -70,11 +70,11 @@ class ParkingInventoryRepositoryAdapter(
         parkingSpotRepository.existsByName(name.value).awaitSingle()
 
     override suspend fun removeParkingSpot(parkingSpotId: String) {
-        parkingSpotRepository.deleteById(parkingSpotId).awaitSingle()
+        parkingSpotRepository.deleteById(parkingSpotId).awaitSingleOrNull()
     }
 
     override suspend fun removeGate(gateId: String) {
-        gateRepository.deleteById(gateId).awaitSingle()
+        gateRepository.deleteById(gateId).awaitSingleOrNull()
     }
 }
 
