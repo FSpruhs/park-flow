@@ -24,9 +24,13 @@ data class VehicleHistoryValidator(
             val actualCount = actual.history.count { it.type == type }
             require(actualCount == count) { "Expected $count entries of type $type but found $actualCount" }
         }
-        if (expectedParkingSpotId != null) {
+        expectedParkingSpotId?.let {
             require(actual.history.any { it.parkingSpotId == expectedParkingSpotId }) { "Expected history entry for $id for parking spot $expectedParkingSpotId" }
         }
+        expectedPrice?.let {
+            require(actual.history.any { it.amount == expectedPrice }) { "Expected history entry for $id with price $expectedPrice" }
+        }
+
     }
 }
 

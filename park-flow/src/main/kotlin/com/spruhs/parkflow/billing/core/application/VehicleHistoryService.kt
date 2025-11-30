@@ -70,7 +70,7 @@ class VehicleHistoryService(
     suspend fun handleVehicleLeaved(event: VehicleLeavedParkingLotEvent) {
         val history = loadVehicleHistory(event.plateNumber)
 
-        val invoice = invoiceService.invoice(history, event)
+        val invoice = invoiceService.invoice(history, event.time)
         history.vehicleLeaved(event.time)
             .chargeInvoice(invoice)
             .also { repository.save(it) }

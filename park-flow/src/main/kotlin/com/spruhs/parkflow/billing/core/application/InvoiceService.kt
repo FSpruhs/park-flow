@@ -16,7 +16,6 @@ import com.spruhs.parkflow.customeraccess.api.PlateNumber
 import com.spruhs.parkflow.parkinginventory.api.ParkingInventoryApi
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotType
-import com.spruhs.parkflow.parkingoperation.api.VehicleLeavedParkingLotEvent
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.Instant
@@ -33,7 +32,7 @@ class InvoiceService(
 
     suspend fun invoice(
         history: VehicleHistoryReflection,
-        event: VehicleLeavedParkingLotEvent,
+        leaveTime: Instant,
     ): Invoice {
         val sortedHistory = history.history.sortedBy { it.time }
         val lastEnterIndex = sortedHistory.indexOfLast { it.type == HistoryType.ENTER }
@@ -47,7 +46,7 @@ class InvoiceService(
             sortedHistory,
             lastEnterIndex,
             history,
-            event.time,
+            leaveTime,
         ).also {
             paymentPort.charge(it)
             repository.save(it)
@@ -67,31 +66,40 @@ class InvoiceService(
                 history.plateNumber,
             )
 
+        var chargedPerHour = false
         var tempHistoryItem: HistoryItem? = null
         val enterTime = sortedHistory[lastEnterIndex].time
         val hasDisabilityCard = sortedHistory[lastEnterIndex].hasDisabilityCard ?: false
 
         sortedHistory.subList(lastEnterIndex, sortedHistory.size).forEach { actualItem ->
 
-            if (actualItem.type == HistoryType.PARKED_ON_CORRECT) {
+            if (actualItem.type == HistoryType.PARKED_ON_CORRECT && !chargedPerHour) {
                 parkingTimeCharge(
                     parkingSpotId = actualItem.parkingSpotId ?: "",
                     plateNumber = history.plateNumber,
                     enterTime = enterTime,
                     leaveTime = leaveTime,
                 ).also { invoice.add(it) }
+                    .also { chargedPerHour = true }
             }
 
             if (actualItem.type == HistoryType.PARKED_ON_WRONG) {
+                if (!chargedPerHour) {
+                    parkingTimeCharge(
+                        parkingSpotId = actualItem.parkingSpotId ?: "",
+                        plateNumber = history.plateNumber,
+                        enterTime = enterTime,
+                        leaveTime = leaveTime,
+                    ).also { invoice.add(it) }
+                        .also { chargedPerHour = true }
+                }
                 tempHistoryItem = actualItem
             }
 
             if (actualItem.type == HistoryType.PARKED_OFF) {
                 tempHistoryItem?.let { tempItem ->
-                    if (isBufferTimeExpired(actualItem.time, tempItem.time)) {
                         extraCharges(tempItem, isElectrical(history), hasDisabilityCard)
                             .also { invoice.addAll(it) }
-                    }
                 }
                 tempHistoryItem = null
             }
@@ -99,11 +107,6 @@ class InvoiceService(
 
         return invoice
     }
-
-    private fun isBufferTimeExpired(
-        start: Instant,
-        end: Instant,
-    ) = Duration.between(end, start).toMinutes() > 5
 
     private suspend fun isElectrical(history: VehicleHistoryReflection) = history.plateNumber.isElectrical()
 

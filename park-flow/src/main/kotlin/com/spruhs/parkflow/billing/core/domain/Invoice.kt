@@ -30,7 +30,15 @@ fun Invoice.addAll(position: List<FeePosition>) {
 private fun FeePosition.calculateInfoItem(): InvoiceItem {
     return when (this) {
         FeePosition.ParkingOnWrongSpot -> InvoiceItem(this.price, this)
-        is FeePosition.ParkingPerHour -> InvoiceItem(this.price * maxOf(1, duration.toHours()).toBigDecimal(), this)
+        is FeePosition.ParkingPerHour -> {
+            val result =
+                if (duration == Duration.ZERO) {
+                    BigDecimal.ZERO
+                } else {
+                    this.price * maxOf(1, duration.toHours()).toBigDecimal()
+                }
+            InvoiceItem(result, this)
+        }
         FeePosition.UnauthorizedParkingOnDisabledSpot -> InvoiceItem(this.price, this)
         FeePosition.UnauthorizedParkingOnElectricSpot -> InvoiceItem(this.price, this)
         FeePosition.UnauthorizedParkingOnRentedSpot -> InvoiceItem(this.price, this)

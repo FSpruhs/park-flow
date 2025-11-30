@@ -46,6 +46,7 @@ dependencies {
     runtimeOnly("org.springframework.modulith:spring-modulith-observability")
 
     testImplementation("org.assertj:assertj-core")
+    testImplementation("io.mockk:mockk:1.12.0")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")

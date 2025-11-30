@@ -79,14 +79,14 @@ class SimpleParkingOperationScenario(
 
         startProcessing(
             name = "1-${gates[0].id()}",
-            intervalProvider = { (100..200L).random() },
+            intervalProvider = { (200..300L).random() },
             handler = { processVehicle(it) }
         )
         delay(3000)
 
         startProcessing(
             name = "2-${gates[0].id()}",
-            intervalProvider = { (100..200L).random() },
+            intervalProvider = { (200..300L).random() },
             handler = { processVehicle(it) }
         )
 
