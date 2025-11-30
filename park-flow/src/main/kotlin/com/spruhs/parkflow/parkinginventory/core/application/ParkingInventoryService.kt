@@ -65,14 +65,20 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
     suspend fun getInventory() = loadInventory()
 
-    suspend fun handleParkingSpotCreatedEvent(event: ParkingSpotCreatedEvent) =
+    suspend fun handleParkingSpotCreatedEvent(event: ParkingSpotCreatedEvent) {
         repository.save(event.toProjection())
+
+        reservedParkingSpotNames.remove(event.parkingSpotName)
+    }
 
     suspend fun handleParkingSpotRenamedEvent(event: ParkingSpotRenamedEvent) =
         handleParkingSpot(event.aggregateId) { it.copy(name = event.newName.value) }
 
-    suspend fun handleGateCreatedEvent(event: GateCreatedEvent) =
+    suspend fun handleGateCreatedEvent(event: GateCreatedEvent) {
         repository.save(event.toProjection())
+
+        reservedGateNames.remove(event.name)
+    }
 
     suspend fun handleParkingSpotRemoved(event: ParkingSpotRemovedEvent) =
         repository.removeParkingSpot(event.aggregateId)

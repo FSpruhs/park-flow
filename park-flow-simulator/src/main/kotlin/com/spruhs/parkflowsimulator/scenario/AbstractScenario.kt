@@ -157,11 +157,6 @@ abstract class Scenario(
         gateQueues[name]?.first?.close()
     }
 
-    suspend fun joinActionJobs() {
-        jobs.joinAll()
-        jobs.clear()
-    }
-
     suspend fun joinAllJobs() {
         queueJobs.joinAll()
         jobs.joinAll()
@@ -336,7 +331,7 @@ abstract class Scenario(
         }
     }
 
-    protected suspend fun runActions(actions: List<ScenarioAction>, delay: Long = 200) = coroutineScope {
+    protected suspend fun runActions(actions: List<ScenarioAction>, delay: Long = 150) = coroutineScope {
         val actionJobs = actions.map { action ->
             launch {
                 when (action) {

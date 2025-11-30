@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger
 @Component
 class ParkMetrics(registry: MeterRegistry) {
     private val vehiclesInParkingLot = AtomicInteger(0)
-    val correctParkedVehicles = registry.counter("vehicles_correct_parked")
-    val wrongParkedVehicles = registry.counter("vehicles_wrong_parked")
+    val correctParkedVehicles = registry.counter("vehicles_correct_parked_total")
+    val wrongParkedVehicles = registry.counter("vehicles_wrong_parked_total")
 
     val enteredParkingSpot: Gauge =
         Gauge.builder("vehicles_in_parking_lot") {

@@ -30,7 +30,7 @@ class RealisticSmallScenario(
             )
         )
 
-        repeat(10) { i ->
+        repeat(100) { i ->
             val types = mutableListOf<String>()
             var price: String? = null
             if (i % 10 == 0) {
@@ -49,7 +49,7 @@ class RealisticSmallScenario(
         createGateQueue("1-${gates[0].id()}")
         createGateQueue("2-${gates[0].id()}")
         createGateQueue("3-${gates[0].id()}")
-        repeat(15) { i ->
+        repeat(150) { i ->
             var plateNumber = "K-A$i"
             val hasDisabilityCard = i % 33 == 0
             if (i % 10 == 0) {
@@ -102,7 +102,7 @@ class RealisticSmallScenario(
             handler = { processVehicle(it) }
         )
 
-
+        joinAllJobs()
     }
 
 }
