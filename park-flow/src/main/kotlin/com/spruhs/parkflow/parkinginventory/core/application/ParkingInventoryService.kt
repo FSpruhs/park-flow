@@ -1,23 +1,28 @@
 package com.spruhs.parkflow.parkinginventory.core.application
 
+import com.spruhs.parkflow.common.helper.KeyedMutex
 import com.spruhs.parkflow.parkinginventory.api.GateActivatedEvent
 import com.spruhs.parkflow.parkinginventory.api.GateCreatedEvent
 import com.spruhs.parkflow.parkinginventory.api.GateDeactivatedEvent
+import com.spruhs.parkflow.parkinginventory.api.GateId
 import com.spruhs.parkflow.parkinginventory.api.GateRemovedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotActivatedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotCreatedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotDeactivatedEvent
+import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRemovedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotRenamedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesAddedEvent
 import com.spruhs.parkflow.parkinginventory.api.ParkingSpotTypesRemovedEvent
+import com.spruhs.parkflow.parkinginventory.core.domain.ActivationState
 import com.spruhs.parkflow.parkinginventory.core.domain.GateName
+import com.spruhs.parkflow.parkinginventory.core.domain.GateNotFoundException
 import com.spruhs.parkflow.parkinginventory.core.domain.GateProjection
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingInventoryProjection
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotName
+import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotNotFoundException
 import com.spruhs.parkflow.parkinginventory.core.domain.ParkingSpotProjection
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import com.spruhs.parkflow.parkinginventory.core.infrastructure.secondary.GateRepository
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -27,7 +32,7 @@ import kotlin.collections.component2
 
 @Service
 class ParkingInventoryService(private val repository: ParkingInventoryRepositoryPort) {
-    private val mutex = Mutex()
+    private val mutex = KeyedMutex<String>()
     private val reservedGateNames: MutableMap<GateName, Instant> = mutableMapOf()
     private val reservedParkingSpotNames: MutableMap<ParkingSpotName, Instant> = mutableMapOf()
 
@@ -41,14 +46,14 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
     suspend fun reserveGateName(name: GateName) {
         require(name !in reservedGateNames.keys) { "Gate name already exists" }
-        require(!loadInventory().existsGateName(name)) { "Gate name already exists" }
+        require(!repository.existsGateName(name)) { "Gate name already exists" }
 
         reservedGateNames[name] = Instant.now()
     }
 
     suspend fun reserveParkingSpotName(name: ParkingSpotName) {
         require(name !in reservedParkingSpotNames.keys) { "Parking spot name already reserved" }
-        require(!loadInventory().existsParkingSpotName(name)) { "Parking spot name already exists" }
+        require(!repository.existsParkingSpotName(name)) { "Parking spot name already exists" }
 
         reservedParkingSpotNames[name] = Instant.now()
     }
@@ -60,53 +65,70 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
     suspend fun getInventory() = loadInventory()
 
-    suspend fun handleParkingSpotCreatedEvent(event: ParkingSpotCreatedEvent) {
-        handle { it.addParkingSpot(event.toProjection()) }
+    suspend fun handleParkingSpotCreatedEvent(event: ParkingSpotCreatedEvent) =
+        repository.save(event.toProjection())
 
-        reservedParkingSpotNames.remove(event.parkingSpotName)
-    }
+    suspend fun handleParkingSpotRenamedEvent(event: ParkingSpotRenamedEvent) =
+        handleParkingSpot(event.aggregateId) { it.copy(name = event.newName.value) }
 
-    suspend fun handleParkingSpotRenamedEvent(event: ParkingSpotRenamedEvent) {
-        handle { it.renameParkingSpot(event.aggregateId, event.newName) }
-
-        reservedParkingSpotNames.remove(event.newName)
-    }
-
-    suspend fun handleGateCreatedEvent(event: GateCreatedEvent) {
-        handle { it.addGate(event.toProjection()) }
-
-        reservedGateNames.remove(event.name)
-    }
+    suspend fun handleGateCreatedEvent(event: GateCreatedEvent) =
+        repository.save(event.toProjection())
 
     suspend fun handleParkingSpotRemoved(event: ParkingSpotRemovedEvent) =
-        handle { it.removeParkingSpot(event.aggregateId) }
+        repository.removeParkingSpot(event.aggregateId)
 
-    suspend fun handleGateActivated(event: GateActivatedEvent) = handle { it.activateGate(event.aggregateId) }
+    suspend fun handleGateActivated(event: GateActivatedEvent) =
+        handleGate(event.aggregateId) { it.copy(state = ActivationState.ACTIVE) }
 
-    suspend fun handleGateDeactivated(event: GateDeactivatedEvent) = handle { it.deactivateGate(event.aggregateId) }
+    suspend fun handleGateDeactivated(event: GateDeactivatedEvent) =
+        handleGate(event.aggregateId) { it.copy(state = ActivationState.INACTIVE) }
 
-    suspend fun handleGateRemoved(event: GateRemovedEvent) = handle { it.removeGate(event.aggregateId) }
+    suspend fun handleGateRemoved(event: GateRemovedEvent)
+    = repository.removeGate(event.aggregateId)
 
     suspend fun handleParkingSpotTypesAdded(event: ParkingSpotTypesAddedEvent) =
-        handle { it.addParkingSpotType(event.aggregateId, event.types, event.price?.value.toString()) }
+        handleParkingSpot(event.aggregateId) { spot ->
+            spot.copy(types = spot.types + event.types.map { it.toValue() })
+        }
 
     suspend fun handleParkingSpotTypesRemoved(event: ParkingSpotTypesRemovedEvent) =
-        handle { it.removeParkingSpotType(event.aggregateId, event.types) }
+        handleParkingSpot(event.aggregateId) { spot ->
+            spot.copy(types = spot.types - event.types.map { it.toValue() }.toSet())
+        }
 
     suspend fun handleParkingSpotActivated(event: ParkingSpotActivatedEvent) =
-        handle { it.activateParkingSpot(event.aggregateId) }
+        handleParkingSpot(event.aggregateId) { it.copy(state = ActivationState.ACTIVE) }
 
     suspend fun handleParkingSpotDeactivated(event: ParkingSpotDeactivatedEvent) =
-        handle { it.deactivateParkingSpot(event.aggregateId) }
+        handleParkingSpot(event.aggregateId) { it.copy(state = ActivationState.INACTIVE) }
 
-    private suspend inline fun handle(block: (ParkingInventoryProjection) -> Unit) {
-        mutex.withLock {
-            loadInventory().also {
-                block(it)
-                repository.save(it)
+    private suspend inline fun handleGate(
+        gateId: String,
+        crossinline block: (GateProjection) -> GateProjection
+    ) {
+        mutex.withKeyLock(gateId) {
+            loadGate(gateId).also { gate ->
+                block(gate).also { repository.save(it) }
             }
         }
     }
+
+    private suspend inline fun handleParkingSpot(
+        parkingSpotId: String,
+        crossinline block: (ParkingSpotProjection) -> ParkingSpotProjection
+    ) {
+        mutex.withKeyLock(parkingSpotId) {
+            loadParkingSpot(parkingSpotId).also { spot ->
+                block(spot).also { repository.save(it) }
+            }
+        }
+    }
+
+    private suspend fun loadGate(id: String): GateProjection =
+        repository.getGate(id) ?: throw GateNotFoundException(GateId(id))
+
+    private suspend fun loadParkingSpot(id: String): ParkingSpotProjection =
+        repository.getParkingSpot(id) ?: throw ParkingSpotNotFoundException(ParkingSpotId(id))
 
     private suspend fun loadInventory(): ParkingInventoryProjection = repository.getInventory()
 
@@ -117,8 +139,17 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
 interface ParkingInventoryRepositoryPort {
     suspend fun getInventory(): ParkingInventoryProjection
+    suspend fun getGate(gateId: String): GateProjection?
+    suspend fun getParkingSpot(parkingSpotId: String): ParkingSpotProjection?
 
-    suspend fun save(inventoryProjection: ParkingInventoryProjection)
+    suspend fun save(gateProjection: GateProjection)
+    suspend fun save(parkingSpotProjection: ParkingSpotProjection)
+
+    suspend fun existsGateName(name: GateName): Boolean
+    suspend fun existsParkingSpotName(name: ParkingSpotName): Boolean
+
+    suspend fun removeParkingSpot(parkingSpotId: String)
+    suspend fun removeGate(gateId: String)
 }
 
 private fun ParkingSpotCreatedEvent.toProjection() =
