@@ -28,7 +28,6 @@ class VehicleHistoryService(
     private val repository: VehicleHistoryRepositoryPort,
     private val invoiceService: InvoiceService,
 ) {
-
     private val mutex = KeyedMutex<PlateNumber>()
 
     suspend fun handleCarParkedOn(event: VehicleParkedOnEvent) =

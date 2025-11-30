@@ -28,6 +28,7 @@ class InvoiceService(
     private val repository: InvoiceRepositoryPort,
 ) {
     private val log = getLogger(javaClass)
+
     suspend fun getAll() = repository.getAll()
 
     suspend fun invoice(
@@ -98,8 +99,8 @@ class InvoiceService(
 
             if (actualItem.type == HistoryType.PARKED_OFF) {
                 tempHistoryItem?.let { tempItem ->
-                        extraCharges(tempItem, isElectrical(history), hasDisabilityCard)
-                            .also { invoice.addAll(it) }
+                    extraCharges(tempItem, isElectrical(history), hasDisabilityCard)
+                        .also { invoice.addAll(it) }
                 }
                 tempHistoryItem = null
             }

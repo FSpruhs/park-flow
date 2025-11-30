@@ -16,7 +16,6 @@ import java.time.LocalDate
 
 @ExtendWith(MockKExtension::class)
 class CustomerListServiceTest {
-
     @MockK
     lateinit var repository: CustomerListRepositoryPort
 
@@ -24,28 +23,29 @@ class CustomerListServiceTest {
     lateinit var service: CustomerListService
 
     @Test
-    fun `isParkingSpotRented should return true when is rented`(): Unit = runBlocking {
-        val parkingSpotId = ParkingSpotId("123")
-        val plateNumber = PlateNumber("K-A1")
+    fun `isParkingSpotRented should return true when is rented`(): Unit =
+        runBlocking {
+            val parkingSpotId = ParkingSpotId("123")
+            val plateNumber = PlateNumber("K-A1")
 
-        val customer = CustomerProjection(
-            "456",
-            listOf(
-                VehicleProjection(
-                    plateNumber = plateNumber.value,
-                    rentedParkingSpotId = parkingSpotId.value,
-                    rentedFrom = LocalDate.now().toString(),
-                    rentedTo = null
+            val customer =
+                CustomerProjection(
+                    "456",
+                    listOf(
+                        VehicleProjection(
+                            plateNumber = plateNumber.value,
+                            rentedParkingSpotId = parkingSpotId.value,
+                            rentedFrom = LocalDate.now().toString(),
+                            rentedTo = null,
+                        ),
+                    ),
+                    "PayPal",
                 )
-            ),
-            "PayPal"
-        )
 
-        coEvery { repository.findByPlateNumber(plateNumber.value) } returns customer
+            coEvery { repository.findByPlateNumber(plateNumber.value) } returns customer
 
-        val result = service.isParkingSpotRented(parkingSpotId, plateNumber)
+            val result = service.isParkingSpotRented(parkingSpotId, plateNumber)
 
-        assertThat(result).isTrue()
-    }
-
+            assertThat(result).isTrue()
+        }
 }

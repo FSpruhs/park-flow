@@ -277,7 +277,6 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     }
 
     private fun reprovideParkingSpot(reservedFor: PlateNumber) {
-
         val vehicle = vehicles[reservedFor] ?: return
         val newSpot = findParkingSpotFor(vehicle) ?: return
 
