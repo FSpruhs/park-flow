@@ -22,18 +22,17 @@ class InvoiceService(
     suspend fun invoice(
         history: VehicleHistoryReflection,
         leaveTime: Instant,
-    ) =
-        Invoice.create(
-            customerId = CustomerId(history.customerId),
-            plateNumber = history.plateNumber,
-            history = history.history,
-            leaveTime = leaveTime,
-            isParkingSpotRented = ::isParkingSpotRented,
-            fetchTypes = ::fetchTypes
-        ).also {
-            paymentPort.charge(it)
-            repository.save(it)
-        }
+    ) = Invoice.create(
+        customerId = CustomerId(history.customerId),
+        plateNumber = history.plateNumber,
+        history = history.history,
+        leaveTime = leaveTime,
+        isParkingSpotRented = ::isParkingSpotRented,
+        fetchTypes = ::fetchTypes,
+    ).also {
+        paymentPort.charge(it)
+        repository.save(it)
+    }
 
     private suspend fun isParkingSpotRented(
         parkingSpotId: String,

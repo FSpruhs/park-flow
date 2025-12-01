@@ -47,13 +47,15 @@ class ParkingInventoryRepositoryAdapter(
             parkingSpots = parkingSpotRepository.findAll().map { it.toProjection() }.collectList().awaitSingle(),
         )
 
-    override suspend fun getGate(gateId: String) = gateRepository.findById(gateId)
-        .awaitSingleOrNull()
-        ?.toProjection()
+    override suspend fun getGate(gateId: String) =
+        gateRepository.findById(gateId)
+            .awaitSingleOrNull()
+            ?.toProjection()
 
-    override suspend fun getParkingSpot(parkingSpotId: String) = parkingSpotRepository.findById(parkingSpotId)
-        .awaitSingleOrNull()
-        ?.toProjection()
+    override suspend fun getParkingSpot(parkingSpotId: String) =
+        parkingSpotRepository.findById(parkingSpotId)
+            .awaitSingleOrNull()
+            ?.toProjection()
 
     override suspend fun save(gateProjection: GateProjection) {
         gateRepository.save(gateProjection.toDocument()).awaitSingle()
@@ -63,8 +65,7 @@ class ParkingInventoryRepositoryAdapter(
         parkingSpotRepository.save(parkingSpotProjection.toDocument()).awaitSingle()
     }
 
-    override suspend fun existsGateName(name: GateName) =
-        gateRepository.existsByName(name.value).awaitSingle()
+    override suspend fun existsGateName(name: GateName) = gateRepository.existsByName(name.value).awaitSingle()
 
     override suspend fun existsParkingSpotName(name: ParkingSpotName) =
         parkingSpotRepository.existsByName(name.value).awaitSingle()
@@ -93,7 +94,7 @@ private fun GateDocument.toProjection() =
         gateId = id,
         name = name,
         type = GateType.valueOf(type),
-        state = ActivationState.valueOf(state)
+        state = ActivationState.valueOf(state),
     )
 
 private fun ParkingSpotDocument.toProjection() =
@@ -102,7 +103,7 @@ private fun ParkingSpotDocument.toProjection() =
         name = name,
         types = types,
         state = ActivationState.valueOf(state),
-        price = price
+        price = price,
     )
 
 private fun GateProjection.toDocument() =
@@ -110,7 +111,7 @@ private fun GateProjection.toDocument() =
         id = gateId,
         name = name,
         state = state.name,
-        type = type.name
+        type = type.name,
     )
 
 private fun ParkingSpotProjection.toDocument() =
@@ -119,5 +120,5 @@ private fun ParkingSpotProjection.toDocument() =
         name = name,
         types = types,
         state = state.name,
-        price = price
+        price = price,
     )

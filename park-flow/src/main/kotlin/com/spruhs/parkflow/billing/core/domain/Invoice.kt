@@ -31,11 +31,12 @@ class Invoice(
                 throw IllegalStateException("No ENTER event found for vehicle ${plateNumber.value}")
             }
 
-            val invoice = Invoice(
-                invoiceId = InvoiceId(generateId()),
-                customerId = customerId,
-                plateNumber = plateNumber,
-            )
+            val invoice =
+                Invoice(
+                    invoiceId = InvoiceId(generateId()),
+                    customerId = customerId,
+                    plateNumber = plateNumber,
+                )
 
             val enterTime = sortedHistory[lastEnterIndex].time
             val hasDisabilityCard = sortedHistory[lastEnterIndex].hasDisabilityCard ?: false
@@ -51,7 +52,7 @@ class Invoice(
                                 plateNumber = plateNumber,
                                 enterTime = enterTime,
                                 leaveTime = leaveTime,
-                                isParkingSpotRented = isParkingSpotRented
+                                isParkingSpotRented = isParkingSpotRented,
                             ).also {
                                 invoice.totalAmount += it.price
                                 invoice.items.add(it.calculateInfoItem())
@@ -87,7 +88,7 @@ class Invoice(
             plateNumber: PlateNumber,
             enterTime: Instant,
             leaveTime: Instant,
-            isParkingSpotRented: suspend (String, PlateNumber) -> Boolean
+            isParkingSpotRented: suspend (String, PlateNumber) -> Boolean,
         ): FeePosition.ParkingPerHour {
             if (isParkingSpotRented(parkingSpotId, plateNumber)) {
                 return FeePosition.ParkingPerHour(Duration.ZERO)
@@ -124,7 +125,6 @@ class Invoice(
             )
         }
     }
-
 }
 
 data class InvoiceItem(val amount: BigDecimal, val feePosition: FeePosition)

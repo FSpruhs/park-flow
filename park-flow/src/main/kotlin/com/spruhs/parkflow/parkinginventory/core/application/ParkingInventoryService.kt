@@ -89,8 +89,7 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
     suspend fun handleGateDeactivated(event: GateDeactivatedEvent) =
         handleGate(event.aggregateId) { it.copy(state = ActivationState.INACTIVE) }
 
-    suspend fun handleGateRemoved(event: GateRemovedEvent)
-    = repository.removeGate(event.aggregateId)
+    suspend fun handleGateRemoved(event: GateRemovedEvent) = repository.removeGate(event.aggregateId)
 
     suspend fun handleParkingSpotTypesAdded(event: ParkingSpotTypesAddedEvent) =
         handleParkingSpot(event.aggregateId) { spot ->
@@ -114,7 +113,7 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
     private suspend inline fun handleGate(
         gateId: String,
-        crossinline block: (GateProjection) -> GateProjection
+        crossinline block: (GateProjection) -> GateProjection,
     ) {
         mutex.withKeyLock(gateId) {
             loadGate(gateId).also { gate ->
@@ -125,7 +124,7 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
     private suspend inline fun handleParkingSpot(
         parkingSpotId: String,
-        crossinline block: (ParkingSpotProjection) -> ParkingSpotProjection
+        crossinline block: (ParkingSpotProjection) -> ParkingSpotProjection,
     ) {
         mutex.withKeyLock(parkingSpotId) {
             loadParkingSpot(parkingSpotId).also { spot ->
@@ -149,16 +148,21 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 
 interface ParkingInventoryRepositoryPort {
     suspend fun getInventory(): ParkingInventoryProjection
+
     suspend fun getGate(gateId: String): GateProjection?
+
     suspend fun getParkingSpot(parkingSpotId: String): ParkingSpotProjection?
 
     suspend fun save(gateProjection: GateProjection)
+
     suspend fun save(parkingSpotProjection: ParkingSpotProjection)
 
     suspend fun existsGateName(name: GateName): Boolean
+
     suspend fun existsParkingSpotName(name: ParkingSpotName): Boolean
 
     suspend fun removeParkingSpot(parkingSpotId: String)
+
     suspend fun removeGate(gateId: String)
 }
 
