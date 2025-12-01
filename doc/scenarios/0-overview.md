@@ -21,3 +21,6 @@ scenario against the running Park Flow application and validate the result.
 | [1](1-simple-parking-inventory.md) | simple-parking-inventory | Covers all use cases for creating a parking inventory          | 1 min    |
 | [2](2-simple-customer-access.md)   | simple-customer-access   | Covers all use cases for a customer end renting a parking spot | 1 min    |
 | [3](3-simple-parking-operation.md) | simple-parking-operation | Covers use cases for a parking operation                       | 1 min    |
+| [4](4-realistic-small.md)          | realistic-small          | Simulates a small parking lot with realistic timings           |          |
+| [5](5-realistic-medium.md)         | realistic-medium         | Simulates a medium-sized parking lot with realistic timings    |          |
+| [6](6-realistic-large.md)          | realistic-large          | Simulates a large parking lot with realistic timings           |          |
