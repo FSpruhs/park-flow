@@ -22,87 +22,54 @@ class RealisticSmallScenario(
         GateInfo("G2", "EXIT"),
     )
 
-    override suspend fun start() {
-
+    private suspend fun createGates() {
         runActions(
             listOf(
                 *gates.map { ScenarioAction.CreateGate(it) }.toTypedArray(),
             )
         )
-
-        repeat(100) { i ->
-            val types = mutableListOf<String>()
-            var price: String? = null
-            if (i % 10 == 0) {
-                types.add("ELECTRIC")
-            }
-            if (i % 25 == 0) {
-                types.add("DISABLED")
-            }
-            if (i % 33 == 0) {
-                types.add("RENTABLE")
-                price = "$i.10"
-            }
-            runAction(ScenarioAction.CreateParkingSpot(ParkingSpotInfo("P-$i", types, price)))
-        }
-
-        createGateQueue("1-${gates[0].id()}")
-        createGateQueue("2-${gates[0].id()}")
-        createGateQueue("3-${gates[0].id()}")
-        repeat(150) { i ->
-            var plateNumber = "K-A$i"
-            val hasDisabilityCard = i % 33 == 0
-            if (i % 10 == 0) {
-                plateNumber += "E"
-            }
-            runAction(ScenarioAction.CreateCustomer(CustomerInfo(plateNumber, hasDisabilityCard = hasDisabilityCard)))
-            val queueName = when {
-                i < 50 -> "1-${gates[0].id()}"
-                i in 50..< 100 -> "2-${gates[0].id()}"
-                else -> "3-${gates[0].id()}"
-            }
-            enqueue(
-                queueName,
-                VehicleSimulation(
-                    plateNumber,
-                    gates[0],
-                    gates[1],
-                    queueName,
-                    randomDelayMinuets(),
-                    randomDelayMinuets(10.0, 20.0),
-                    randomDelayMinuets(),
-                    hasDisabilityCard
-                )
-            )
-        }
-
-        closeQueue("1-${gates[0].id()}")
-        closeQueue("2-${gates[0].id()}")
-        closeQueue("3-${gates[0].id()}")
-
-        startProcessing(
-            name = "1-${gates[0].id()}",
-            intervalProvider = { (8_000L..12_000L).random() },
-            handler = { processVehicle(it) }
-        )
-
-        delay(600_000L)
-
-        startProcessing(
-            name = "2-${gates[0].id()}",
-            intervalProvider = { (8_000L..12_000L).random() },
-            handler = { processVehicle(it) }
-        )
-
-        delay(600_000L)
-
-        startProcessing(
-            name = "3-${gates[0].id()}",
-            intervalProvider = { (8_000L..12_000L).random() },
-            handler = { processVehicle(it) }
-        )
-
-        joinAllJobs()
     }
 
+    override suspend fun start() {
+
+        createGates()
+
+        createGenericParkingSpots(100)
+
+        val gateQueueNames = buildGateQueueNames(gates[0], 3)
+            .also { gateNames -> gateNames.forEach { createGateQueue(it) } }
+
+        createGenericVehicles(
+            150,
+        ) {
+            when {
+                it < 50 -> Triple(gates[0], gates[1], gateQueueNames[0])
+                it in 50..<100 -> Triple(gates[0], gates[1], gateQueueNames[1])
+                else -> Triple(gates[0], gates[1], gateQueueNames[2])
+            }
+        }
+
+        gateQueueNames.forEach(::closeQueue)
+
+        repeat(3) { i ->
+            startProcessing(
+                name = gateQueueNames[i],
+                intervalProvider = { (secondsToMillis(8)..secondsToMillis(12)).random() },
+                handler = { processVehicle(it) }
+            )
+
+            if (i != 2) {
+                delay(minutesToMillis(10))
+            }
+        }
+
+        joinAllJobs()
+
+        log.info("------ Scenario ended ------")
+        log.info("------ Start validating scenario ------")
+
+        validateGenericHistory(150)
+
+        log.info("------ Scenario validation correct ------")
+    }
 }

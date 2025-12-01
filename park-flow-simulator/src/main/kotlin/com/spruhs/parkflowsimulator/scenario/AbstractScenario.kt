@@ -375,6 +375,102 @@ abstract class Scenario(
         val minutes = rnd.nextDouble(minMinutes, maxMinutes)
         return (minutes * 60_000.0).toLong()
     }
+
+    protected fun buildGateQueueNames(gate: GateInfo, count: Int): List<String> =
+        List(count) { index -> "${index + 1}-${gate.id()}" }
+
+    protected fun createPlate(i: Int, electricRate: Int, disabledRate: Int): Pair<String, Boolean> {
+        var plate = "K-A$i"
+        val disabled = i % disabledRate == 0
+        if (i % electricRate == 0) plate += "E"
+        return plate to disabled
+    }
+
+    protected suspend fun createGenericParkingSpots(
+        numberOfParkingSpots: Int,
+        electricRate: Int = 10,
+        disabledRate: Int = 25,
+        rentableRate: Int = 33
+    ) {
+        repeat(numberOfParkingSpots) { i ->
+            val types = buildList {
+                if (i % electricRate == 0) add("ELECTRIC")
+                if (i % disabledRate == 0) add("DISABLED")
+                if (i % rentableRate == 0) add("RENTABLE")
+            }
+
+            val price = if (i % rentableRate == 0) "$i.10" else null
+
+            runAction(
+                ScenarioAction.CreateParkingSpot(
+                    ParkingSpotInfo("P-$i", types, price)
+                )
+            )
+        }
+    }
+
+    protected suspend fun validateGenericHistory(numberOfHistories: Int) {
+        repeat(numberOfHistories) { i ->
+            var plateNumber = "K-A$i"
+            if (i % 10 == 0) {
+                plateNumber += "E"
+            }
+            val history = getVehicleHistory(plateNumber)
+
+            val historyValidator = VehicleHistoryValidator(
+                plateNumber,
+                6,
+                mapOf(
+                    HistoryType.CREATED to 1,
+                    HistoryType.ENTER to 1,
+                    HistoryType.PARKED_ON_CORRECT to 1,
+                    HistoryType.PARKED_OFF to 1,
+                    HistoryType.EXIT to 1,
+                    HistoryType.INVOICED to 1
+                ),
+                expectedPrice = "10"
+            )
+            validate(history, historyValidator)
+        }
+    }
+
+    protected suspend fun createGenericVehicles(
+        numberOfVehicles: Int,
+        parkOnDelay: Pair<Double, Double> = 1.0 to 2.0,
+        parkOffDelay: Pair<Double, Double> = 10.0 to 20.0,
+        exitDelay: Pair<Double, Double> = 1.0 to 2.0,
+        electricRate: Int = 10,
+        disabledRate: Int = 33,
+        queueSelector: (vehicleIndex: Int) -> Triple<GateInfo, GateInfo, String>,
+    ) {
+        repeat(numberOfVehicles) { i ->
+            val (plateNumber, hasDisabilityCard) = createPlate(i, electricRate, disabledRate)
+
+            runAction(ScenarioAction.CreateCustomer(CustomerInfo(plateNumber, hasDisabilityCard = hasDisabilityCard)))
+
+            val (entrance, exit, queueName) = queueSelector(i)
+
+            enqueue(
+                queueName,
+                VehicleSimulation(
+                    plateNumber,
+                    entrance,
+                    exit,
+                    queueName,
+                    randomDelayMinuets(parkOnDelay.first, parkOnDelay.second),
+                    randomDelayMinuets(parkOffDelay.first, parkOffDelay.second),
+                    randomDelayMinuets(exitDelay.first, exitDelay.second),
+                    hasDisabilityCard
+                )
+            )
+        }
+    }
+
+    fun minutesToMillis(minutes: Int): Long =
+        minutes * 60_000L
+
+    fun secondsToMillis(seconds: Int): Long =
+        seconds * 1_000L
 }
 
 sealed class ScenarioAction {

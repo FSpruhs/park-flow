@@ -115,4 +115,8 @@ fun <T> validateAll(
     }
 }
 
+fun <T> validate(actual: T, validator: Validator<T>) {
+    validator.validate(actual)
+}
+
 
