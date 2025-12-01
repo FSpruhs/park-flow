@@ -62,5 +62,30 @@ After starting the simulator with a specific Scenario ID, it will automatically 
 
 ✅ Note: After a successful simulation and validation, the application will automatically shut down.
 
+## Grafana Dashboard
+
+Grafana is included in the Park Flow Docker Compose stack for monitoring.
+
+### Start Grafana
+
+Start the infrastructure (including Grafana) with:
+
+```bash
+docker compose up -d --build
+```
+
+Grafana will be available at: [http://localhost:3000](http://localhost:3000)
+
+### Login
+
+- **Username:** admin
+- **Password:** admin
+
+### Dashboards
+
+All dashboards in `monitoring/grafana/dashboards` are automatically loaded on startup.  
+Just open Grafana and explore the dashboards.
+
+
 
 
