@@ -155,9 +155,8 @@ Events sind unveränderbare Fakten über vergangene Zustände oder Aktionen @sta
 
 Events dienen dazu, Veränderungen in einem System darzustellen und anderen Systemen mitzuteilen.
 Dabei gibt es mehrere Beteiligte: \
-Der *Producer* erzeugt das Event und veröffentlicht es über einen Event-Mechanismus.
-Dieser Mechanismus kann unterschiedliche Bezeichnungen haben.
-In dieser Arbeit wird der Begriff *Event-Queue* verwendet.
+Der *Producer* erzeugt das Event und veröffentlicht es über einen *Event-Queue*#footnote[Auch bekannt als Event-Bus, Publisher oder Broker].
+In dieser Arbeit wird der Begriff Event-Queue verwendet.
 Eine Queue ist dabei eine Warteschlange nach dem First-In-First-Out-Prinzip, in der Events gespeichert werden, bis sie von einem *Consumer* verarbeitet werden.
 Ein Event kann von einem oder mehreren Consumern empfangen werden @stack2022[p.~8-11].
 
@@ -231,7 +230,32 @@ Dabei fungiert der Event Stream als Write Model, dessen Events von einem separat
 
 == Domain Driven Design
 
+Domain Driven Design (DDD) ist eine Methodik zur Entwicklung eines hochwertigen Softwaremodells.
+Dabei soll die Software so designt werden, dass sie die fachlichen Anforderungen der Domäne bestmöglich abbildet @vernon2013[p.~1].
+
+Die Grundlage für DDD wurde 2003 durch Eric Evans und sein Werk "Domain-Driven Design: Tackling Complexity in the Heart of Software" geschaffen @evans2003.
+Evans beschreibt darin einen umfassenden, systematischen Ansatz, um komplexe fachliche Domänen zu analysieren, zu strukturieren und in Software umzusetzen.
+Sein Buch bildet bis heute die theoretische Basis von DDD.
+
+Im Jahr 2013 veröffentlichte Vaughn Vernon mit "Implementing Domain-Driven Design" ein praxisorientierteres Werk, das konkrete Vorgehensweisen und Implementierungsstrategien für die Anwendung von DDD in realen Projekten beschreibt @vernon2013.
+Beide Werke bilden die zentrale Grundlage für die in dieser Arbeit verwendeten DDD-Konzepte.
+#footnote[In der DDD-Community werden diese Bücher aufgrund der Farbgestaltung ihrer Einbände häufig als „Blue Book“ (Evans) und „Red Book“ (Vernon) bezeichnet.]
+
 === Taktisches und Strategisches Design
+
+DDD lässt sich in zwei Hauptbereiche unterteilen.
+Einmal dem Taktischen und einmal dem Strategischen.
+
+Das Strategische Design beschäftigt sich mit der Analyse und Strukturierung der Domäne auf hoher Ebene.
+Es soll hier herausgearbeitet werden was für eine Software entwickelt werden soll und warum.
+Dafür gibt es im Strategischen Design eine Reihe von Werkzeugen und Konzepten, die dabei helfen, die Domäne zu verstehen und zu strukturieren.
+Dabei ist Kommunikation ein zentrales Element.
+Das Strategische Design soll ein gemeinsames Verständins der Domain zwischen den verschiedenen Beteiligten sicherstellen.
+Dieses gemeinsame Wissen soll dazu verwendet werden Designentscheidungen auf Hoher Ebene zu treffen @khononov2022[p.~26-27].
+In diesem Kapitel werde ich die Strategischen Werkzeuge, Sub, Bounded Context, Ubiquitous Language
+
+Das Taktische Design setzt eine Ebene darunter an.
+Hier geht es darum wie die einzelnen Komponenten implementiert werden sollen
 
 === Bounded Context
 
@@ -244,6 +268,10 @@ Dabei fungiert der Event Stream als Write Model, dessen Events von einem separat
 == Modulith
 
 === Hexagonale Architektur
+
+== Kotlin
+
+== Spring Boot
 
 = Implementierung
 
