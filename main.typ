@@ -243,27 +243,78 @@ Beide Werke bilden die zentrale Grundlage für die in dieser Arbeit verwendeten 
 
 === Taktisches und Strategisches Design
 
-DDD lässt sich in zwei Hauptbereiche unterteilen.
-Einmal dem Taktischen und einmal dem Strategischen.
+DDD lässt sich in zwei Hauptbereiche unterteilen, dem *strategischen* und dem *taktischen* Design.
 
-Das Strategische Design beschäftigt sich mit der Analyse und Strukturierung der Domäne auf hoher Ebene.
-Es soll hier herausgearbeitet werden was für eine Software entwickelt werden soll und warum.
-Dafür gibt es im Strategischen Design eine Reihe von Werkzeugen und Konzepten, die dabei helfen, die Domäne zu verstehen und zu strukturieren.
-Dabei ist Kommunikation ein zentrales Element.
-Das Strategische Design soll ein gemeinsames Verständins der Domain zwischen den verschiedenen Beteiligten sicherstellen.
-Dieses gemeinsame Wissen soll dazu verwendet werden Designentscheidungen auf Hoher Ebene zu treffen @khononov2022[p.~26-27].
-In diesem Kapitel werde ich die Strategischen Werkzeuge, Sub, Bounded Context, Ubiquitous Language
+Das strategische Design beschäftigt sich mit der Analyse und Strukturierung der Domäne auf hoher Ebene.
+Ziel ist es, herauszuarbeiten, welche Software entwickelt werden soll und warum, und wie die Domäne sinnvoll in fachliche Teilbereiche gegliedert werden kann.
 
-Das Taktische Design setzt eine Ebene darunter an.
-Hier geht es darum wie die einzelnen Komponenten implementiert werden sollen
+Dafür stehen im strategischen Design verschiedene Werkzeuge und Konzepte zur Verfügung, die dabei helfen, die Domäne zu verstehen, Verantwortlichkeiten abzugrenzen und Zusammenhänge zu visualisieren.
+Ein zentraler Aspekt ist die Kommunikation zwischen allen Beteiligten, um ein gemeinsames Verständnis der Domäne sicherzustellen.
+Dieses gemeinsame Wissen dient als Grundlage für Designentscheidungen auf hoher Ebene @khononov2022[p.~26–27].
+
+In diesem Kapitel werde ich die Strategischen Begriffe, Subdomain, Bounded Context und Ubiquitous Language vorstellen die ich auch bei der Implementierung verwenden werde.
+
+Das taktische Design setzt eine Ebene darunter an und beschäftigt sich mit der konkreten Umsetzung der Softwarekomponenten.
+Es beschreibt, wie das im strategischen Design entwickelte Domänenmodell technisch realisiert wird @khononov2022[p.~89].
+In diesem Kapitel werde ih die Taktischen Begriffe, Entities, Value Objects, Aggregates, Domain Events und Modules
+
+=== Subdomain
+
+Als Domain wird alles bezeichnet, womit sich eine Organisation #footnote[z.B. Unternehmen oder öffentliche Institutionen] beschäftigt und in welchem fachlichen Kontext sie tätig ist @vernon2013[p.~43].
+Die Domain beschreibt somit den fachlichen Kontext, in dem die Software operiert, und umfasst die Geschäftsprozesse, Regeln und Anforderungen, die für die Organisation relevant sind.
+
+Damit die Ziele der Domain erreicht werden können, wird sie in mehrere Subdomains unterteilt.
+Subdomains lassen sich in drei Kategorien einordnen:
+- *Core Subdomain*: Die Core Subdomain stellt die Haupttätigkeit der Organisation dar. Sie definiert, wodurch sich die Organisation von ihren Wettbewerbern abhebt, und repräsentiert das, was die Organisation besonders macht. Die Hauptentwicklung sollte sich auf die Core Subdomain konzentrieren, da hier der größte Mehrwert liegt.
+- *Supporting Subdomain*: Supporting Subdomains unterstützen die Core Subdomain dabei, ihre Ziele zu erreichen, bilden aber nicht das Hauptbetätigungsfeld der Organisation. Sie sind für den Gesamterfolg wichtig, liefern jedoch keinen direkten Wettbewerbsvorteil.
+- *Generic Subdomain*: Generic Subdomains sind allgemeine, standardisierte Bereiche, die viele Organisationen ebenfalls besitzen. Sie sind nicht spezifisch für die Organisation und bieten keinen Wettbewerbsvorteil. Solche Domains können häufig durch Standardlösungen oder Drittanbieter abgedeckt werden.
+@khononov2022[p.~30-33]
+
+=== Ubiquitous Language
+
+Ein zentrales Element von DDD ist die Ubiquitous Language („allgegenwärtige Sprache“).
+Sie besagt, dass alle Beteiligten eine gemeinsame Sprache verwenden, die sich aus der Domain ableitet.
+
+Die Ubiquitous Language soll:
+- Verständigung zwischen Fachexperten, Entwicklern und anderen Beteiligten erleichtern
+- Übersetzungen zwischen unterschiedlichen Begrifflichkeiten vermeiden
+- Technische Begriffe nur soweit einfließen lassen, wie sie die fachliche Sprache unterstützen.
+@khononov2022[p.~50–51]
 
 === Bounded Context
+
+Ein zentrales Ziel von DDD ist es, verschiedene Modelle zu entwickeln, die unterschiedliche Aspekte der Domain abbilden und dabei helfen, das reale System besser zu verstehen.
+Jedes Modell soll nur die Elemente enthalten, die für seinen Zweck erforderlich sind, während unnötige Details bewusst ausgeklammert werden.
+Auf diese Weise wird die Komplexität des Modells auf ein Minimum reduziert @khononov2022[p.~53–54].
+
+Ein Modell kann in verschiedenen Domänen verwendet werden, dabei aber unterschiedliche Rollen einnehmen.
+Dies kann dazu führen, dass ein Modell sehr groß und komplex wird und nicht alle Aspekte in allen Domänen benötigt werden.
+DDD adressiert diese Herausforderung, indem es Modelle aufteilt und klar Abgrenzungen definiert.
+
+Ein Bounded Context bezeichnet einen abgegrenzten Bereich, in dem ein Modell gültig, konsistent und eindeutig definiert ist.
+Das gleiche fachliche Modell kann somit in mehreren Bounded Contexts existieren, unterscheidet sich dort jedoch in Bedeutung und Verwendung @khononov2022[p.~63–64].
+
+Während eine Subdomain einen fachlichen Bereich beschreibt, definiert ein Bounded Context die technische und organisatorische Grenze, innerhalb derer ein Modell konsistent angewendet wird.
+
+Die Ubiquitous Language wird innerhalb eines Bounded Contexts festgelegt. Gleichlautende Begriffe müssen dabei nicht zwingend die gleiche Bedeutung in anderen Contexts haben.
+So kann ein und dasselbe Wort in verschiedenen Bounded Contexts unterschiedliche Bedeutungen besitzen @khononov2022[p.~65].
+
+Das Beherrschen der Komplexität durch die Aufteilung in kleine, unabhängige Bereiche ist eines der zentralen Ziele von DDD.
+Subdomains, Bounded Contexts und die Ubiquitous Language arbeiten dabei zusammen, um die Domäne strukturiert und verständlich zu modellieren.
+
+=== Entities
+
+=== Value Objects
 
 === Aggregates
 
 === Domain Events
 
+=== Modules
+
 === Event Storming
+
+=== Zusammenfassung
 
 == Modulith
 
