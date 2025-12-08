@@ -375,17 +375,154 @@ Domain Events ermöglichen somit nicht nur die fachliche Abbildung wichtiger Ges
 
 === Modules
 
+Ein Module ist eine logische Zusammenfassung eng verwandter Domänenelemente innerhalb eines Bounded Contexts.
+Innerhalb eines Moduls herrscht hohe Kohäsion.
+Die enthaltenen Klassen, Konzepte und Regeln stehen in einem klaren fachlichen Zusammenhang und tragen gemeinsam zur Lösung einer spezifischen Teilaufgabe der Domäne bei.
+
+Zwischen Modulen sollte hingegen eine möglichst geringe Kopplung bestehen.
+Diese Trennung fördert die Verständlichkeit, Wartbarkeit und Weiterentwicklung des Systems, da Änderungen innerhalb eines Moduls keine oder nur geringe Auswirkungen auf andere Module haben.
+
+Wichtig ist, dass Module fachlich und nicht technisch geschnitten werden.
+Sie orientieren sich also an der Problem- und Begriffswelt der Domäne und nicht an technischen Strukturen @vernon2013[p.~333–334].
+
 === Event Storming
 
-=== Zusammenfassung
+Event Storming ist ein Werkzeug, um das Fachwissen einer Domäne sichtbar zu machen, zu strukturieren und im Team zu verbreiten.
+Es handelt sich um einen kollaborativen Workshop-Ansatz, bei dem eine heterogene Gruppe, bestehend aus Fachexperten, Entwicklern und weiteren Stakeholdern, gemeinsam die Geschäftsprozesse und Abläufe einer Domäne modelliert.
 
-== Modulith
+Den Ausgangspunkt bilden dabei die Domain Events, die als zentrale Orientierungspunkte dienen.
+Sie beschreiben bedeutende fachliche Ereignisse und helfen, den Ablauf und die Zustandsänderungen innerhalb der Domäne nachvollziehbar darzustellen.
+
+Ausgehend von diesen Domain Events werden im weiteren Verlauf des Workshops zusätzliche Elemente identifiziert, darunter Commands, Aggregates, Read Models sowie externe Systeme.
+Diese Elemente werden in Beziehung zueinander gesetzt, um ein umfassendes Verständnis der Domäne und ihrer Interaktionen zu entwickeln.
+
+Die Modellierung erfolgt typischerweise an einem großen Whiteboard, auf dem die verschiedenen Bestandteile mithilfe farbcodierter Post-its visualisiert werden @khononov2022[p.~235–236].
+
+== Architektur
+
+Es gibt verschiedene Architekturmuster, die bei der Umsetzung von Softwarelösungen verwendet werden können.
+In dieser Arbeit werde ich mich auf den Modulithen konzentrieren.
+Dabei handelt es sich um eine Architektur, die die Vorteile von Monolithen und Microservices miteinander kombiniert.
+
+Zunächst stelle ich die beiden Architekturmuster Monolith und Microservices vor, um anschließend den Modulith als Zwischenform zu erläutern.
+Darüber hinaus wird die hexagonale Architektur vorgestellt, die eine wichtige Rolle bei der internen Strukturierung von Softwarekomponenten spielt.
+
+=== Monolith
+
+Ein Monolith ist eine Softwareanwendung, die als eine einzige, zusammenhängende Einheit entwickelt, bereitgestellt und betrieben wird @köhler2025[p.~327].
+Monolithen zeichnen sich durch ihre Einfachheit aus, da alle Komponenten und Funktionalitäten in einem einzigen Prozess laufen.
+
+Vorteile von Monolithen sind:
+- *Einfache Entwicklung und Bereitstellung*: Da alle Komponenten in einer einzigen Anwendung enthalten sind, ist die Entwicklung und das Deployment vergleichsweise unkompliziert.
+- *Geringer Overhead*: Monolithen benötigen keine komplexe Infrastruktur für die Kommunikation zwischen verschiedenen Diensten, was den Overhead reduziert.
+- *Einfache Tests*: Integrationstests können leichter durchgeführt werden, da alle Komponenten in einer einzigen Anwendung laufen.
+
+Trotz ihrer Vorteile haben Monolithen auch gravierende Nachteile.
+Insbesondere, wenn das System über die Jahre stark wächst oder viele Teams parallel daran arbeiten.
+
+Ein Monolith ohne klare Modul- oder Domänenstruktur entwickelt sich häufig zu einem Big Ball of Mud @vernon2017[p.~16].
+Typische Probleme sind:
+- Komponenten referenzieren sich gegenseitig ohne klare Regeln.
+- Änderungen an einer Stelle führen zu unerwarteten Seiteneffekten an anderen Stellen.
+- Der gesamte Code wird schwerer zu verstehen und zu überblicken.
+
+
+
+=== Microservices
+
+Microservices sind ein Architekturmuster, bei dem eine Anwendung aus einer Sammlung kleiner, unabhängiger Dienste besteht.
+Jeder Dienst ist für eine klar abgegrenzte Funktionalität verantwortlich und kommuniziert über wohldefinierte Schnittstellen mit anderen Diensten @distributed2023[p.~65–66].
+
+Microservices lassen sich gut mit den Prinzipien des Domain-Driven Design kombinieren.
+Ein Microservice bildet häufig einen oder mehrere Bounded Contexts ab.
+Zudem kann jeder Service genau die Technologien, Datenbanken und Programmiersprachen verwenden, die für seine spezifische Aufgabe am besten geeignet sind @khononov2022[p.~255–256].
+
+Darüber hinaus bieten Microservice noch weitere Vorteile.
+Durch das unabhängige Deployment können einzelne Dienste unabhängig voneinander aktualisiert und skaliert werden.
+Auch ist die Fehlertoleranz höher, da der Ausfall eines Dienstes nicht zwangsläufig das gesamte System beeinträchtigt.
+
+Allerdings bringen Microservices auch Herausforderungen mit sich.
+Die Komplexität der Infrastruktur steigt, da Dienste orchestriert und überwacht werden müssen.
+Die Kommunikation zwischen den Microservices erfolgt zwangläufig über ein Netzwerk.
+
+Damit einhergehen weitere Herausforderungen wie der Netzwerklatenz, der Fehlertoleranz, der Sicherheit und der Datenkonsistenz @distributed2023[p.~53].
+
+=== Modulith
+
+Ein Modulith ist ein Architekturmuster, das die Vorteile von Monolithen und Microservices vereint.
+Die Anwendung wird als eine einzige Einheit bereitgestellt, ist jedoch intern in klar abgegrenzte Module unterteilt @stack2022[p.~41].
+
+Vom Monolithen übernimmt der Modulith die einfache Bereitstellung und den geringen Overhead.
+Durch die Modularisierung wird jedoch eine klare Struktur geschaffen, die die Wartbarkeit und Erweiterbarkeit und die Grenzen der Microservices wiederspiegelt.
+
+Dabei gehen einige Nachteile von Microservices verloren, da keine komplexe Infrastruktur für die Kommunikation zwischen den Diensten erforderlich ist.
+Die Module kommunizieren innerhalb des gleichen Prozesses, was die Latenz reduziert und die Fehlertoleranz erhöht.
+Jedoch gehen auch einige Vorteile von Microservices verloren, wie die unabhängige Skalierbarkeit und das unabhängige Deployment der einzelnen Module.
+Für Softwareprojekte, die eine moderate Komplexität aufweisen und bei denen die Vorteile von Microservices nicht zwingend erforderlich sind, stellt der Modulith eine attraktive Alternative dar.
+
+Ein weiterer Vorteil von Modulithen ist, dass er mit geringen Aufwand in eine Microservice-Architektur überführt werden kann.
+Somit können neue oder junge Projekte zunächst als Modulith gestartet und bei wachsender Komplexität später in Microservices aufgeteilt werden.
+Die Teams haben dadurch die Möglichkeit, sich zunächst auf die fachlichen Anforderungen zu konzentrieren, ohne sich von Anfang an mit der Komplexität einer Microservice-Architektur auseinandersetzen zu müssen.
+
+In Abbildung @modulith-diagram ist der Unterschied zwischen Monolithen, Modulithen und Microservices dargestellt.
+Bei a) ist ein Monoloth dargestellt, es handelt sich um eine einzige Anwendung ohne klare Strukturierung.
+Bei c) sind Microservices dargestellt, die als unabhängige Dienste agieren und über ein Netzwerk kommunizieren.
+Die Komplexität wird hierbei innerhalb eines Services abgebildet.
+In b) ist ein Modulith dargestellt, der die Vorteile beider Architekturmuster vereint.
+Es ist eine einzige Anwendung, die jedoch in klar abgegrenzte Module unterteilt ist.
+
+#figure(
+  image("./pictures/modulith.svg"),
+  caption: [
+    Monolith vs. Modulith vs. Microservices
+  ],
+) <modulith-diagram>
+
 
 === Hexagonale Architektur
 
+Während die Modulith-Architektur die Strukturierung auf der Ebene der gesamten Anwendung adressiert, konzentriert sich die hexagonale Architektur auf die Strukturierung innerhalb einzelner Softwarekomponenten.
+Bei der hexagonalen Architektur wird die Domänenlogik der Anwendung von äußeren Systemen und Schnittstellen isoliert. Die Domäne befindet sich dabei im Zentrum der Architektur und wird mit möglichst wenigen äußeren Abhängigkeiten modelliert.
+Technische Aspekte werden nicht innerhalb der Domäne implementiert.
+
+Damit die Domäne mit der Außenwelt kommunizieren kann, werden sogenannte Ports und Adapters #footnote[Deswegen wird die Hexagonale Architektur auch als Ports and Adapters Architektur bezeichnet].
+Ports definieren dabei die Schnittstellen, über die die Domäne mit externen Systemen interagiert.
+Dabei gibt es zwei Arten von Ports:
+- *Primary Ports* #footnote[Auch bekannt als Driving, Aktive oder Inbound Ports]: Diese Ports werden von externen Systemen aufgerufen, um Aktionen innerhalb der Domäne auszulösen. Sie repräsentieren die Eingangsseite der Domäne.
+- *Secondary Ports* #footnote[Auch bekannt als Driven oder Outbound Ports]: Diese Ports werden von der Domäne verwendet, um auf externe Systeme zuzugreifen. Sie repräsentieren die Ausgangsseite der Domäne.
+
+Die Ports können dann von Adaptern implementiert werden, die die eigentliche Kommunikation mit den externen Systemen übernehmen.
+Adapter sind konkrete Implementierungen der Ports und können verschiedene Technologien und Protokolle verwenden, um mit der Außenwelt zu interagieren.
+
+Durch die Trennung von Domänenlogik und technischen Aspekten wird die Wartbarkeit und Testbarkeit der Software verbessert.
+Die Domäne kann unabhängig von den äußeren Systemen entwickelt und getestet werden, was die Flexibilität und Anpassungsfähigkeit der Software erhöht.
+Dieser Ansatz schützt die Domänenlogik vor Änderungen in der technischen Infrastruktur und erleichtert die Integration neuer Technologien.
+Auch diese Architektur lässt sich gut mit DDD kombinieren, da sie zum einen die Domaine in den Mittelpunkt stellt und die Prinzipien der klaren Abgrenzung und der losen Kopplung unterstützt @vernon2013[p.~125-130].
+
+In Abbildung @hexagonal-diagram ist die hexagonale Architektur dargestellt.
+Im Zentrum befindet sich die Domainlogik der Anwendung.
+Auf der Linken Seite wird ein Rest-Controller übere einen Adapter mit einem Primary Port der Domäne verbunden.
+Auf der Rechten Seite ist eine Datenbank dargestellt.
+Über einen Secondary Port kann die Domäne auf die Datenbank zugreifen.
+
+#figure(
+  image("./pictures/hexagonal.svg"),
+  caption: [
+    Hexagonale Architektur
+  ],
+) <hexagonal-diagram>
+
 == Kotlin
 
+=== Interpolarität Java
+
+=== Coroutines
+
+=== Funktionale Programmierung
+
 == Spring Boot
+
+== Zusammenfassung
 
 = Implementierung
 
