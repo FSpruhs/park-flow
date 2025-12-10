@@ -122,38 +122,58 @@ Die Evaluationskriterien sind die Performance der Event-Verarbeitung, die Modula
 
 Die Arbeit gliedert sich in die Vorstellung der theoretischen Grundlagen, die Umsetzung in einer Beispielanwendung und die Evaluierung der gewählten Architektur.-
 
+= Verwandte Arbeiten
+
+Die Grundlage für DDD wurde 2003 durch Eric Evans und sein Werk "Domain-Driven Design: Tackling Complexity in the Heart of Software" geschaffen @evans2003.
+Evans beschreibt darin einen umfassenden, systematischen Ansatz, um komplexe fachliche Domänen zu analysieren, zu strukturieren und in Software umzusetzen.
+Sein Buch bildet bis heute die theoretische Basis von DDD.
+
+Im Jahr 2013 veröffentlichte Vaughn Vernon mit "Implementing Domain-Driven Design" ein praxisorientierteres Werk, das konkrete Vorgehensweisen und Implementierungsstrategien für die Anwendung von DDD in realen Projekten beschreibt @vernon2013.
+Beide Werke bilden die zentrale Grundlage für die in dieser Arbeit verwendeten DDD-Konzepte.
+#footnote[In der DDD-Community werden diese Bücher aufgrund der Farbgestaltung ihrer Einbände häufig als „Blue Book“ (Evans) und „Red Book“ (Vernon) bezeichnet.]
+
+2022 hat Michael Stack das Buch Event-Driven Architecture in Golang veröffentlicht @stack2022.
+Darin beschreibt er eine umfassende Einführung in ereignisgetriebene Architekturen (EDA) und deren praktische Umsetzung.
+Als Programmiersprache verwendet er Go (Golang) und Entwickelt damit eine Beispielanwendung als Microservice-Architektur.
+Ich werde in dieser Arbeit untersuchen, inwiefern sich die Konzepte aus Stacks Buch auf Kotlin und Spring Boot übertragen lassen und was sich bei der Umsetzung in einem modularen Monolithen ändert.
+
 = Theoretische Grundlagen
 
-In diesem Kapitel werden die theoretischen Grundlagen vorgestellt, die für die Umsetzung der in dieser Arbeit entwickelten Softwarelösung relevant sind.
-Ziel ist es, ein solides Verständnis der zentralen Konzepte und Technologien zu vermitteln, die im anschließenden Kapitel gemeinsam in einem Programm praktisch implementiert werden.
-Dabei soll deutlich werden, wie die einzelnen Ansätze ineinandergreifen und sich gegenseitig ergänzen, um flexible, skalierbare und gut strukturierte Software zu entwickeln.
+In diesem Kapitel werden die theoretischen Grundlagen vorgestellt, die für die Umsetzung der in dieser Arbeit entwickelten Softwarelösung relevant sind. 
+Ziel ist es, ein solides Verständnis der zentralen Konzepte und Technologien zu vermitteln, die im anschließenden Kapitel gemeinsam in einer konkreten Anwendung praktisch umgesetzt werden.
 
-Ein zentrales Thema dieses Kapitels sind Events und event-getriebene Architekturen (EDA).
-Dazu gehören sowohl die Grundlagen von Events und Event-Streams, als auch weiterführende Konzepte wie Event Sourcing und Command Query Responsibility Segregation (CQRS).
-Diese Architekturmuster ermöglichen eine lose Kopplung von Komponenten, eine klare Trennung von Lese- und Schreiboperationen und die Nachvollziehbarkeit von Systemzuständen und Eigenschaften, die sich besonders gut mit modernen Softwarearchitekturen kombinieren lassen.
+Die Wahl dieser Konzepte basiert auf der Notwendigkeit, komplexe Software domänenspezifisch, wartbar und erweiterbar zu gestalten. Insbesondere in modernen Anwendungen mit hohen Anforderungen an Skalierbarkeit und Fehlertoleranz bieten die kombinierten Ansätze aus EDA, DDD und modularen Architekturen deutliche Vorteile.
+Dabei wird aufgezeigt, wie die einzelnen Ansätze ineinandergreifen und sich gegenseitig ergänzen, um flexible, skalierbare und gut strukturierte Software zu entwickeln.
 
-Eng verbunden mit event-getriebenen Ansätzen ist das Konzept des Domain-Driven Design (DDD).
-DDD bietet sowohl strategische als auch taktische Werkzeuge, um komplexe Domänen zu modellieren.
-Themen wie Bounded Contexts, Aggregates und Event Storming liefern dabei eine klare Struktur und erleichtern die Identifikation relevanter Events, wodurch sich DDD nahtlos mit EDA, Event Sourcing und CQRS kombinieren lässt.
+Ein zentrales Thema dieses Kapitels sind Events und event-getriebene Architekturen (EDA). 
+Hierzu gehören sowohl die Grundlagen von Events und Event-Streams als auch weiterführende Konzepte wie Event Sourcing und Command Query Responsibility Segregation (CQRS). 
+Diese Architekturmuster ermöglichen eine lose Kopplung von Komponenten, eine klare Trennung von Lese- und Schreiboperationen sowie die Nachvollziehbarkeit von Systemzuständen. 
+Diese Eigenschaften eignen sich besonders für moderne Softwarearchitekturen.
 
-Auf der architektonischen Ebene werden in diesem Kapitel zudem Modulithen und hexagonale Architekturen behandelt.
-Modulithen ermöglichen eine modulare, gut wartbare Struktur innerhalb einer Anwendung, während die hexagonale Architektur die Interaktion zwischen Kernlogik und äußeren Systemen sauber trennt.
+Eng verbunden mit event-getriebenen Ansätzen ist das Konzept des Domain-Driven Design (DDD). 
+DDD bietet sowohl strategische als auch taktische Werkzeuge, um komplexe Domänen zu modellieren. 
+Konzepte wie Bounded Contexts, Aggregates und Event Storming liefern eine klare Struktur und erleichtern die Identifikation relevanter Events. 
+Dadurch lässt sich DDD nahtlos mit EDA, Event Sourcing und CQRS kombinieren.
+
+Auf der architektonischen Ebene werden zudem Modulithen und hexagonale Architekturen betrachtet. 
+Modulithen ermöglichen eine modulare und gut wartbare Struktur innerhalb einer Anwendung, während die hexagonale Architektur die Interaktion zwischen Kernlogik und externen Systemen sauber trennt. 
 Beide Konzepte ergänzen die zuvor eingeführten Patterns und tragen dazu bei, die in DDD und EDA identifizierten Strukturen konsequent umzusetzen.
 
-Die theoretische Grundlage endet durch die Betrachtung der eingesetzten Technologien, insbesondere Kotlin als Programmiersprache und Spring Boot als Framework für die Entwicklung moderner, modularer Anwendungen.
-Die Kombination dieser Technologien mit den vorgestellten Konzepten zeigt, wie sich die theoretischen Ansätze praktisch und effizient in einer Softwarelösung umsetzen lassen.
+Abschließend werden die eingesetzten Technologien betrachtet, insbesondere Kotlin als Programmiersprache und Spring Boot als Framework für die Entwicklung moderner, modularer Anwendungen. 
+Die Kombination dieser Technologien mit den vorgestellten Konzepten zeigt, wie sich die theoretischen Ansätze effizient in einer Softwarelösung umsetzen lassen.
 
-Zusammengefasst legt dieses Kapitel die Basis für die Implementierung im nächsten Abschnitt, indem es die zentralen Konzepte, Patterns und Technologien beschreibt, deren Zusammenspiel die Entwicklung flexibler, wartbarer und skalierbarer Software erleichtert.
+Zusammenfassend legt dieses Kapitel die Grundlage für die Implementierung im folgenden Abschnitt, indem es die zentralen Konzepte, Patterns und Technologien beschreibt und deren Zusammenspiel aufzeigt. 
+Auf dieser Basis können flexible, wartbare und skalierbare Softwarelösungen entwickelt werden.
 
 == Events
 
-Ein Event ist eine Nachricht, die eine bereits eingetretene Änderung beschreibt.
-Es beschreibt also einen Sachverhalt, der bereits in der Vergangenheit stattgefunden hat.
+Ein *Event* ist eine Nachricht, die eine bereits eingetretene Änderung beschreibt. 
+Es handelt sich somit um einen Sachverhalt, der in der Vergangenheit stattgefunden hat. 
 Der Name eines Events besteht in der Regel aus einem Verb in der Vergangenheitsform, das ausdrückt, was geschehen ist @khononov2022[p.~264–265].
 
 Events sind unveränderbare Fakten über vergangene Zustände oder Aktionen @stack2022[p.~8].
+Sie dienen dazu, Veränderungen in einem System zu dokumentieren und anderen Systemen mitzuteilen.
 
-Events dienen dazu, Veränderungen in einem System darzustellen und anderen Systemen mitzuteilen.
 Dabei gibt es mehrere Beteiligte: \
 Der *Producer* erzeugt das Event und veröffentlicht es über einen *Event-Queue*#footnote[Auch bekannt als Event-Bus, Publisher oder Broker].
 In dieser Arbeit wird der Begriff Event-Queue verwendet.
@@ -163,11 +183,11 @@ Ein Event kann von einem oder mehreren Consumern empfangen werden @stack2022[p.~
 Beim Veröffentlichen eines Events muss der Producer den Consumer weder kennen noch auf dessen Verarbeitung warten.
 Diese Form der Verarbeitung, bei der der Producer nicht durch den Consumer blockiert wird, wird als asynchron bezeichnet.
 Wird die Event-Queue persistent gespeichert, müssen Producer und Consumer nicht gleichzeitig aktiv sein.
-Dies führt zu einer zeitlichen und referenziellen Entkopplung @distributed2023[p.~69–73].
+Dies führt zu einer zeitlichen und referenziellen Entkopplung, die die Flexibilität und Skalierbarkeit des Systems erhöht @distributed2023[p.~69–73].
 
 === Event Driven Architecture
 
-Unter einer Event-Driven Architecture (EDA) versteht man ein Architekturmuster, das auf der Verarbeitung und Weitergabe von Events basiert.
+Unter einer *Event-Driven Architecture (EDA)* versteht man ein Architekturmuster, das auf der Verarbeitung und Weitergabe von Events basiert.
 Dabei werden die Vorteile der losen Kopplung genutzt, um Systeme zu entwickeln, die weitgehend unabhängig voneinander funktionieren.
 EDA ist eng mit Domain-Driven Design (DDD) verbunden, da Events in DDD eine zentrale Rolle einnehmen @khononov2022[p.~263].
 
@@ -189,27 +209,32 @@ Dazu gehören:
 - *Event-Carried State Transfer*: Hier werden Events verwendet, die eine Statusänderung samt aller dafür notwendigen Daten enthalten. Der Empfänger kann seinen eigenen Zustand dadurch direkt und ohne zusätzliche Anfragen aktualisieren. Das Event trägt somit den gesamten fachlichen Kontext, der für den State Transfer erforderlich ist.
 @stack2022[p.~4-6]
 
+Diese Ansätze zeigen, wie EDA die Vorteile von losgekoppelten, flexiblen und skalierbaren Systemen praktisch umsetzt, gleichzeitig aber auch die Komplexität in verteilten Systemen adressiert.
+
 === Event Sourcing
-Beim Event Sourcing wird der Zustand einer Anwendung nicht durch das Speichern der aktuellen Daten, sondern durch eine chronologische Abfolge von Events repräsentiert.
+
+Beim *Event Sourcing* wird der Zustand einer Anwendung nicht durch das Speichern der aktuellen Daten, sondern durch eine chronologische Abfolge von Events repräsentiert.
 Diese Events bilden einen unveränderbaren Event Stream. Ein Event selbst ist unveränderlich, es können lediglich neue Events an den Stream angehängt werden @vernon2013[p.~539].
 
-Durch das Speichern des Event Streams lässt sich der aktuelle Zustand jederzeit durch das Abspielen (Replay) dieser Events rekonstruieren. Event Streams werden in der Regel in einem Event Store persistiert @vernon2013[p.~539].
+Durch das Speichern des Event Streams lässt sich der aktuelle Zustand jederzeit durch das Abspielen (Replay) dieser Events rekonstruieren. 
+Event Streams werden in der Regel in einem Event Store persistiert, der die Events zuverlässig speichert und für die Rekonstruktion bereitstellt @vernon2013[p.~539].
 
 Da alle Änderungen als Events gespeichert werden, steht eine vollständige Historie aller Zustandsänderungen zur Verfügung.
 Es ist jederzeit nachvollziehbar, wie ein bestimmter Zustand aus dem Event Store erreicht wurde.
 Dies erleichtert das Auffinden von Fehlern und die Rekonstruktion fehlerhafter Daten @vernon2013[p.~539].
 
-In der Entwicklung einer Anwendung kann es vorkommen, dass sich der Fokus hauptsächlich auf die Verwaltung des aktuellen Datenbestands richtet.
-Event Sourcing zwingt den Entwickler jedoch dazu, sich auf die fachlichen Ereignisse zu konzentrieren, die im System auftreten.
-Dies fördert ein besseres Verständnis der Domäne und führt zu einer klareren Modellierung der Geschäftsprozesse @khononov2022[p.~127–132].
+Event Sourcing verschiebt den Fokus der Anwendungsentwicklung von der bloßen Verwaltung des aktuellen Datenbestands hin zur Modellierung fachlicher Ereignisse, die im System auftreten. 
+Dies fördert ein tieferes Verständnis der Domäne und führt zu einer klareren Modellierung der Geschäftsprozesse @khononov2022[p.~127–132].
 
+Ein weiterer Vorteil ergibt sich aus der langfristigen Flexibilität der Datenbasis.
 Zum Zeitpunkt der Entwicklung ist oft nicht absehbar, welche Anforderungen in der Zukunft auftreten werden und welche Daten dafür benötigt werden.
 Durch das Speichern aller Events steht jedoch eine umfangreiche Datenbasis zur Verfügung, die für zukünftige Anforderungen genutzt werden kann.
 So können beispielsweise neue Berichte oder Analysen erstellt werden, ohne dass die ursprünglichen Daten erneut erfasst werden müssen @khononov2022[p.~133].
 
 === Command Query Responsibility Segregation
 
-Command Query Responsibility Segregation (CQRS) ist ein Architekturpattern, das die Verantwortlichkeiten für das Schreiben (Commands) und Lesen (Queries) von Daten trennt.
+Command Query Responsibility Segregation (CQRS) ist ein Architekturpattern, das die Verantwortlichkeiten für das Schreiben (Commands) und Lesen (Queries) von Daten strikt trennt.
+Dadurch werden fachliche Aktionen klar von Abfragen getrennt, was sowohl die Skalierbarkeit als auch das Verständnis der Domäne fördert.
 
 Für das Schreiben von Daten wird ein separates System verwendet, das als *Write Model* bezeichnet wird.
 Das Lesen von Daten erfolgt über ein separates *Read Model*.
@@ -226,20 +251,18 @@ Das Read Model ist daher nicht zu jedem Zeitpunkt konsistent mit dem Write Model
 CQRS und Event Sourcing lassen sich gut kombinieren, da CQRS einige Einschränkungen von Event Sourcing ausgleicht.
 Ein typisches Problem beim Event Sourcing ist das Auffinden von Entitäten mit bestimmten Zuständen, da der aktuelle Zustand nicht direkt gespeichert wird.
 Durch das Read Model können solche Abfragen effizient durchgeführt werden, ohne den Event Stream durchsuchen zu müssen.
-Dabei fungiert der Event Stream als Write Model, dessen Events von einem separaten System konsumiert werden, das als Read Model dient @vernon2013[p.~140–145].
+Dabei fungiert der Event Stream als Write Model, dessen Events von einem separaten System konsumiert werden, das als Read Model dient.
+Auf diese Weise entsteht eine saubere Trennung von Fachlogik und Datenzugriff, die sowohl die Domäne klarer abbildet als auch die Vorteile von Event Sourcing optimal nutzt @vernon2013[p.~140–145].
 
 == Domain Driven Design
 
-Domain Driven Design (DDD) ist eine Methodik zur Entwicklung eines hochwertigen Softwaremodells.
-Dabei soll die Software so designt werden, dass sie die fachlichen Anforderungen der Domäne bestmöglich abbildet @vernon2013[p.~1].
+Domain Driven Design (DDD) ist eine Methodik zur Entwicklung von Software, die ein hochwertiges, fachlich getreues Modell der zugrunde liegenden Domäne ermöglicht. 
+Ziel ist es, die Software so zu gestalten, dass sie die fachlichen Anforderungen der Domäne bestmöglich abbildet @vernon2013[p.~1].
 
-Die Grundlage für DDD wurde 2003 durch Eric Evans und sein Werk "Domain-Driven Design: Tackling Complexity in the Heart of Software" geschaffen @evans2003.
-Evans beschreibt darin einen umfassenden, systematischen Ansatz, um komplexe fachliche Domänen zu analysieren, zu strukturieren und in Software umzusetzen.
-Sein Buch bildet bis heute die theoretische Basis von DDD.
+Eine zentrale Herausforderung bei der Entwicklung komplexer Software liegt weniger in den technischen Aspekten, sondern vielmehr in der Beherrschung der fachlichen Komplexität. 
+DDD adressiert diese Herausforderung, indem es den Fokus konsequent auf die Domäne legt und die Gestaltung von Modellen in den Vordergrund stellt, die die realen Abläufe und Sachverhalte der Domäne widerspiegeln @evans2003[preface xxi].
 
-Im Jahr 2013 veröffentlichte Vaughn Vernon mit "Implementing Domain-Driven Design" ein praxisorientierteres Werk, das konkrete Vorgehensweisen und Implementierungsstrategien für die Anwendung von DDD in realen Projekten beschreibt @vernon2013.
-Beide Werke bilden die zentrale Grundlage für die in dieser Arbeit verwendeten DDD-Konzepte.
-#footnote[In der DDD-Community werden diese Bücher aufgrund der Farbgestaltung ihrer Einbände häufig als „Blue Book“ (Evans) und „Red Book“ (Vernon) bezeichnet.]
+Durch diese Fokussierung auf die Domäne können Softwarelösungen entwickelt werden, die enger an der Realität der Fachprozesse orientiert sind. 
 
 === Taktisches und Strategisches Design
 
@@ -247,6 +270,10 @@ DDD lässt sich in zwei Hauptbereiche unterteilen, dem *strategischen* und dem *
 
 Das strategische Design beschäftigt sich mit der Analyse und Strukturierung der Domäne auf hoher Ebene.
 Ziel ist es, herauszuarbeiten, welche Software entwickelt werden soll und warum, und wie die Domäne sinnvoll in fachliche Teilbereiche gegliedert werden kann.
+
+Mit dem strategischen Design soll die Komplexität der Domäne beherrschbar gemacht werden.
+Ein einzelnes Modell reicht oft nicht aus, um alle Aspekte einer komplexen Domäne abzubilden.
+Das System muss in mehrere besser handhabbare Teile zerlegt werden ohne dabei die Vorteile der Integration zu verlieren @evans2003[p.~328].
 
 Dafür stehen im strategischen Design verschiedene Werkzeuge und Konzepte zur Verfügung, die dabei helfen, die Domäne zu verstehen, Verantwortlichkeiten abzugrenzen und Zusammenhänge zu visualisieren.
 Ein zentraler Aspekt ist die Kommunikation zwischen allen Beteiligten, um ein gemeinsames Verständnis der Domäne sicherzustellen.
@@ -256,7 +283,7 @@ In diesem Kapitel werde ich die Strategischen Begriffe, Subdomain, Bounded Conte
 
 Das taktische Design setzt eine Ebene darunter an und beschäftigt sich mit der konkreten Umsetzung der Softwarekomponenten.
 Es beschreibt, wie das im strategischen Design entwickelte Domänenmodell technisch realisiert wird @khononov2022[p.~89].
-In diesem Kapitel werde ih die Taktischen Begriffe, Entities, Value Objects, Aggregates, Domain Events und Modules
+In diesem Kapitel werde ich die Taktischen Begriffe, Entities, Value Objects, Aggregates, Domain Events und Modules
 
 === Subdomain
 
@@ -270,16 +297,23 @@ Subdomains lassen sich in drei Kategorien einordnen:
 - *Generic Subdomain*: Generic Subdomains sind allgemeine, standardisierte Bereiche, die viele Organisationen ebenfalls besitzen. Sie sind nicht spezifisch für die Organisation und bieten keinen Wettbewerbsvorteil. Solche Domains können häufig durch Standardlösungen oder Drittanbieter abgedeckt werden.
 @khononov2022[p.~30-33]
 
+Subdomains helfen nicht nur, die Komplexität der Softwareentwicklung zu reduzieren, sondern fördern auch die Fokussierung auf die fachlich relevanten Bereiche.
+Sie schaffen klare Abgrenzungen, die es erleichtern, Verantwortlichkeiten zu definieren, Zuständigkeiten nachvollziehbar zu machen und langfristig stabile Software zu entwickeln.
+
 === Ubiquitous Language
 
 Ein zentrales Element von DDD ist die Ubiquitous Language („allgegenwärtige Sprache“).
-Sie besagt, dass alle Beteiligten eine gemeinsame Sprache verwenden, die sich aus der Domain ableitet.
+Sie besagt, dass alle Beteiligten #footnote[z.B. Entwickler, Fachexperten, Architekten und weitere Stakeholder] eine gemeinsame Sprache verwenden, die sich aus der Domain ableitet.
 
-Die Ubiquitous Language soll:
-- Verständigung zwischen Fachexperten, Entwicklern und anderen Beteiligten erleichtern
-- Übersetzungen zwischen unterschiedlichen Begrifflichkeiten vermeiden
-- Technische Begriffe nur soweit einfließen lassen, wie sie die fachliche Sprache unterstützen.
+Die Ubiquitous Language dient mehreren Zwecken:
+- Sie erleichtert die Verständigung zwischen allen Beteiligten und stellt sicher, dass fachliche Anforderungen klar, präzise und einheitlich kommuniziert werden können.
+- Sie verhindert Übersetzungen zwischen unterschiedlichen Begrifflichkeiten, die in der Softwareentwicklung häufig zu Missverständnissen führen. In Projekten, in denen Entwickler, Product Owner und Fachexperten unterschiedliche Worte für dasselbe Konzept verwenden, entstehen oft Fehler, unklare Anforderungen oder ungenaue Implementierungen.
+- Sie bindet technische Begriffe nur insoweit ein, wie sie die fachliche Sprache unterstützen, und verhindert, dass technisches Vokabular die fachliche Sicht überlagert.
 @khononov2022[p.~50–51]
+
+Darüber hinaus ist die Ubiquitous Language ein entscheidendes Werkzeug, um ein konsistentes Domänenmodell zu entwickeln. 
+Jedes Modell-Element sollte mit einem Begriff aus der Ubiquitous Language benannt werden. 
+Auf diese Weise kann präzise beschrieben werden, was entwickelt werden soll, und alle Beteiligten verstehen dasselbe Konzept auf dieselbe Weise.
 
 === Bounded Context
 
@@ -287,29 +321,31 @@ Ein zentrales Ziel von DDD ist es, verschiedene Modelle zu entwickeln, die unter
 Jedes Modell soll nur die Elemente enthalten, die für seinen Zweck erforderlich sind, während unnötige Details bewusst ausgeklammert werden.
 Auf diese Weise wird die Komplexität des Modells auf ein Minimum reduziert @khononov2022[p.~53–54].
 
-Ein Modell kann in verschiedenen Domänen verwendet werden, dabei aber unterschiedliche Rollen einnehmen.
-Dies kann dazu führen, dass ein Modell sehr groß und komplex wird und nicht alle Aspekte in allen Domänen benötigt werden.
-DDD adressiert diese Herausforderung, indem es Modelle aufteilt und klar Abgrenzungen definiert.
+In der Praxis kann dasselbe fachliche Konzept in unterschiedlichen Teilen der Organisation unterschiedliche Rollen einnehmen. 
+Wird versucht, ein einziges Modell für alle Anwendungsfälle zu verwenden, entsteht schnell ein sehr großes, komplexes Modell, das schwer verständlich und fehleranfällig ist. 
+DDD adressiert diese Herausforderung, indem es Modelle aufteilt und klar abgegrenzte Bereiche definiert.
 
 Ein Bounded Context bezeichnet einen abgegrenzten Bereich, in dem ein Modell gültig, konsistent und eindeutig definiert ist.
 Das gleiche fachliche Modell kann somit in mehreren Bounded Contexts existieren, unterscheidet sich dort jedoch in Bedeutung und Verwendung @khononov2022[p.~63–64].
 
-Während eine Subdomain einen fachlichen Bereich beschreibt, definiert ein Bounded Context die technische und organisatorische Grenze, innerhalb derer ein Modell konsistent angewendet wird.
+Während Subdomains fachliche Bereiche der Organisation beschreiben, definieren Bounded Contexts die technischen und organisatorischen Grenzen, innerhalb derer ein Modell konsistent angewendet wird. 
+Sie dienen als Schnittstellen zwischen verschiedenen Modellen und verhindern, dass Konzepte außerhalb ihres Geltungsbereichs falsch interpretiert oder vermischt werden.
 
 Die Ubiquitous Language wird innerhalb eines Bounded Contexts festgelegt. Gleichlautende Begriffe müssen dabei nicht zwingend die gleiche Bedeutung in anderen Contexts haben.
 So kann ein und dasselbe Wort in verschiedenen Bounded Contexts unterschiedliche Bedeutungen besitzen @khononov2022[p.~65].
 
-Das Beherrschen der Komplexität durch die Aufteilung in kleine, unabhängige Bereiche ist eines der zentralen Ziele von DDD.
-Subdomains, Bounded Contexts und die Ubiquitous Language arbeiten dabei zusammen, um die Domäne strukturiert und verständlich zu modellieren.
+Durch die Kombination von Subdomains, Bounded Contexts und Ubiquitous Language wird die Komplexität der Domäne beherrschbar. 
+Jedes Modell bleibt auf seinen Zweck fokussiert, ist leichter verständlich und langlebiger, während gleichzeitig die konsistente Kommunikation zwischen allen Beteiligten gesichert wird.
 
 === Entities
 
 Domain-Konzepte, die eine eigene Identität besitzen und sich dadurch eindeutig von anderen Objekten unterscheiden lassen, werden als Entities modelliert.
-Eine Entity wird nicht über ihre Attribute definiert, sondern über eine stabile, eindeutige Identität (Identity), die sie innerhalb der Domäne unverwechselbar macht.
-Entities repräsentieren typischerweise fachliche Konzepte, die über einen längeren Zeitraum bestehen und sich weiterentwickeln @vernon2013[p.~171-172].
+Eine Entity wird nicht über ihre Attribute definiert, sondern über eine stabile, eindeutige Identität, die sie innerhalb der Domäne unverwechselbar macht.
+Entities repräsentieren typischerweise fachliche Konzepte, die über einen längeren Zeitraum bestehen, sich weiterentwickeln und oft in verschiedenen Bounded Contexts relevant sind.@vernon2013[p.~171-172].
 
-Wesentlich ist zudem, dass Entities mehr sind als reine Datencontainer.
-Sie verkörpern fachliches Verhalten und enthalten Regeln, Invarianten und Logik, die sicherstellen, dass ihr Zustand jederzeit konsistent bleibt.
+Wesentlich ist zudem, dass Entities mehr sind als reine Datencontainer. 
+Sie verkörpern fachliches Verhalten, enthalten Regeln, Invarianten und Logik und stellen so sicher, dass ihr Zustand jederzeit konsistent bleibt. 
+Durch diese Kapselung von Verhalten innerhalb der Entity wird die Langlebigkeit und Robustheit des Systems erhöht, da fachliche Regeln zentral an einer Stelle umgesetzt werden und nicht über verstreute Services verteilt sind.
 
 === Value Objects
 
@@ -323,6 +359,8 @@ Sie sollen präzise ausdrücken, was ein bestimmter Wert fachlich bedeutet, und 
 Ein wesentliches Merkmal von Value Objects ist ihre Unveränderlichkeit (Immutability).
 Statt ihren Zustand zu verändern, wird bei einer Änderung ein neues Objekt erzeugt.
 Dadurch bleiben Value Objects jederzeit konsistent und können gefahrlos gemeinsam verwendet, verglichen oder wiederverwendet werden.
+
+Die Verwendung von Value Objects fördert sauberen Code, da fachliche Regeln zentral in der Konstruktion des Objekts umgesetzt werden können. 
 
 === Aggregates
 
@@ -339,6 +377,7 @@ Auf diese Weise wird verhindert, dass Außenstehende direkt auf interne Entities
 
 Aggregates stehen zueinander in einem losen Kopplungsverhältnis.
 Sie dürfen einander weder direkt aufrufen noch auf internem Wege referenzieren @khononov2022[p.~117].
+Durch diese Entkopplung wird die Modularität erhöht und die Komplexität des Gesamtsystems beherrschbar gehalten.
 
 Aggregates gehören zu den zentralen Bausteinen von DDD.
 Sie spielen eine grundlegende Rolle, weil sie:
@@ -371,7 +410,12 @@ Wenn jedoch eine Zustandsänderung eines Aggregates für andere Aggregates relev
 Alle Aggregates, die an dieser Zustandsänderung interessiert sind, können das Event empfangen und darauf reagieren.
 Auf diese Weise entsteht eine lose Kopplung zwischen den Aggregates, und Änderungen können asynchron verarbeitet werden.
 
-Domain Events ermöglichen somit nicht nur die fachliche Abbildung wichtiger Geschehnisse, sondern tragen auch zur Skalierbarkeit, Flexibilität und Wartbarkeit des Systems bei.
+Domain Events haben zudem eine fachliche Bedeutung über die reine technische Umsetzung hinaus:
+- Sie dokumentieren, dass etwas tatsächlich geschehen ist, und machen Zustandsänderungen nachvollziehbar.
+- Sie fördern die Nachvollziehbarkeit und Transparenz innerhalb der Domäne, da jedes Event einen konkreten fachlichen Sachverhalt beschreibt.
+- Sie erleichtern die Kommunikation zwischen Entwicklern und Fachexperten, da sie direkt auf die Ubiquitous Language der Domäne abgebildet werden können.
+
+Durch diese Eigenschaften tragen Domain Events wesentlich zur Skalierbarkeit, Flexibilität und Wartbarkeit von Systemen bei, da sie die Domänenlogik klar strukturieren und gleichzeitig eine Erweiterbarkeit ermöglichen, ohne bestehende Aggregate direkt zu beeinflussen.
 
 === Modules
 
@@ -385,6 +429,8 @@ Diese Trennung fördert die Verständlichkeit, Wartbarkeit und Weiterentwicklung
 Wichtig ist, dass Module fachlich und nicht technisch geschnitten werden.
 Sie orientieren sich also an der Problem- und Begriffswelt der Domäne und nicht an technischen Strukturen @vernon2013[p.~333–334].
 
+Durch die Verwendung von Modulen können komplexe Systeme wie Modulithen klar strukturiert werden. Jedes Modul bildet dabei eine in sich geschlossene Einheit, die sowohl die fachliche Kohärenz als auch die organisatorische Trennung unterstützt.
+
 === Event Storming
 
 Event Storming ist ein Werkzeug, um das Fachwissen einer Domäne sichtbar zu machen, zu strukturieren und im Team zu verbreiten.
@@ -397,6 +443,10 @@ Ausgehend von diesen Domain Events werden im weiteren Verlauf des Workshops zus�
 Diese Elemente werden in Beziehung zueinander gesetzt, um ein umfassendes Verständnis der Domäne und ihrer Interaktionen zu entwickeln.
 
 Die Modellierung erfolgt typischerweise an einem großen Whiteboard, auf dem die verschiedenen Bestandteile mithilfe farbcodierter Post-its visualisiert werden @khononov2022[p.~235–236].
+
+Event Storming fördert die gemeinsame Sprache (Ubiquitous Language), weil alle Beteiligten dieselben Begriffe verwenden, um die Domäne zu beschreiben. 
+Zudem erleichtert es das Erkennen von Engpässen, Abhängigkeiten und komplexen Abläufen frühzeitig, bevor diese in Code umgesetzt werden. 
+Durch diese Sichtbarkeit der Prozesse lassen sich Softwaremodelle entwickeln, die stärker an der Realität der Domäne ausgerichtet sind.
 
 == Architektur
 
@@ -425,8 +475,6 @@ Typische Probleme sind:
 - Komponenten referenzieren sich gegenseitig ohne klare Regeln.
 - Änderungen an einer Stelle führen zu unerwarteten Seiteneffekten an anderen Stellen.
 - Der gesamte Code wird schwerer zu verstehen und zu überblicken.
-
-
 
 === Microservices
 
@@ -514,15 +562,67 @@ Auf der Rechten Seite ist eine Datenbank dargestellt.
 
 == Kotlin
 
+Kotlin ist eine Programmiersprache, die 2011 von JetBrains entwickelt wurde.
+Ziel der Entwicklung war es, eine verbesserte Alternative zu Java zu schaffen @kotlinHandbuch[p.~19].
+
+Bei Java handel es sich um eine weit verbreitete und etablierte Programmiersprache, die seit 1995 existiert und für ihre Plattformunabhängigkeit und Stabilität bekannt ist.
+
+Bei der Entwicklung von Kotlin hat JetBrains bewusst aus den Designfehlern von Java gelernt.
+Gleichzeitig wurden essenzielle Eigenschaften, die zur Popularität von Java beigetragen haben, beibehalten @kotlinHandbuch[p.~20].
+
+Ich werde in dieser Arbeit zentrale Feautres von Kotlin vorstellen, die sich sehr gut mit den anderen Technologien und Patterns dieser Arbeit kombinieren lassen.
+Darüber hinaus bietet Kotlin eine Vielzahl moderner Sprachfeatures, die die Entwicklung von Software erleichtern und beschleunigen.
+
+
 === Interpolarität Java
 
-=== Coroutines
+Java Code wird in Bytecode kompiliert der dann auch einer entsprechenden Laufzeitumgebung, häufig die Java Virtual Machine (JVM) genannt, ausgeführt wird.
+Auch Kotlin Code wird in Bytecode kompiliert, der auf der JVM ausgeführt werden kann.
+Beide Sprachen teilen sich somit die gleiche Laufzeitumgebung und können nahtlos miteinander interagieren.
+Dies bietet den großen Vorteil, dass Kotlin-Programme überall dort lauffähig sind, wo auch Java-Code ausgeführt werden kann.
+Zudem kann Kotlin dadurch auf sämtliche vorhandenen Java-Bibliotheken zugreifen und diese nutzen, wodurch nahezu das gesamte Java-Ökosystem zur Verfügung steht @kotlinHandbuch[p.~20].
+
+So kann Kotlin auf der einen Seite auf den Erfolg von Java aufbauen und auf der anderen Seite eigene Features und Verbesserungen einbringen.
 
 === Funktionale Programmierung
 
-== Spring Boot
+Die funktionale Programmierung hat in den letzten Jahren zunehmend an Bedeutung gewonnen.
+Ein wesentlicher Grund dafür liegt in der stagnierenden Entwicklung der CPU-Geschwindigkeit.
+Während in früheren Jahren Leistungssteigerungen hauptsächlich durch höhere Taktfrequenzen erzielt wurden, liegt der Fokus heute verstärkt auf Mehrkernprozessoren.
+Daraus ergibt sich die Möglichkeit, Programme parallel auszuführen, um die vorhandenen Ressourcen effizient zu nutzen.
+Die funktionale Programmierung eignet sich besonders gut für Parallelisierungskonzepte, da sie auf Zustandslosigkeit und Nebenwirkungsfreiheit basiert.
+Diese Eigenschaften vereinfachen die Ausführung von Code und machen sie zugleich sicherer @kotlinPatterns[p.~129].
+
+Kotlin wurde von Beginn an mit dem Ziel entwickelt, eine moderne Programmiersprache bereitzustellen, die sowohl objektorientierte als auch funktionale Paradigmen unterstützt.
+
+
+=== Coroutines
+
+In modernen Anwendungen, insbesondere in solchen mit hoher Benutzerinteraktion oder paralleler Datenverarbeitung, spielt effiziente Nebenläufigkeit eine zentrale Rolle.
+Wie im vorherigen Kapitel beschrieben eignet sich sich die Funktionale Programmierung, um die nebenläufige Logik deklarativ und fehlerarm zu beschreiben.
+Die tatsächliche technische Ausführung von Nebenläufigkeit wird in Java durch Threads realisiert und in Kotlin durch die Coroutines.
+
+Kotlin bietet mit Coroutines eine leichtgewichtige Lösung um Nebenläufigkeit zu implementieren.
+Coroutines ermöglichen eine effizientere und zugleich einfachere Umsetzung von paralleler und asynchroner Programmierung.
+Sie sind nicht an einen bestimmten System-Thread gebunden und können flexibel zwischen Threads wechseln.
+Die Verwaltung der Coroutines übernimmt der Kotlin-Compiler in Verbindung mit dem Dispatcher, der auch den Overhead von Kontextwechseln reduziert.
+Selbst bei einer blockierenden Coroutine bleibt der zugrunde liegende Thread frei und kann andere Coroutines verarbeiten.
+So lässt sich eine deutlich bessere Ausnutzung der verfügbaren Ressourcen erzielen @kotlinPatterns[p.~195].
+
+=== Spring Boot
+
+Spring Boot ist ein Framework zur Entwicklung moderner Java- und Kotlin-Anwendungen und basiert auf dem Spring-Framework.
+Es wurde entwickelt, um den Einstieg in Spring-basierte Projekte zu vereinfachen und typische Konfigurationsaufwände drastisch zu reduzieren.
+Durch Konventionen und automatisierte Konfiguration ermöglicht Spring Boot das Erstellen produktionsreifer Anwendungen mit minimalem Setup.
+
+Ein zentrales Ziel von Spring Boot ist es, Entwicklerinnen und Entwicklern eine schlanke, modulare und gut strukturierbare Grundlage für unterschiedlichste Softwarearchitekturen zu bieten.
+Dabei fügt es sich nahtlos in gängige moderne Architekturansätze wie Domain-Driven Design, hexagonale Architektur und modulare Monolithen ein.
+
+Spring Boot bietet eine große Auswahl an sogenannten Starter Dependencies, die es erlauben, unterschiedliche Technologien mit minimalem Konfigurationsaufwand einzubinden.
 
 == Zusammenfassung
+
+Ein Event repräsentiert somit einen Fakt, der tatsächlich eingetreten ist und nicht rückgängig gemacht werden kann. Man kann sich ein System, das auf Events basiert, als eine Art Fortschreiten der Zeit vorstellen: Jeder Event markiert einen Punkt in dieser Zeitachse und trägt zur Abfolge der Ereignisse bei. Dadurch lassen sich reale Sachverhalte realistischer nachvollziehen und die Software näher an der tatsächlichen Domäne entwickeln, wie es das Domain-Driven Design anstrebt. Änderungen in der Vergangenheit können nicht gelöscht werden; es ist lediglich möglich, kompensierende Handlungen durchzuführen, um unerwünschte Effekte zu korrigieren.
 
 = Implementierung
 
