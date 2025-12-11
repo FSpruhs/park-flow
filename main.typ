@@ -79,7 +79,7 @@
 #pagebreak()
 
 = Einleitung
-\
+
 Events spielen in der modernen Softwareentwicklung eine immer grössere Rolle.
 Anwendungen werden zunehmend reaktiver, ereignisgetrieben und asynchron gestaltet.
 In dieser Arbeit sollen verschiedene Techniken, die auf Events basieren miteinander kombiniert und praktisch umgesetzt werden.
@@ -450,67 +450,84 @@ Durch diese Sichtbarkeit der Prozesse lassen sich Softwaremodelle entwickeln, di
 
 == Architektur
 
-Es gibt verschiedene Architekturmuster, die bei der Umsetzung von Softwarelösungen verwendet werden können.
+Bei der Umsetzung von Softwarelösungen stehen verschiedene Architekturmuster zur Verfügung, die jeweils unterschiedliche Herausforderungen adressieren und eigene Stärken besitzen.
 In dieser Arbeit werde ich mich auf den Modulithen konzentrieren.
 Dabei handelt es sich um eine Architektur, die die Vorteile von Monolithen und Microservices miteinander kombiniert.
 
-Zunächst stelle ich die beiden Architekturmuster Monolith und Microservices vor, um anschließend den Modulith als Zwischenform zu erläutern.
-Darüber hinaus wird die hexagonale Architektur vorgestellt, die eine wichtige Rolle bei der internen Strukturierung von Softwarekomponenten spielt.
+Um die Bedeutung des Modulithen besser einordnen zu können, werden zunächst die beiden grundlegenden Architekturstile Monolith und Microservices vorgestellt. 
+Beide bilden die konzeptionelle Grundlage für das Verständnis des Modulithen.
+
+Zusätzlich wird in diesem Kapitel die hexagonale Architektur betrachtet. 
+Sie spielt eine wichtige Rolle für die interne Strukturierung von Modulen und Bounded Contexts. 
+Die hexagonale Architektur stellt sicher, dass Domänenlogik von technischen Details getrennt wird und erleichtert damit langfristige Wartbarkeit, Testbarkeit und eine klare Ausrichtung an der fachlichen Domäne.
 
 === Monolith
 
 Ein Monolith ist eine Softwareanwendung, die als eine einzige, zusammenhängende Einheit entwickelt, bereitgestellt und betrieben wird @köhler2025[p.~327].
-Monolithen zeichnen sich durch ihre Einfachheit aus, da alle Komponenten und Funktionalitäten in einem einzigen Prozess laufen.
+Alle Bestandteile der Anwendung, wie Benutzeroberfläche, Geschäftslogik und Persistenz — laufen typischerweise in einem einzigen Prozess und werden gemeinsam versioniert und ausgerollt.
 
-Vorteile von Monolithen sind:
+Monolithen zeichnen sich durch ihre strukturelle Einfachheit aus. Da alle Komponenten innerhalb derselben Anwendung laufen, entfällt die Komplexität verteilter Systeme. 
+Dies macht sie insbesondere in frühen Projektphasen oder für kleinere Teams attraktiv.
+
+Vorteile von Monolithen sind:   
 - *Einfache Entwicklung und Bereitstellung*: Da alle Komponenten in einer einzigen Anwendung enthalten sind, ist die Entwicklung und das Deployment vergleichsweise unkompliziert.
 - *Geringer Overhead*: Monolithen benötigen keine komplexe Infrastruktur für die Kommunikation zwischen verschiedenen Diensten, was den Overhead reduziert.
 - *Einfache Tests*: Integrationstests können leichter durchgeführt werden, da alle Komponenten in einer einzigen Anwendung laufen.
 
-Trotz ihrer Vorteile haben Monolithen auch gravierende Nachteile.
-Insbesondere, wenn das System über die Jahre stark wächst oder viele Teams parallel daran arbeiten.
+Mit zunehmender Größe eines Systems treten jedoch auch deutliche Nachteile zutage, insbesondere, wenn viele Teams gleichzeitig am selben Code arbeiten oder die Domäne komplex wird.
 
-Ein Monolith ohne klare Modul- oder Domänenstruktur entwickelt sich häufig zu einem Big Ball of Mud @vernon2017[p.~16].
-Typische Probleme sind:
+Ein Monolith ohne klare modulare oder fachliche Struktur tendiert dazu, sich im Laufe der Zeit zu einem sogenannten Big Ball of Mud zu entwickeln @vernon2017[p.~16].
+Typische Symptome sind:
 - Komponenten referenzieren sich gegenseitig ohne klare Regeln.
 - Änderungen an einer Stelle führen zu unerwarteten Seiteneffekten an anderen Stellen.
-- Der gesamte Code wird schwerer zu verstehen und zu überblicken.
+- Die Codebasis wird immer schwerer zu verstehen, weiterzuentwickeln und zu testen.
+- Die Entwicklungsgeschwindigkeit nimmt ab, da jede Anpassung potenziell das gesamte System beeinflusst.
 
 === Microservices
 
 Microservices sind ein Architekturmuster, bei dem eine Anwendung aus einer Sammlung kleiner, unabhängiger Dienste besteht.
 Jeder Dienst ist für eine klar abgegrenzte Funktionalität verantwortlich und kommuniziert über wohldefinierte Schnittstellen mit anderen Diensten @distributed2023[p.~65–66].
 
-Microservices lassen sich gut mit den Prinzipien des Domain-Driven Design kombinieren.
-Ein Microservice bildet häufig einen oder mehrere Bounded Contexts ab.
+Microservices passen konzeptionell gut zu den Prinzipien des Domain-Driven Design.
+Häufig bildet ein Microservice einen oder mehrere Bounded Contexts ab und kapselt dadurch einen geschlossenen fachlichen Verantwortungsbereich.
 Zudem kann jeder Service genau die Technologien, Datenbanken und Programmiersprachen verwenden, die für seine spezifische Aufgabe am besten geeignet sind @khononov2022[p.~255–256].
 
-Darüber hinaus bieten Microservice noch weitere Vorteile.
-Durch das unabhängige Deployment können einzelne Dienste unabhängig voneinander aktualisiert und skaliert werden.
-Auch ist die Fehlertoleranz höher, da der Ausfall eines Dienstes nicht zwangsläufig das gesamte System beeinträchtigt.
+Microservices bieten mehrere Vorteile:
+- Unabhängiges Deployment: Jeder Dienst kann getrennt entwickelt, veröffentlicht und aktualisiert werden, ohne dass andere Dienste neu ausgerollt werden müssen.
+- Skalierbarkeit: Dienste können individuell horizontal skaliert werden — dort, wo Last anfällt.
+- Höhere Fehlertoleranz: Der Ausfall eines einzelnen Dienstes muss nicht zwingend zu einem Ausfall der gesamten Anwendung führen, sofern geeignete Mechanismen eingesetzt werden.
 
-Allerdings bringen Microservices auch Herausforderungen mit sich.
-Die Komplexität der Infrastruktur steigt, da Dienste orchestriert und überwacht werden müssen.
-Die Kommunikation zwischen den Microservices erfolgt zwangläufig über ein Netzwerk.
+Diese Vorteile gehen jedoch mit erheblichen Herausforderungen einher.
+Da eine Anwendung nicht mehr in einem einzelnen Prozess läuft, steigt die Komplexität der Gesamtarchitektur wesentlich an. 
+Dienste müssen orchestriert, überwacht und abgesichert werden. Die Kommunikation erfolgt zwangsläufig über ein Netzwerk, was neue Fehlerquellen eröffnet.
 
 Damit einhergehen weitere Herausforderungen wie der Netzwerklatenz, der Fehlertoleranz, der Sicherheit und der Datenkonsistenz @distributed2023[p.~53].
+
+Microservices ermöglichen also hohe Flexibilität und Skalierbarkeit, erfordern jedoch gleichzeitig eine deutlich komplexere Infrastruktur. 
+Ohne klare Domänengrenzen, ein durchdachtes Deployment-Konzept und ausgereifte Betriebsprozesse führt ein Microservice-System schnell zu unnötigem Overhead und sinkender Produktivität.
 
 === Modulith
 
 Ein Modulith ist ein Architekturmuster, das die Vorteile von Monolithen und Microservices vereint.
-Die Anwendung wird als eine einzige Einheit bereitgestellt, ist jedoch intern in klar abgegrenzte Module unterteilt @stack2022[p.~41].
+Die Anwendung wird als eine einzige, gemeinsam deployte Einheit bereitgestellt, ist intern jedoch in klar abgegrenzte, fachlich motivierte Module strukturiert @stack2022[p.~41].
+Diese Module bilden eigenständige Verantwortungsbereiche ab und orientieren sich häufig an Bounded Contexts aus dem Domain-Driven Design.
 
-Vom Monolithen übernimmt der Modulith die einfache Bereitstellung und den geringen Overhead.
-Durch die Modularisierung wird jedoch eine klare Struktur geschaffen, die die Wartbarkeit und Erweiterbarkeit und die Grenzen der Microservices wiederspiegelt.
+Vom klassischen Monolithen übernimmt der Modulith vor allem die einfache Bereitstellung und den geringen infrastrukturellen Overhead.
+Durch die interne Modularisierung entsteht jedoch eine klare, disziplinierte Struktur, die die Wartbarkeit, Erweiterbarkeit und langfristige Stabilität der Anwendung deutlich verbessert.
+Zudem spiegeln die Module in vielen Fällen dieselben Grenzen wider, die in einer Microservice-Landschaft zu eigenständigen Diensten führen würden.
 
 Dabei gehen einige Nachteile von Microservices verloren, da keine komplexe Infrastruktur für die Kommunikation zwischen den Diensten erforderlich ist.
 Die Module kommunizieren innerhalb des gleichen Prozesses, was die Latenz reduziert und die Fehlertoleranz erhöht.
-Jedoch gehen auch einige Vorteile von Microservices verloren, wie die unabhängige Skalierbarkeit und das unabhängige Deployment der einzelnen Module.
-Für Softwareprojekte, die eine moderate Komplexität aufweisen und bei denen die Vorteile von Microservices nicht zwingend erforderlich sind, stellt der Modulith eine attraktive Alternative dar.
 
-Ein weiterer Vorteil von Modulithen ist, dass er mit geringen Aufwand in eine Microservice-Architektur überführt werden kann.
-Somit können neue oder junge Projekte zunächst als Modulith gestartet und bei wachsender Komplexität später in Microservices aufgeteilt werden.
-Die Teams haben dadurch die Möglichkeit, sich zunächst auf die fachlichen Anforderungen zu konzentrieren, ohne sich von Anfang an mit der Komplexität einer Microservice-Architektur auseinandersetzen zu müssen.
+Allerdings gehen dabei auch zentrale Vorteile von Microservices verloren.
+Module können nicht unabhängig voneinander skaliert oder separat deployt werden, da die Anwendung stets als Ganzes bereitgestellt wird.
+Für Szenarien, in denen unterschiedliche Teile des Systems stark unterschiedliche Lastprofile haben oder unabhängig weiterentwickelt werden müssen, kann dies einschränkend sein.
+
+Für viele Softwareprojekte ist der Modulith dennoch eine besonders attraktive Lösung.
+Er eignet sich vor allem dann, wenn die Komplexität moderat ist oder wenn die Anforderungen noch nicht so stabil sind, dass eine verteilte Systemlandschaft gerechtfertigt wäre.
+Da ein Modulith seinen internen Aufbau entlang klarer Bounded Contexts strukturiert, kann er mit vergleichsweise geringem Aufwand in eine Microservice-Architektur überführt werden.
+Dadurch ermöglicht er eine schrittweise Evolution. 
+Teams können zunächst die fachliche Domäne sauber modellieren, ohne frühzeitig mit der betrieblichen Komplexität einer Microservice-Infrastruktur belastet zu werden.
 
 In Abbildung @modulith-diagram ist der Unterschied zwischen Monolithen, Modulithen und Microservices dargestellt.
 Bei a) ist ein Monoloth dargestellt, es handelt sich um eine einzige Anwendung ohne klare Strukturierung.
@@ -530,8 +547,8 @@ Es ist eine einzige Anwendung, die jedoch in klar abgegrenzte Module unterteilt 
 === Hexagonale Architektur
 
 Während die Modulith-Architektur die Strukturierung auf der Ebene der gesamten Anwendung adressiert, konzentriert sich die hexagonale Architektur auf die Strukturierung innerhalb einzelner Softwarekomponenten.
-Bei der hexagonalen Architektur wird die Domänenlogik der Anwendung von äußeren Systemen und Schnittstellen isoliert. Die Domäne befindet sich dabei im Zentrum der Architektur und wird mit möglichst wenigen äußeren Abhängigkeiten modelliert.
-Technische Aspekte werden nicht innerhalb der Domäne implementiert.
+BZiel ist es, die Domänenlogik klar von technischen Details und externen Systemen zu isolieren. Die Domäne befindet sich dabei im Zentrum der Architektur und sollte möglichst wenige Abhängigkeiten zu außenliegenden Systemen haben. 
+Technische Aspekte wie werden nicht direkt innerhalb der Domäne implementiert.
 
 Damit die Domäne mit der Außenwelt kommunizieren kann, werden sogenannte Ports und Adapters #footnote[Deswegen wird die Hexagonale Architektur auch als Ports and Adapters Architektur bezeichnet].
 Ports definieren dabei die Schnittstellen, über die die Domäne mit externen Systemen interagiert.
@@ -622,7 +639,38 @@ Spring Boot bietet eine große Auswahl an sogenannten Starter Dependencies, die 
 
 == Zusammenfassung
 
-Ein Event repräsentiert somit einen Fakt, der tatsächlich eingetreten ist und nicht rückgängig gemacht werden kann. Man kann sich ein System, das auf Events basiert, als eine Art Fortschreiten der Zeit vorstellen: Jeder Event markiert einen Punkt in dieser Zeitachse und trägt zur Abfolge der Ereignisse bei. Dadurch lassen sich reale Sachverhalte realistischer nachvollziehen und die Software näher an der tatsächlichen Domäne entwickeln, wie es das Domain-Driven Design anstrebt. Änderungen in der Vergangenheit können nicht gelöscht werden; es ist lediglich möglich, kompensierende Handlungen durchzuführen, um unerwünschte Effekte zu korrigieren.
+Die in dieser Arbeit vorgestellten Konzepte und Technologien verfolgen das übergeordnete Ziel, die Komplexität moderner Software beherrschbar zu machen. 
+Dies wird erreicht, indem Software in eigenständige, klar abgegrenzte Einheiten strukturiert wird, die auf verschiedenen Ebenen unabhängig und nach Möglichkeit asynchron miteinander interagieren können. 
+Durch die Kombination der vorgestellten Werkzeuge lassen sich sowohl die fachliche Komplexität als auch technische Herausforderungen effizient adressieren.
+
+Auf konzeptioneller Ebene bietet DDD ein Rahmenwerk, um die fachliche Domäne präzise zu modellieren. 
+Subdomains, Bounded Contexts, Aggregates, Entities, Value Objects und Domain Events schaffen klare Abgrenzungen und tragen dazu bei, dass Softwarelösungen eng an der Realität der Fachprozesse ausgerichtet sind. 
+Event Storming unterstützt diesen Ansatz, indem es die Zusammenarbeit zwischen Entwicklern und Fachexperten erleichtert und ein gemeinsames Verständnis der Domäne sicherstellt.
+
+Die vorgestellten Architekturen, insbesondere Modulithen und die hexagonale Architektur, ergänzen DDD ideal. Sie sorgen dafür, dass die einzelnen Domänenmodule klar strukturiert, gut wartbar und von technischen Details isoliert sind. 
+Ports und Adapters stellen sicher, dass die Domänenlogik unabhängig von externen Systemen entwickelt und getestet werden kann.
+
+Event-Driven Architecture (EDA) sorgt dafür, dass diese Einheiten asynchron und strukturiert miteinander kommunizieren. 
+Event Sourcing erweitert diesen Ansatz, indem es Zustandsänderungen als unveränderbare Events modelliert. 
+Ein Event repräsentiert dabei einen Fakt, der tatsächlich eingetreten ist und nicht rückgängig gemacht werden kann. 
+Man kann sich ein System, das auf Events basiert, als eine Art Fortschreiten der Zeit vorstellen. 
+Jeder Event markiert einen Punkt auf dieser Zeitachse und trägt zur Abfolge der Ereignisse bei. 
+So lassen sich reale Sachverhalte nachvollziehbar abbilden, und die Software kann näher an der fachlichen Domäne entwickelt werden. 
+Änderungen in der Vergangenheit können nicht gelöscht werden. 
+Lediglich kompensierende Handlungen sind möglich, um unerwünschte Effekte zu korrigieren. 
+In Kombination mit CQRS entsteht eine saubere Trennung von Lese- und Schreiboperationen, die die Konsistenz der Domäne unterstützt.
+
+Auf technischer Ebene bieten Kotlin und insbesondere seine Coroutines eine leistungsfähige Basis für nebenläufige und asynchrone Verarbeitung. 
+Zusammen mit Spring Boot ergeben sich konkrete Werkzeuge und Frameworks, um die theoretischen Konzepte praktisch umzusetzen. 
+Spring Boot unterstützt modulare Anwendungen, interne Event-Systeme und reactive Programmierung, wodurch die Umsetzung von EDA, Event Sourcing und modularem Aufbau vereinfacht wird.
+
+Insgesamt zeigt sich, dass die vorgestellten Konzepte und Technologien auf mehreren Ebenen ineinandergreifen:
+- DDD liefert die fachliche Modellierung und klare Abgrenzung von Verantwortlichkeiten.
+- Modulithen und hexagonale Architektur stellen eine saubere technische Struktur bereit.
+- EDA und Event Sourcing ermöglichen nachvollziehbare, asynchrone Kommunikation und Zustandsverwaltung.
+-Kotlin und Spring Boot bieten die technische Grundlage für effiziente Implementierung, Nebenläufigkeit und Skalierbarkeit.
+
+Durch diese Kombination entsteht eine Softwarearchitektur, die sowohl fachlich präzise als auch technisch robust ist, leicht erweiterbar, wartbar und skalierbar und damit den Herausforderungen moderner, komplexer Anwendungen gerecht wird.
 
 = Implementierung
 
