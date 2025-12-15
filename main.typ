@@ -5,6 +5,8 @@
     numbering: none,
 )
 
+#show link: underline
+
 #align(left)[
     Fabian Spruhs \
     Lütticher Str. 57 \
@@ -139,36 +141,36 @@ Ich werde in dieser Arbeit untersuchen, inwiefern sich die Konzepte aus Stacks B
 
 = Theoretische Grundlagen
 
-In diesem Kapitel werden die theoretischen Grundlagen vorgestellt, die für die Umsetzung der in dieser Arbeit entwickelten Softwarelösung relevant sind. 
+In diesem Kapitel werden die theoretischen Grundlagen vorgestellt, die für die Umsetzung der in dieser Arbeit entwickelten Softwarelösung relevant sind.
 Ziel ist es, ein solides Verständnis der zentralen Konzepte und Technologien zu vermitteln, die im anschließenden Kapitel gemeinsam in einer konkreten Anwendung praktisch umgesetzt werden.
 
 Die Wahl dieser Konzepte basiert auf der Notwendigkeit, komplexe Software domänenspezifisch, wartbar und erweiterbar zu gestalten. Insbesondere in modernen Anwendungen mit hohen Anforderungen an Skalierbarkeit und Fehlertoleranz bieten die kombinierten Ansätze aus EDA, DDD und modularen Architekturen deutliche Vorteile.
 Dabei wird aufgezeigt, wie die einzelnen Ansätze ineinandergreifen und sich gegenseitig ergänzen, um flexible, skalierbare und gut strukturierte Software zu entwickeln.
 
-Ein zentrales Thema dieses Kapitels sind Events und event-getriebene Architekturen (EDA). 
-Hierzu gehören sowohl die Grundlagen von Events und Event-Streams als auch weiterführende Konzepte wie Event Sourcing und Command Query Responsibility Segregation (CQRS). 
-Diese Architekturmuster ermöglichen eine lose Kopplung von Komponenten, eine klare Trennung von Lese- und Schreiboperationen sowie die Nachvollziehbarkeit von Systemzuständen. 
+Ein zentrales Thema dieses Kapitels sind Events und event-getriebene Architekturen (EDA).
+Hierzu gehören sowohl die Grundlagen von Events und Event-Streams als auch weiterführende Konzepte wie Event Sourcing und Command Query Responsibility Segregation (CQRS).
+Diese Architekturmuster ermöglichen eine lose Kopplung von Komponenten, eine klare Trennung von Lese- und Schreiboperationen sowie die Nachvollziehbarkeit von Systemzuständen.
 Diese Eigenschaften eignen sich besonders für moderne Softwarearchitekturen.
 
-Eng verbunden mit event-getriebenen Ansätzen ist das Konzept des Domain-Driven Design (DDD). 
-DDD bietet sowohl strategische als auch taktische Werkzeuge, um komplexe Domänen zu modellieren. 
-Konzepte wie Bounded Contexts, Aggregates und Event Storming liefern eine klare Struktur und erleichtern die Identifikation relevanter Events. 
+Eng verbunden mit event-getriebenen Ansätzen ist das Konzept des Domain-Driven Design (DDD).
+DDD bietet sowohl strategische als auch taktische Werkzeuge, um komplexe Domänen zu modellieren.
+Konzepte wie Bounded Contexts, Aggregates und Event Storming liefern eine klare Struktur und erleichtern die Identifikation relevanter Events.
 Dadurch lässt sich DDD nahtlos mit EDA, Event Sourcing und CQRS kombinieren.
 
-Auf der architektonischen Ebene werden zudem Modulithen und hexagonale Architekturen betrachtet. 
-Modulithen ermöglichen eine modulare und gut wartbare Struktur innerhalb einer Anwendung, während die hexagonale Architektur die Interaktion zwischen Kernlogik und externen Systemen sauber trennt. 
+Auf der architektonischen Ebene werden zudem Modulithen und hexagonale Architekturen betrachtet.
+Modulithen ermöglichen eine modulare und gut wartbare Struktur innerhalb einer Anwendung, während die hexagonale Architektur die Interaktion zwischen Kernlogik und externen Systemen sauber trennt.
 Beide Konzepte ergänzen die zuvor eingeführten Patterns und tragen dazu bei, die in DDD und EDA identifizierten Strukturen konsequent umzusetzen.
 
-Abschließend werden die eingesetzten Technologien betrachtet, insbesondere Kotlin als Programmiersprache und Spring Boot als Framework für die Entwicklung moderner, modularer Anwendungen. 
+Abschließend werden die eingesetzten Technologien betrachtet, insbesondere Kotlin als Programmiersprache und Spring Boot als Framework für die Entwicklung moderner, modularer Anwendungen.
 Die Kombination dieser Technologien mit den vorgestellten Konzepten zeigt, wie sich die theoretischen Ansätze effizient in einer Softwarelösung umsetzen lassen.
 
-Zusammenfassend legt dieses Kapitel die Grundlage für die Implementierung im folgenden Abschnitt, indem es die zentralen Konzepte, Patterns und Technologien beschreibt und deren Zusammenspiel aufzeigt. 
+Zusammenfassend legt dieses Kapitel die Grundlage für die Implementierung im folgenden Abschnitt, indem es die zentralen Konzepte, Patterns und Technologien beschreibt und deren Zusammenspiel aufzeigt.
 Auf dieser Basis können flexible, wartbare und skalierbare Softwarelösungen entwickelt werden.
 
 == Events
 
-Ein *Event* ist eine Nachricht, die eine bereits eingetretene Änderung beschreibt. 
-Es handelt sich somit um einen Sachverhalt, der in der Vergangenheit stattgefunden hat. 
+Ein *Event* ist eine Nachricht, die eine bereits eingetretene Änderung beschreibt.
+Es handelt sich somit um einen Sachverhalt, der in der Vergangenheit stattgefunden hat.
 Der Name eines Events besteht in der Regel aus einem Verb in der Vergangenheitsform, das ausdrückt, was geschehen ist @khononov2022[p.~264–265].
 
 Events sind unveränderbare Fakten über vergangene Zustände oder Aktionen @stack2022[p.~8].
@@ -216,14 +218,14 @@ Diese Ansätze zeigen, wie EDA die Vorteile von losgekoppelten, flexiblen und sk
 Beim *Event Sourcing* wird der Zustand einer Anwendung nicht durch das Speichern der aktuellen Daten, sondern durch eine chronologische Abfolge von Events repräsentiert.
 Diese Events bilden einen unveränderbaren Event Stream. Ein Event selbst ist unveränderlich, es können lediglich neue Events an den Stream angehängt werden @vernon2013[p.~539].
 
-Durch das Speichern des Event Streams lässt sich der aktuelle Zustand jederzeit durch das Abspielen (Replay) dieser Events rekonstruieren. 
+Durch das Speichern des Event Streams lässt sich der aktuelle Zustand jederzeit durch das Abspielen (Replay) dieser Events rekonstruieren.
 Event Streams werden in der Regel in einem Event Store persistiert, der die Events zuverlässig speichert und für die Rekonstruktion bereitstellt @vernon2013[p.~539].
 
 Da alle Änderungen als Events gespeichert werden, steht eine vollständige Historie aller Zustandsänderungen zur Verfügung.
 Es ist jederzeit nachvollziehbar, wie ein bestimmter Zustand aus dem Event Store erreicht wurde.
 Dies erleichtert das Auffinden von Fehlern und die Rekonstruktion fehlerhafter Daten @vernon2013[p.~539].
 
-Event Sourcing verschiebt den Fokus der Anwendungsentwicklung von der bloßen Verwaltung des aktuellen Datenbestands hin zur Modellierung fachlicher Ereignisse, die im System auftreten. 
+Event Sourcing verschiebt den Fokus der Anwendungsentwicklung von der bloßen Verwaltung des aktuellen Datenbestands hin zur Modellierung fachlicher Ereignisse, die im System auftreten.
 Dies fördert ein tieferes Verständnis der Domäne und führt zu einer klareren Modellierung der Geschäftsprozesse @khononov2022[p.~127–132].
 
 Ein weiterer Vorteil ergibt sich aus der langfristigen Flexibilität der Datenbasis.
@@ -256,13 +258,13 @@ Auf diese Weise entsteht eine saubere Trennung von Fachlogik und Datenzugriff, d
 
 == Domain Driven Design
 
-Domain Driven Design (DDD) ist eine Methodik zur Entwicklung von Software, die ein hochwertiges, fachlich getreues Modell der zugrunde liegenden Domäne ermöglicht. 
+Domain Driven Design (DDD) ist eine Methodik zur Entwicklung von Software, die ein hochwertiges, fachlich getreues Modell der zugrunde liegenden Domäne ermöglicht.
 Ziel ist es, die Software so zu gestalten, dass sie die fachlichen Anforderungen der Domäne bestmöglich abbildet @vernon2013[p.~1].
 
-Eine zentrale Herausforderung bei der Entwicklung komplexer Software liegt weniger in den technischen Aspekten, sondern vielmehr in der Beherrschung der fachlichen Komplexität. 
+Eine zentrale Herausforderung bei der Entwicklung komplexer Software liegt weniger in den technischen Aspekten, sondern vielmehr in der Beherrschung der fachlichen Komplexität.
 DDD adressiert diese Herausforderung, indem es den Fokus konsequent auf die Domäne legt und die Gestaltung von Modellen in den Vordergrund stellt, die die realen Abläufe und Sachverhalte der Domäne widerspiegeln @evans2003[preface xxi].
 
-Durch diese Fokussierung auf die Domäne können Softwarelösungen entwickelt werden, die enger an der Realität der Fachprozesse orientiert sind. 
+Durch diese Fokussierung auf die Domäne können Softwarelösungen entwickelt werden, die enger an der Realität der Fachprozesse orientiert sind.
 
 === Taktisches und Strategisches Design
 
@@ -311,8 +313,8 @@ Die Ubiquitous Language dient mehreren Zwecken:
 - Sie bindet technische Begriffe nur insoweit ein, wie sie die fachliche Sprache unterstützen, und verhindert, dass technisches Vokabular die fachliche Sicht überlagert.
 @khononov2022[p.~50–51]
 
-Darüber hinaus ist die Ubiquitous Language ein entscheidendes Werkzeug, um ein konsistentes Domänenmodell zu entwickeln. 
-Jedes Modell-Element sollte mit einem Begriff aus der Ubiquitous Language benannt werden. 
+Darüber hinaus ist die Ubiquitous Language ein entscheidendes Werkzeug, um ein konsistentes Domänenmodell zu entwickeln.
+Jedes Modell-Element sollte mit einem Begriff aus der Ubiquitous Language benannt werden.
 Auf diese Weise kann präzise beschrieben werden, was entwickelt werden soll, und alle Beteiligten verstehen dasselbe Konzept auf dieselbe Weise.
 
 === Bounded Context
@@ -321,20 +323,20 @@ Ein zentrales Ziel von DDD ist es, verschiedene Modelle zu entwickeln, die unter
 Jedes Modell soll nur die Elemente enthalten, die für seinen Zweck erforderlich sind, während unnötige Details bewusst ausgeklammert werden.
 Auf diese Weise wird die Komplexität des Modells auf ein Minimum reduziert @khononov2022[p.~53–54].
 
-In der Praxis kann dasselbe fachliche Konzept in unterschiedlichen Teilen der Organisation unterschiedliche Rollen einnehmen. 
-Wird versucht, ein einziges Modell für alle Anwendungsfälle zu verwenden, entsteht schnell ein sehr großes, komplexes Modell, das schwer verständlich und fehleranfällig ist. 
+In der Praxis kann dasselbe fachliche Konzept in unterschiedlichen Teilen der Organisation unterschiedliche Rollen einnehmen.
+Wird versucht, ein einziges Modell für alle Anwendungsfälle zu verwenden, entsteht schnell ein sehr großes, komplexes Modell, das schwer verständlich und fehleranfällig ist.
 DDD adressiert diese Herausforderung, indem es Modelle aufteilt und klar abgegrenzte Bereiche definiert.
 
 Ein Bounded Context bezeichnet einen abgegrenzten Bereich, in dem ein Modell gültig, konsistent und eindeutig definiert ist.
 Das gleiche fachliche Modell kann somit in mehreren Bounded Contexts existieren, unterscheidet sich dort jedoch in Bedeutung und Verwendung @khononov2022[p.~63–64].
 
-Während Subdomains fachliche Bereiche der Organisation beschreiben, definieren Bounded Contexts die technischen und organisatorischen Grenzen, innerhalb derer ein Modell konsistent angewendet wird. 
+Während Subdomains fachliche Bereiche der Organisation beschreiben, definieren Bounded Contexts die technischen und organisatorischen Grenzen, innerhalb derer ein Modell konsistent angewendet wird.
 Sie dienen als Schnittstellen zwischen verschiedenen Modellen und verhindern, dass Konzepte außerhalb ihres Geltungsbereichs falsch interpretiert oder vermischt werden.
 
 Die Ubiquitous Language wird innerhalb eines Bounded Contexts festgelegt. Gleichlautende Begriffe müssen dabei nicht zwingend die gleiche Bedeutung in anderen Contexts haben.
 So kann ein und dasselbe Wort in verschiedenen Bounded Contexts unterschiedliche Bedeutungen besitzen @khononov2022[p.~65].
 
-Durch die Kombination von Subdomains, Bounded Contexts und Ubiquitous Language wird die Komplexität der Domäne beherrschbar. 
+Durch die Kombination von Subdomains, Bounded Contexts und Ubiquitous Language wird die Komplexität der Domäne beherrschbar.
 Jedes Modell bleibt auf seinen Zweck fokussiert, ist leichter verständlich und langlebiger, während gleichzeitig die konsistente Kommunikation zwischen allen Beteiligten gesichert wird.
 
 === Entities
@@ -343,8 +345,8 @@ Domain-Konzepte, die eine eigene Identität besitzen und sich dadurch eindeutig 
 Eine Entity wird nicht über ihre Attribute definiert, sondern über eine stabile, eindeutige Identität, die sie innerhalb der Domäne unverwechselbar macht.
 Entities repräsentieren typischerweise fachliche Konzepte, die über einen längeren Zeitraum bestehen, sich weiterentwickeln und oft in verschiedenen Bounded Contexts relevant sind.@vernon2013[p.~171-172].
 
-Wesentlich ist zudem, dass Entities mehr sind als reine Datencontainer. 
-Sie verkörpern fachliches Verhalten, enthalten Regeln, Invarianten und Logik und stellen so sicher, dass ihr Zustand jederzeit konsistent bleibt. 
+Wesentlich ist zudem, dass Entities mehr sind als reine Datencontainer.
+Sie verkörpern fachliches Verhalten, enthalten Regeln, Invarianten und Logik und stellen so sicher, dass ihr Zustand jederzeit konsistent bleibt.
 Durch diese Kapselung von Verhalten innerhalb der Entity wird die Langlebigkeit und Robustheit des Systems erhöht, da fachliche Regeln zentral an einer Stelle umgesetzt werden und nicht über verstreute Services verteilt sind.
 
 === Value Objects
@@ -360,7 +362,7 @@ Ein wesentliches Merkmal von Value Objects ist ihre Unveränderlichkeit (Immutab
 Statt ihren Zustand zu verändern, wird bei einer Änderung ein neues Objekt erzeugt.
 Dadurch bleiben Value Objects jederzeit konsistent und können gefahrlos gemeinsam verwendet, verglichen oder wiederverwendet werden.
 
-Die Verwendung von Value Objects fördert sauberen Code, da fachliche Regeln zentral in der Konstruktion des Objekts umgesetzt werden können. 
+Die Verwendung von Value Objects fördert sauberen Code, da fachliche Regeln zentral in der Konstruktion des Objekts umgesetzt werden können.
 
 === Aggregates
 
@@ -444,8 +446,8 @@ Diese Elemente werden in Beziehung zueinander gesetzt, um ein umfassendes Verst�
 
 Die Modellierung erfolgt typischerweise an einem großen Whiteboard, auf dem die verschiedenen Bestandteile mithilfe farbcodierter Post-its visualisiert werden @khononov2022[p.~235–236].
 
-Event Storming fördert die gemeinsame Sprache (Ubiquitous Language), weil alle Beteiligten dieselben Begriffe verwenden, um die Domäne zu beschreiben. 
-Zudem erleichtert es das Erkennen von Engpässen, Abhängigkeiten und komplexen Abläufen frühzeitig, bevor diese in Code umgesetzt werden. 
+Event Storming fördert die gemeinsame Sprache (Ubiquitous Language), weil alle Beteiligten dieselben Begriffe verwenden, um die Domäne zu beschreiben.
+Zudem erleichtert es das Erkennen von Engpässen, Abhängigkeiten und komplexen Abläufen frühzeitig, bevor diese in Code umgesetzt werden.
 Durch diese Sichtbarkeit der Prozesse lassen sich Softwaremodelle entwickeln, die stärker an der Realität der Domäne ausgerichtet sind.
 
 == Architektur
@@ -454,11 +456,11 @@ Bei der Umsetzung von Softwarelösungen stehen verschiedene Architekturmuster zu
 In dieser Arbeit werde ich mich auf den Modulithen konzentrieren.
 Dabei handelt es sich um eine Architektur, die die Vorteile von Monolithen und Microservices miteinander kombiniert.
 
-Um die Bedeutung des Modulithen besser einordnen zu können, werden zunächst die beiden grundlegenden Architekturstile Monolith und Microservices vorgestellt. 
+Um die Bedeutung des Modulithen besser einordnen zu können, werden zunächst die beiden grundlegenden Architekturstile Monolith und Microservices vorgestellt.
 Beide bilden die konzeptionelle Grundlage für das Verständnis des Modulithen.
 
-Zusätzlich wird in diesem Kapitel die hexagonale Architektur betrachtet. 
-Sie spielt eine wichtige Rolle für die interne Strukturierung von Modulen und Bounded Contexts. 
+Zusätzlich wird in diesem Kapitel die hexagonale Architektur betrachtet.
+Sie spielt eine wichtige Rolle für die interne Strukturierung von Modulen und Bounded Contexts.
 Die hexagonale Architektur stellt sicher, dass Domänenlogik von technischen Details getrennt wird und erleichtert damit langfristige Wartbarkeit, Testbarkeit und eine klare Ausrichtung an der fachlichen Domäne.
 
 === Monolith
@@ -466,10 +468,10 @@ Die hexagonale Architektur stellt sicher, dass Domänenlogik von technischen Det
 Ein Monolith ist eine Softwareanwendung, die als eine einzige, zusammenhängende Einheit entwickelt, bereitgestellt und betrieben wird @köhler2025[p.~327].
 Alle Bestandteile der Anwendung, wie Benutzeroberfläche, Geschäftslogik und Persistenz — laufen typischerweise in einem einzigen Prozess und werden gemeinsam versioniert und ausgerollt.
 
-Monolithen zeichnen sich durch ihre strukturelle Einfachheit aus. Da alle Komponenten innerhalb derselben Anwendung laufen, entfällt die Komplexität verteilter Systeme. 
+Monolithen zeichnen sich durch ihre strukturelle Einfachheit aus. Da alle Komponenten innerhalb derselben Anwendung laufen, entfällt die Komplexität verteilter Systeme.
 Dies macht sie insbesondere in frühen Projektphasen oder für kleinere Teams attraktiv.
 
-Vorteile von Monolithen sind:   
+Vorteile von Monolithen sind:
 - *Einfache Entwicklung und Bereitstellung*: Da alle Komponenten in einer einzigen Anwendung enthalten sind, ist die Entwicklung und das Deployment vergleichsweise unkompliziert.
 - *Geringer Overhead*: Monolithen benötigen keine komplexe Infrastruktur für die Kommunikation zwischen verschiedenen Diensten, was den Overhead reduziert.
 - *Einfache Tests*: Integrationstests können leichter durchgeführt werden, da alle Komponenten in einer einzigen Anwendung laufen.
@@ -498,12 +500,12 @@ Microservices bieten mehrere Vorteile:
 - Höhere Fehlertoleranz: Der Ausfall eines einzelnen Dienstes muss nicht zwingend zu einem Ausfall der gesamten Anwendung führen, sofern geeignete Mechanismen eingesetzt werden.
 
 Diese Vorteile gehen jedoch mit erheblichen Herausforderungen einher.
-Da eine Anwendung nicht mehr in einem einzelnen Prozess läuft, steigt die Komplexität der Gesamtarchitektur wesentlich an. 
+Da eine Anwendung nicht mehr in einem einzelnen Prozess läuft, steigt die Komplexität der Gesamtarchitektur wesentlich an.
 Dienste müssen orchestriert, überwacht und abgesichert werden. Die Kommunikation erfolgt zwangsläufig über ein Netzwerk, was neue Fehlerquellen eröffnet.
 
 Damit einhergehen weitere Herausforderungen wie der Netzwerklatenz, der Fehlertoleranz, der Sicherheit und der Datenkonsistenz @distributed2023[p.~53].
 
-Microservices ermöglichen also hohe Flexibilität und Skalierbarkeit, erfordern jedoch gleichzeitig eine deutlich komplexere Infrastruktur. 
+Microservices ermöglichen also hohe Flexibilität und Skalierbarkeit, erfordern jedoch gleichzeitig eine deutlich komplexere Infrastruktur.
 Ohne klare Domänengrenzen, ein durchdachtes Deployment-Konzept und ausgereifte Betriebsprozesse führt ein Microservice-System schnell zu unnötigem Overhead und sinkender Produktivität.
 
 === Modulith
@@ -526,7 +528,7 @@ Für Szenarien, in denen unterschiedliche Teile des Systems stark unterschiedlic
 Für viele Softwareprojekte ist der Modulith dennoch eine besonders attraktive Lösung.
 Er eignet sich vor allem dann, wenn die Komplexität moderat ist oder wenn die Anforderungen noch nicht so stabil sind, dass eine verteilte Systemlandschaft gerechtfertigt wäre.
 Da ein Modulith seinen internen Aufbau entlang klarer Bounded Contexts strukturiert, kann er mit vergleichsweise geringem Aufwand in eine Microservice-Architektur überführt werden.
-Dadurch ermöglicht er eine schrittweise Evolution. 
+Dadurch ermöglicht er eine schrittweise Evolution.
 Teams können zunächst die fachliche Domäne sauber modellieren, ohne frühzeitig mit der betrieblichen Komplexität einer Microservice-Infrastruktur belastet zu werden.
 
 In Abbildung @modulith-diagram ist der Unterschied zwischen Monolithen, Modulithen und Microservices dargestellt.
@@ -547,7 +549,7 @@ Es ist eine einzige Anwendung, die jedoch in klar abgegrenzte Module unterteilt 
 === Hexagonale Architektur
 
 Während die Modulith-Architektur die Strukturierung auf der Ebene der gesamten Anwendung adressiert, konzentriert sich die hexagonale Architektur auf die Strukturierung innerhalb einzelner Softwarekomponenten.
-BZiel ist es, die Domänenlogik klar von technischen Details und externen Systemen zu isolieren. Die Domäne befindet sich dabei im Zentrum der Architektur und sollte möglichst wenige Abhängigkeiten zu außenliegenden Systemen haben. 
+BZiel ist es, die Domänenlogik klar von technischen Details und externen Systemen zu isolieren. Die Domäne befindet sich dabei im Zentrum der Architektur und sollte möglichst wenige Abhängigkeiten zu außenliegenden Systemen haben.
 Technische Aspekte wie werden nicht direkt innerhalb der Domäne implementiert.
 
 Damit die Domäne mit der Außenwelt kommunizieren kann, werden sogenannte Ports und Adapters #footnote[Deswegen wird die Hexagonale Architektur auch als Ports and Adapters Architektur bezeichnet].
@@ -639,29 +641,29 @@ Spring Boot bietet eine große Auswahl an sogenannten Starter Dependencies, die 
 
 == Zusammenfassung
 
-Die in dieser Arbeit vorgestellten Konzepte und Technologien verfolgen das übergeordnete Ziel, die Komplexität moderner Software beherrschbar zu machen. 
-Dies wird erreicht, indem Software in eigenständige, klar abgegrenzte Einheiten strukturiert wird, die auf verschiedenen Ebenen unabhängig und nach Möglichkeit asynchron miteinander interagieren können. 
+Die in dieser Arbeit vorgestellten Konzepte und Technologien verfolgen das übergeordnete Ziel, die Komplexität moderner Software beherrschbar zu machen.
+Dies wird erreicht, indem Software in eigenständige, klar abgegrenzte Einheiten strukturiert wird, die auf verschiedenen Ebenen unabhängig und nach Möglichkeit asynchron miteinander interagieren können.
 Durch die Kombination der vorgestellten Werkzeuge lassen sich sowohl die fachliche Komplexität als auch technische Herausforderungen effizient adressieren.
 
-Auf konzeptioneller Ebene bietet DDD ein Rahmenwerk, um die fachliche Domäne präzise zu modellieren. 
-Subdomains, Bounded Contexts, Aggregates, Entities, Value Objects und Domain Events schaffen klare Abgrenzungen und tragen dazu bei, dass Softwarelösungen eng an der Realität der Fachprozesse ausgerichtet sind. 
+Auf konzeptioneller Ebene bietet DDD ein Rahmenwerk, um die fachliche Domäne präzise zu modellieren.
+Subdomains, Bounded Contexts, Aggregates, Entities, Value Objects und Domain Events schaffen klare Abgrenzungen und tragen dazu bei, dass Softwarelösungen eng an der Realität der Fachprozesse ausgerichtet sind.
 Event Storming unterstützt diesen Ansatz, indem es die Zusammenarbeit zwischen Entwicklern und Fachexperten erleichtert und ein gemeinsames Verständnis der Domäne sicherstellt.
 
-Die vorgestellten Architekturen, insbesondere Modulithen und die hexagonale Architektur, ergänzen DDD ideal. Sie sorgen dafür, dass die einzelnen Domänenmodule klar strukturiert, gut wartbar und von technischen Details isoliert sind. 
+Die vorgestellten Architekturen, insbesondere Modulithen und die hexagonale Architektur, ergänzen DDD ideal. Sie sorgen dafür, dass die einzelnen Domänenmodule klar strukturiert, gut wartbar und von technischen Details isoliert sind.
 Ports und Adapters stellen sicher, dass die Domänenlogik unabhängig von externen Systemen entwickelt und getestet werden kann.
 
-Event-Driven Architecture (EDA) sorgt dafür, dass diese Einheiten asynchron und strukturiert miteinander kommunizieren. 
-Event Sourcing erweitert diesen Ansatz, indem es Zustandsänderungen als unveränderbare Events modelliert. 
-Ein Event repräsentiert dabei einen Fakt, der tatsächlich eingetreten ist und nicht rückgängig gemacht werden kann. 
-Man kann sich ein System, das auf Events basiert, als eine Art Fortschreiten der Zeit vorstellen. 
-Jeder Event markiert einen Punkt auf dieser Zeitachse und trägt zur Abfolge der Ereignisse bei. 
-So lassen sich reale Sachverhalte nachvollziehbar abbilden, und die Software kann näher an der fachlichen Domäne entwickelt werden. 
-Änderungen in der Vergangenheit können nicht gelöscht werden. 
-Lediglich kompensierende Handlungen sind möglich, um unerwünschte Effekte zu korrigieren. 
+Event-Driven Architecture (EDA) sorgt dafür, dass diese Einheiten asynchron und strukturiert miteinander kommunizieren.
+Event Sourcing erweitert diesen Ansatz, indem es Zustandsänderungen als unveränderbare Events modelliert.
+Ein Event repräsentiert dabei einen Fakt, der tatsächlich eingetreten ist und nicht rückgängig gemacht werden kann.
+Man kann sich ein System, das auf Events basiert, als eine Art Fortschreiten der Zeit vorstellen.
+Jeder Event markiert einen Punkt auf dieser Zeitachse und trägt zur Abfolge der Ereignisse bei.
+So lassen sich reale Sachverhalte nachvollziehbar abbilden, und die Software kann näher an der fachlichen Domäne entwickelt werden.
+Änderungen in der Vergangenheit können nicht gelöscht werden.
+Lediglich kompensierende Handlungen sind möglich, um unerwünschte Effekte zu korrigieren.
 In Kombination mit CQRS entsteht eine saubere Trennung von Lese- und Schreiboperationen, die die Konsistenz der Domäne unterstützt.
 
-Auf technischer Ebene bieten Kotlin und insbesondere seine Coroutines eine leistungsfähige Basis für nebenläufige und asynchrone Verarbeitung. 
-Zusammen mit Spring Boot ergeben sich konkrete Werkzeuge und Frameworks, um die theoretischen Konzepte praktisch umzusetzen. 
+Auf technischer Ebene bieten Kotlin und insbesondere seine Coroutines eine leistungsfähige Basis für nebenläufige und asynchrone Verarbeitung.
+Zusammen mit Spring Boot ergeben sich konkrete Werkzeuge und Frameworks, um die theoretischen Konzepte praktisch umzusetzen.
 Spring Boot unterstützt modulare Anwendungen, interne Event-Systeme und reactive Programmierung, wodurch die Umsetzung von EDA, Event Sourcing und modularem Aufbau vereinfacht wird.
 
 Insgesamt zeigt sich, dass die vorgestellten Konzepte und Technologien auf mehreren Ebenen ineinandergreifen:
@@ -674,7 +676,154 @@ Durch diese Kombination entsteht eine Softwarearchitektur, die sowohl fachlich p
 
 = Implementierung
 
+In diesem Kapitel werde ich die Umsetzung der in den vorherigen Kapiteln vorgestellten Konzepte und Technologien in Form eines Beispielprojekts erläutern.
+Das Ziel ist es, die praktische Anwendung der theoretischen Grundlagen zu demonstrieren und aufzuzeigen, wie diese miteinander kombiniert werden können, um eine modulare, wartbare und skalierbare Softwarelösung zu erstellen.
+Als Domain für das Beispielprojekt habe ich eine fiktive Parkplatzverwaltungsanwendung gewählt.
+Der Grund für die Wahl dieser Domain liegt zum einen daran, dass ein Parkplatz zum einen einen klar abgegrenzten fachlichen Kontext darstellt der in der physischen Welt liegt.
+Die Anzahl der User ist an die reale Kapazität des Parkplatzes gebunden.
+Plötzliche Lastspitzen sind unwahrscheinlich.
+Zum anderen bieten Parkplätze eine gute Dynamik die mit Events dargestellt werden können.
+Fahrzeuge Fahren ein und aus, Parkplätze werden reserviert oder freigegeben.
+Die Domaine ist einfach erklärt und braucht kein Spezielles Fachwissen, darüber hinaus lassen sich schnell Anwendungsfälle beschreiben die Notwendig sind um Aspekte von DDD und EDA zu demonstrieren
+Der Code zu diesem Projekt ist auf meinem Github-Account unter #link("https://github.com/FSpruhs/park-flow") zu finden #footnote[In der README.md ist eine Kurzanleitung für das Repository].
+
+== Vorstellung Parkflow
+
+Das Beispielprojekt trägt den Namen Parkflow.
+Mit der Anwendung soll es möglich sein Parkplätze zu verwalten, dabei sollen alle Eingänge und Ausgänge und jeder Parkplatz mit Sensoren#footnote[Das verhalten der Sensoren wird in dieser Arbeit simuliert] bestückt werden die die Aktionen der Fahrzeuge erkennen und entsprechende Events auslösen.
+Dadurch soll es möglich sein, viele Abläufe zu automatisieren.
+
+Im ersten Schritt soll der Parkplatzbetreiber in der Lage sein, Parkplätze, Ein- und Ausgänge im System anzulegen und zu verwalten#footnote[Inventar löschen, kurzfristig deaktivieren/aktivieren, Preise Festlegen, Typen ändern].
+Dabei kann er verschiedene Typen von Parkplätzen anlegen, in dieser Arbeit gibt es Reguläre-Parkpätze, Behinderten-Parkplätze, Pakplätze für Elektrofahrzeuge und monatlich Mietbare Parkplätze geben.
+
+Als Kunde des Parkplatzes soll es zum einen Möglich sein, einen Account anzulegen und hier Zahlungsinformationen zu hinterlegen.
+Weiterhin kann der Kunde verschiedene Fahrzeuge zu registrieren über das Nummernschild.
+Auch soll es möglich sein, Parkplätze für einen Monat zu mieten.
+
+Zu dem Verwalten der Parkplätze und Kunden gibt es auch einen laufenden Parkbetrieb der gesteuert werden soll.
+Wenn ein Fahrzeug bei einem Eingang vor Fährt wird über einen Sensor das Nummernschild eingelesen und geprüft ob das Fahrzeug registriert ist.
+Wenn das Fahrzeug registriert ist wird dem Fahrzeug ein Parkplatz zugewiese und angezeigt.
+Danach wird das Tor geöffnet und das Fahrzeug kann einfahren.
+Über den Sensor am Parkplatz wird dem System mitgeteilt welches Fahrzeug auf dem Parkplatz parkt.
+Wenn das Fahrzeug den Parkplatz wieder verlässt wird über den Sensor am Ausgang das Nummernschild gescannt, das Tor wird geöffnet und das Fahrzeug kann ausfahren.
+Gleichzeit wird eine Rechnung über die Parkdauer erstellt und automatisch vom hinterlegten Zahlungsmittel abgebucht.
+
+Mit dem Anwendung soll es Möglichsein, den Parkplatzbetrieb für Parkplätze aller Größenordnungen zu verwalten.
+Nur Registrierte Fahrzeuge sollen den Parkplatz betreten können.
+Über das Zuordnen der Parkplätze zu den Fahrzeugen soll eine optimale Auslastung des Parkplatzes erreicht werden.
+Ausserdemm sollen Parkplätze mit einem speziellen Zweck, wie Behindertenparkplätze oder Elektrofahrzeugparkplätze, bevorzugt an die entsprechenden Fahrzeuge vergeben werden.
+Das Vorgehen wie Parkplätze zugewiesen werden, soll flexibel anpassbar sein.
+Ein Parkplatzbetreiber soll zwischen verschiedenen Strategien wählen können die er im laufe des Betriebes wechseln kann.
+Zum Beispiel könnte ein Parkplatz von einem Fussballstdion Parkplätze an einem Spieltag nur an Kunden mit gültigen Tickets vermieten wollen und an nicht Spieltagen auch anderen Kunden zur Verfügung stellen.
+
+Da es sich um ein Beispielprojekt handelt, werde ich mich auf die Kernfunktionen konzentrieren, die notwendig sind, um die in dieser Arbeit vorgestellten Konzepte zu demonstrieren.
+Folgende Aspekte werden in der Implementierung nicht berücksichtigt:
+- Sicherheitsaspekte wie Authentifizierung und Autorisierung#footnote[Standard Flows wie OAuth2 sollten aber Problemlos nachrüstbar sein].
+- Bei den meisten Usecases wird der Happy-Path implementiert und meistens ein bis zwei Fehlerfälle behandelt. Eine detailierte Behandlung aller Edge-Cases würde den Rahmen dieser Arbeit sprengen.
+- Es gibt keine Benutzeroberfläche.
+- Rechtliche und regulatorische Anforderungen werden nicht berücksichtigt.
+- Nur Fahrzeuge mit Registrierung werden berücksichtigt.
+- Nur Fahrzeuge mit deutschen Kennzeichen werden berücksichtigt.
+- Die Lage der einzelnen Parkplätze spielt keine Rolle.
+
 == Erkunden der Domain
+
+Das Erkunden der Domain werde ich über einen Event Storming Workshop durchführen.
+Aus Mangel an Fachexperten werde ich die Rolle des Fachexperten selbst übernehmen und den Workshop alleine durchführen.
+In diesen Rollen werde ich die Usecases Modellieren die für diese Arbeit implementiert werden sollen.
+Aufgrund der Fehlenden Disskussionen lässt sich der Workshop nur bedingt darstellen.
+Mir geht es auch weniger darum ein perfektes Modell zu erstellen, sondern vielmehr darum, den Prozess des Event Stormings zu demonstrieren und zu Zeigen, warum auch Events hier eine wichtige Rolle spielen.
+Auch wenn dies suboptimal ist, da der Austausch zwischen verschiedenen Perspektiven fehlt, ist es dennoch möglich, die Domäne zu modellieren und die wichtigsten Konzepte zu identifizieren.
+Um die übersicht zu behalten werde ich nicht alle Schritte hier Grafisch darstellen.
+Alle Bilder zu dem Workshop sind in der Dokumentation von Pakflow zu finden unter #link("https://github.com/FSpruhs/park-flow/doc/eventstorming").
+
+
+=== Schritt 1: Unstrukturiertes Erforschen
+
+Im ersten Scrhitt Schreiben die Teilnehmer nur den Namen von Events, die Ihnen zu der Domaine einfallen, auf einen orongefarbenen Klebezettel und Kleben diese unstrukturiert auf eine Wand#footnote[Workshops können auch mit entsprechenden Tools digital durchgeführt werden].
+Events sind dabei fachliche Ereignisse in der Vergangenheitsform @khononov2022[p.~217].
+
+#figure(
+  image("./doc/eventstorming/01-unstrukturiertes-erforschen.svg"),
+  caption: [
+    Ergebnis Unstrukturiertes Erforschen
+  ],
+) <unstrukturiertes-erforschen>
+
+=== Schritt 2: Zeitache
+
+Im zweiten Schritt werden die Events auf einer horizontale Zeitachse angeordnet.
+Begonnen wird mit dem frühesten Event links und endet mit dem aktuellsten Event rechts.
+Bei der Anordnung der Events geht man von dem Happy-Path aus.
+Events, die gleichzeitig auftreten, werden vertikal untereinander angeordnet @khononov2022[p.~218].
+
+#figure(
+  image("./doc/eventstorming/01-unstrukturiertes-erforschen.svg"),
+  caption: [
+    Ergebnis Zeitachse
+  ],
+) <zeitachse>
+
+In der Abbildung @zeitachse sieht man, dass die unstrukturierten Events in 4 verschiedene Zeitachse unterteilt werden.
+Dabei haben ergeben sich 3 Zeitachsen für die Verwaltung von Parkplätzen, Toren und Kunden.
+Diese sind alle sehr ähnlich aufgebaut.
+Zuerst wird das Objekt anglegt, danach kann man verschiedene Eigentschaften ändern, hinzufügen oder entfernen.
+Bei der 4 Zeitache wird der Lifecycle eines Fahrzeuges bei einem Parkplatzbesuch dargestellt.
+Dabei gibt es einen Punkt an dem sich die Zeitache in zwei Pfade aufteilt und dann später wieder zusammenführt.
+Und zwar wenn ein Fahrzeug auf einem Parkplatz parkt kann es entweder auf demm Parken der ihm zugewiesen wurde oder auf einem anderen Parkplatz parken.
+Bei dem Parken auf einem falschen Parkplatz werden zusätzliche Events ausgelöst.
+
+=== Schritt 3: Pain Points
+
+Im dritten Schritt werden Pain Points identifiziert und markiert.
+Pain Points sind Stellen im Prozess, die problematisch, ineffizient oder fehleranfällig sind.
+Diese werden mit rautenförmigen und pinkfarbenen Klebezetteln dargestellt @khononov2022[p.~219].
+
+In unserem Beispielprojekt erstelle ich einen Paint Point beim den Events `ParkedOn` und `ParkedOnWrong`.
+Damit weise ich auf die Gefahr hin, dass eine unkontrolierte Dynamik entstehen kann, wenn Fahrzeuge sich sich gegenseitig die zugewiesenen Parkplätze wegnehmen und die neu zugewiesenen Parkplätze den Fahrer nicht erreichen.
+
+=== Schritt 4: Pivotal Events
+
+Im vierten Schritt werden Pivotal Events identifiziert und markiert.
+Dabei handelt es sich um Events die dafür sorgen, dass der Prozess in eine andere Phase übergeht.
+Diese werden mit einem vertikalen strich markiert @khononov2022[p.~219-220].
+
+=== Schritt 5: Commands
+
+Im fünften Schritt werden Commands identifiziert.
+Bei Commands handelt es sich um Anweisungen, die eine Aktion innerhalb des Systems auslösen.
+Commands führen zu einem Event, wenn die Aktion erfolgreich abgeschlossen wurde.
+Aus diesem Grund werden Commands, auf einem hellblauen Klebezettel, vor einem Event platziert.
+Zusätzlich dazu kann ein Actor der diese Commands ausführt auf einem gelben Klebezettel vermerkt werden und an den Command geklebt werden.
+Wenn eine Folge von Commands von demselben Actor ausgeführt wird, kann dieser Actor auch über die gesamte Folge hinweg dargestellt werden @khononov2022[p.~220-221].
+
+=== Schritt 6: Policies
+
+Im sechsten Schritt werden Policies identifiziert.
+Policies sind Regeln oder Bedingungen, die bestimmen, wie das System auf bestimmte Ereignisse reagieren soll.
+Das sind in der Regel Commands die durch keinen Actor ausgelöst werden, sondern automatisch als Reaktion auf ein Event.
+Plicies werden auf einem lila-farbenen Klebezettel dargestellt und zwischen dem auslösenden Event und dem resultierenden Command platziert @khononov2022[p.~221].
+
+=== Schritt 7: Read Models
+
+Im siebten Schritt werden Read Models identifiziert.
+Read models werden vom Actor verwendet, um entscheidungen zum ausführen von Commands zu treffen.
+Dabei handelt es sich nicht um technische Darstellung von Datenbanken, sondern um fachliche Konzepte die dem Actor helfen den aktuellen Zustand der Domäne zu verstehen.
+Read Models werden auf einem grünen Klebezettel dargestellt.
+Da der Actor die Informationen benötigt, bevor er die Commands ausführt, werden die Read Models vor den Commands platziert @khononov2022[p.~222].
+
+=== Schritt 8: Externe Systeme
+
+Im achten Schritt werden externe Systeme identifiziert.
+Externe Systeme sind Systeme außerhalb der eigenen Domäne, mit denen interagiert wird.
+Das können zum Beispiel Zahlungssysteme, Benachrichtigungssysteme oder andere Drittanbietersysteme sein.
+Externe Systeme werden auf einem pinkfarbenen Klebezettel dargestellt und an den entsprechenden Stellen im Prozess platziert, an denen die Interaktion mit dem externen System stattfindet @khononov2022[p.~223].
+
+=== Schritt 9: Aggregates
+
+
+
+=== Schritt 10: Bounded Contexts
 
 == Architektur
 
