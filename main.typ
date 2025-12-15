@@ -758,7 +758,7 @@ Bei der Anordnung der Events geht man von dem Happy-Path aus.
 Events, die gleichzeitig auftreten, werden vertikal untereinander angeordnet @khononov2022[p.~218].
 
 #figure(
-  image("./doc/eventstorming/01-unstrukturiertes-erforschen.svg"),
+  image("./doc/eventstorming/02-zeitachse.svg"),
   caption: [
     Ergebnis Zeitachse
   ],
@@ -796,6 +796,13 @@ Commands führen zu einem Event, wenn die Aktion erfolgreich abgeschlossen wurde
 Aus diesem Grund werden Commands, auf einem hellblauen Klebezettel, vor einem Event platziert.
 Zusätzlich dazu kann ein Actor der diese Commands ausführt auf einem gelben Klebezettel vermerkt werden und an den Command geklebt werden.
 Wenn eine Folge von Commands von demselben Actor ausgeführt wird, kann dieser Actor auch über die gesamte Folge hinweg dargestellt werden @khononov2022[p.~220-221].
+
+#figure(
+  image("./doc/eventstorming/05-commands.svg"),
+  caption: [
+    Ergebnis Commands
+  ],
+) <commands>
 
 === Schritt 6: Policies
 
