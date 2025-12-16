@@ -764,7 +764,7 @@ Events, die gleichzeitig auftreten, werden vertikal untereinander angeordnet @kh
   ],
 ) <zeitachse>
 
-In der Abbildung @zeitachse sieht man, dass die unstrukturierten Events in 4 verschiedene Zeitachse unterteilt werden.
+In der Abbildung @zeitachse sieht man, dass die unstrukturierten Events in 5 verschiedene Zeitachse unterteilt werden.
 Dabei haben ergeben sich 3 Zeitachsen für die Verwaltung von Parkplätzen, Toren und Kunden.
 Diese sind alle sehr ähnlich aufgebaut.
 Zuerst wird das Objekt anglegt, danach kann man verschiedene Eigentschaften ändern, hinzufügen oder entfernen.
@@ -772,6 +772,7 @@ Bei der 4 Zeitache wird der Lifecycle eines Fahrzeuges bei einem Parkplatzbesuch
 Dabei gibt es einen Punkt an dem sich die Zeitache in zwei Pfade aufteilt und dann später wieder zusammenführt.
 Und zwar wenn ein Fahrzeug auf einem Parkplatz parkt kann es entweder auf demm Parken der ihm zugewiesen wurde oder auf einem anderen Parkplatz parken.
 Bei dem Parken auf einem falschen Parkplatz werden zusätzliche Events ausgelöst.
+Bei der letzten Zeitachse wird der Bezahlvorgang dargestellt.
 
 === Schritt 3: Pain Points
 
@@ -779,7 +780,7 @@ Im dritten Schritt werden Pain Points identifiziert und markiert.
 Pain Points sind Stellen im Prozess, die problematisch, ineffizient oder fehleranfällig sind.
 Diese werden mit rautenförmigen und pinkfarbenen Klebezetteln dargestellt @khononov2022[p.~219].
 
-In unserem Beispielprojekt erstelle ich einen Paint Point beim den Events `ParkedOn` und `ParkedOnWrong`.
+Für Parkflow erstelle ich einen Paint Point beim den Events `ParkedOn` und `ParkedOnWrong`.
 Damit weise ich auf die Gefahr hin, dass eine unkontrolierte Dynamik entstehen kann, wenn Fahrzeuge sich sich gegenseitig die zugewiesenen Parkplätze wegnehmen und die neu zugewiesenen Parkplätze den Fahrer nicht erreichen.
 
 === Schritt 4: Pivotal Events
@@ -797,6 +798,10 @@ Aus diesem Grund werden Commands, auf einem hellblauen Klebezettel, vor einem Ev
 Zusätzlich dazu kann ein Actor der diese Commands ausführt auf einem gelben Klebezettel vermerkt werden und an den Command geklebt werden.
 Wenn eine Folge von Commands von demselben Actor ausgeführt wird, kann dieser Actor auch über die gesamte Folge hinweg dargestellt werden @khononov2022[p.~220-221].
 
+In Parkflow gibt es zwei Actor, den Parkplatzbetreiber und den Kunden.
+Der Parkplatzbetreiber ist für die Verwaltung des Parkplatz Inventar zuständig und führt die entsprechenden Commands aus.
+Der Kunde ist für die Registrierung seiner Fahrzeuge und das Mieten von Parkplätzen zuständig und führt die entsprechenden Commands aus.
+
 #figure(
   image("./doc/eventstorming/05-commands.svg"),
   caption: [
@@ -811,6 +816,9 @@ Policies sind Regeln oder Bedingungen, die bestimmen, wie das System auf bestimm
 Das sind in der Regel Commands die durch keinen Actor ausgelöst werden, sondern automatisch als Reaktion auf ein Event.
 Plicies werden auf einem lila-farbenen Klebezettel dargestellt und zwischen dem auslösenden Event und dem resultierenden Command platziert @khononov2022[p.~221].
 
+Bei Parkflow gibt es zum Beispiel die Policy, dass wenn ein Fahrzeug an einem Eingang erkannt wird, automatisch der Command `ProvideParkingSpot` ausgelöst wird um dem Fahrzeug einen Parkplatz zuzuweisen.
+Auch wird durch eine Policy eine Rechnung erstellt, wenn die Fahrzeug den Parkplatz verlassen.
+
 === Schritt 7: Read Models
 
 Im siebten Schritt werden Read Models identifiziert.
@@ -819,6 +827,13 @@ Dabei handelt es sich nicht um technische Darstellung von Datenbanken, sondern u
 Read Models werden auf einem grünen Klebezettel dargestellt.
 Da der Actor die Informationen benötigt, bevor er die Commands ausführt, werden die Read Models vor den Commands platziert @khononov2022[p.~222].
 
+Bei Parkflow ergeben sich folgende Read Models:
+- *ParkingInventory*: Ein Überblick über alle Parkplätze und Ein- und Ausgänge, deren Status und deren Typen. Dieses Read Model hilft dem Parkplatzbetreiber, den aktuellen Zustand des Parkplatzes zu verstehen und Entscheidungen über die Verwaltung des Inventars zu treffen.
+- *ParkingSpotCatalog*: Gibt dem Kunden einen Überblick über die mietbaren Parkplätze und deren Preise.
+- *ParkingMap*: Eine Karte die den laufenden Betrieb des Parkplatzes darstellt. Sie zeigt an, welche Parkplätze belegt oder frei sind und zeigt an welche Fahrzeuge sich in diesem Zeitpunkt im System sind. Das hilft dem System, dem Fahrzeug einen geeigneten Parkplatz zuzuweisen.
+- *FeeCatalog*: Eine Übersicht über die verschiedenen Parkgebühren und deren Berechnungsgrundlagen. Dieses Read Model unterstützt das System dabei, die korrekten Gebühren für die Parkdauer zu berechnen.
+- *VehicleHistory*: Eine Historie über die Action eines Fahrzeugs im System. Dieses Read Model hilft dabei eine Rechnung zu erstellen, wenn das Fahrzeug den Parkplatz verlässt.
+
 === Schritt 8: Externe Systeme
 
 Im achten Schritt werden externe Systeme identifiziert.
@@ -826,11 +841,56 @@ Externe Systeme sind Systeme außerhalb der eigenen Domäne, mit denen interagie
 Das können zum Beispiel Zahlungssysteme, Benachrichtigungssysteme oder andere Drittanbietersysteme sein.
 Externe Systeme werden auf einem pinkfarbenen Klebezettel dargestellt und an den entsprechenden Stellen im Prozess platziert, an denen die Interaktion mit dem externen System stattfindet @khononov2022[p.~223].
 
+Bei Parkflow wird ein externes Zahlungssystem verwendet, um die Parkgebühren automatisch vom hinterlegten Zahlungsmittel des Kunden abzubuchen, wenn das Fahrzeug den Parkplatz verlässt.
+
 === Schritt 9: Aggregates
 
+Im neunten Schritt werden Aggregates identifiziert.
+Hierzu werden die Aggregates als grosser gelber Klebezettel dargestellt. Um diesen Zettel werden auf der Linken Seite die Commands und auf der Rechten Seite die Events platziert, die zu dem Aggregate gehören.
+Auf diese Weise wird deutlich, welche Commands und Events zu welchem Aggregate gehören @khononov2022[p.~223].
 
+Nach diesem Schritt ergeben sich für Parflow die Aggregates `ParkingSpot`, `Gate`, `Customer`, `ParkingOperator` und `Invoice`.
 
 === Schritt 10: Bounded Contexts
+
+Im zehnten und letzten Schritt werden Bounded Contexts identifiziert.
+Bounded Contexts sind klar abgegrenzte Bereiche innerhalb der Domäne, die eine eigene Sprache und ein eigenes Modell besitzen.
+Sie werden durch einen Rahmen dargestellt, der die zugehörigen Aggregates, Commands, Events, Read Models und externen Systeme umfasst @khononov2022[p.~224].
+
+Parkflow lässt sich, wie in @bounded-contexts zu sehen, in diese Bounded Contexts unterteilen:
+- *ParkingInventory*: Verwaltung des Parkplatzinventars, einschließlich der Parkplätze und Ein- und Ausgänge.
+- *CustomerAcces*: Gibt dem Kunden die Möglichkeit, sich zu registrieren und Fahrzeuge zu hinterlegen.
+- *ParkingOperation*: Steuert den laufenden Betrieb des Parkplatzes, einschließlich der Zuweisung von Parkplätzen und der Überwachung des Parkvorgangs.
+- *Billing*: Verwaltet die Abrechnung und Zahlung der Parkgebühren.
+
+#figure(
+  image("./doc/eventstorming/10-bounded-contexts.svg"),
+  caption: [
+    Ergebnis Bounded Contexts
+  ],
+) <bounded-contexts>
+
+=== Subdomains
+
+In disem Schritt werden die verschiedenen Subdomains identifiziert und den 3 Typen zugeordnet.
+Dazu nutzte ich die Definition aus @khononov2022[p.~35].
+Hier wird die Domaine nach dem Verhältniss zwischen Komplexität der Business Logik und dem Wettbewerbsforteil gegenüber konkurenz eingeteilt.
+
+In @subdomains ist die Einteilung der Subdomains von Parkflow dargestellt.
+Dabei ist die Subdomain `ParkingOperation` eine Core Domain, das verwalten des Operatiiven Betriebs ist der zentrale Wettbewerbsfaktor von Parkflow und beinhaltet die meiste Komplexität. Diese ergibt sich, da viele Events Zeitnah verabeitet werden müssen und entstehende Konflikte schnell gelöst werden müssen.
+Die Subdomains `CustomerAcces` und `ParkingInventory` sind Supporting Domains, sie sind notwendig um den Betrieb von Parkflow zu ermöglichen, stellen aber keinen direkten Wettbewerbsfaktor dar.
+Das verwalten von Kunden und Parkplätzen ist vergleichsweise einfach.
+Die Subdomain `Billing` ist eine Generic/Support Domain. Das berechnen von Gebühren und das Abwickeln von Zahlungen ist eine Standardaufgabe die von vielen Drittanbietern übernommen werden kann bei Parkflow wird diese Domaie aber selber entwickelt.
+Das Abweickeln von Zahlungen ist an sich Konplex, da es viele rechtliche und sicherheitsrelevante Aspekte gibt. 
+Das anbieten von online Zahlungen ist aber eine Tätigkeit die viele Unternehmen anbieten, weshalb es hier keinen Wettbewerbsvorteil gibt.
+Aus diesem Grund ist diese Domaine eine Generic Domain und soll in Parkflow von einem externen Zahlungssystem übernommen werden.
+
+#figure(
+  image("./pictures/subdomains.svg"),
+  caption: [
+    Subdomains
+  ],
+) <subdomains>
 
 == Architektur
 
