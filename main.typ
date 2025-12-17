@@ -593,15 +593,15 @@ Die zentralen Vorteile des C4-Modells sind:
 - *Gute Verständlichkeit*: Fokus auf Struktur und Verantwortlichkeiten statt auf technische Details.
 - *Technologieunabhängigkeit*: Das Modell beschreibt was ein System ist und wie es strukturiert ist – nicht zwingend wie es implementiert wurde.
 
-Gerade in domänengetriebenen und modularen Architekturen unterstützt das C4-Modell dabei, fachliche und technische Strukturen klar zu kommunizieren, ohne sich frühzeitig auf Implementierungsdetails festzulegen.
+Gerade in domänengetriebenen und modularen Architekturen unterstützt das C4-Modell dabei, fachliche und technische Strukturen klar zu kommunizieren, ohne sich frühzeitig auf Implementierungsdetails festzulegen @c4model.
 
-Das C4-Modell besteht aus vier aufeinander aufbauenden Diagrammtypen, die jeweils eine spezifische Abstraktionsebene abdecken.
+Das C4-Modell besteht aus vier aufeinander aufbauenden Diagrammtypen, die jeweils eine spezifische Abstraktionsebene abdecken @c4diagrams.
 
 - *Context Diagram (System Context)*: Das Context Diagram bietet die höchste Abstraktionsebene. Es zeigt das betrachtete Softwaresystem als Ganzes und stellt dessen Beziehungen zu externen Akteuren und Systemen dar. Ziel dieses Diagramms ist es, ein gemeinsames Verständnis darüber zu schaffen, welche Rolle das System im Gesamtkontext spielt und mit wem oder was es interagiert.
 - *Container Diagram*: Das Container Diagram zoomt eine Ebene tiefer in das System hinein. Es zeigt, aus welchen Containern das System besteht und wie diese miteinander kommunizieren.  
 - *Component Diagram*: Das Component Diagram beschreibt die innere Struktur eines einzelnen Containers. Es zeigt, aus welchen Komponenten dieser besteht und wie diese zusammenarbeiten.
-- *Code Diagram (optional)*: Das Code Diagram stellt die detaillierteste Ebene dar und zeigt die konkrete Implementierung. Im C4-Modell ist dieses Diagramm optional.
-                                                                                                                           Der Grund dafür ist, dass der Quellcode selbst bereits eine sehr detaillierte und oft automatisch generierbare Dokumentation darstellt. Zudem ändern sich Code-Strukturen in der Regel häufiger als architektonische Konzepte.
+- *Code Diagram (optional)*: Das Code Diagram stellt die detaillierteste Ebene dar und zeigt die konkrete Implementierung. Im C4-Modell ist dieses Diagramm optional. Der Grund dafür ist, dass der Quellcode selbst bereits eine sehr detaillierte und oft automatisch generierbare Dokumentation darstellt. Zudem ändern sich Code-Strukturen in der Regel häufiger als architektonische Konzepte.
+
 == Kotlin
 
 Kotlin ist eine Programmiersprache, die 2011 von JetBrains entwickelt wurde.
