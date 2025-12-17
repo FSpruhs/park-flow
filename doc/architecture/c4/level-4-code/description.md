@@ -3,7 +3,7 @@
 This diagram shows the internal structure of the Parking Inventory Context within the Modulith, highlighting its **modules, ports, and adapters**. It focuses on the internal design and organization of the context, following a **hexagonal architecture** approach.
 
 ## Component Diagram
-![Parking Inventory Components](level-4-0.png)
+![Parking Inventory Components](level-4-0.svg)
 
 ---
 

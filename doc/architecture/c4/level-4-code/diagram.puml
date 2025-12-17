@@ -48,6 +48,9 @@ package "Core" as core {
     }
 }
 
+api -[hidden]-> common
+common -[hidden]-> core
+
 [AggregateStoreImpl] ..|> [AggregateStore] : implements
 [EventPublisherImpl] ..|> [EventPublisher] : implements
 [AggregateStoreImpl] --> [EventPublisher] : uses

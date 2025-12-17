@@ -1025,11 +1025,131 @@ Darüber hinaus gibt es noch das `common` Paket, das gemeinsame Funktionalitäte
 In Parkflow enthält das Modul die die Implementierung für das Event-Sourcing System und das interne Event-System.
 
 #figure(
-  image("./doc/architecture/c4/level-3-code/level-4-0.svg"),
+  image("./doc/architecture/c4/level-4-code/level-4-0.svg"),
   caption: [
     Component
   ],
 ) <code>
+
+=== Spring Modulith
+
+Spring Modulith ist ein ein ein offizielles Spring-Projekt, das speziell für die Entwicklung modularer Monolithen entwickelt wurde.
+Es bietet eine Reihe von Werkzeugen und Best Practices, um die Strukturierung, Kommunikation und Verwaltung von Modulen innerhalb eines Monolithen zu sicher zu stellen.
+Spring Modulith etabliert Regeln und Konventionen, die sicherstellen, dass Module klar abgegrenzt sind und nur über definierte Schnittstellen miteinander kommunizieren.
+Als Standard dürfen Module nur auf Code zugreifen, der in der Paketstruktur unterhalb des eigenen Moduls liegt.
+Dies verhindert unkontrollierte Abhängigkeiten zwischen Modulen.
+Zusätzlich dazu können einzelne Pakete innerhalb eines Moduls als interface deklariert werden.
+Nur dieses interface darf von anderen Modulen genutzt werden.
+Im folgenden Codebeispiel ist das `api` Paket des Moduls `parking-inventory` als interface deklariert.
+
+```kotlin
+package com.spruhs.parkflow.parkinginventory.api
+
+import org.springframework.modulith.NamedInterface
+import org.springframework.modulith.PackageInfo
+
+@PackageInfo
+@NamedInterface(name = ["parking-inventory-api"])
+class ModuleMetaData
+```
+
+Mit einem Test lässt sich dann überprüfen, ob die Regeln dien von Spring Modulith definiert werden, eingehalten werden.
+Dieser Test kann automatisiert in den Build-Prozess eingebunden werden, um sicherzustellen, dass die modulare Struktur während der Entwicklung erhalten bleibt.
+
+```kotlin
+package com.spruhs.parkflow.architecture
+
+import com.spruhs.parkflow.ParkFlowApplication
+import org.junit.jupiter.api.Test
+import org.springframework.modulith.core.ApplicationModules
+
+class ModulithTests {
+    @Test
+    fun `verifies modular structure`() {
+        val modules = ApplicationModules.of(ParkFlowApplication::class.java)
+        modules.verify()
+    }
+}
+```
+
+=== Archunit
+
+ArchUnit ist ein weiteres Werkzeug, das zur Überprüfung und Durchsetzung von Architekturregeln in Kotlin-Projekten verwendet werden kann.
+Mit ArchUnit lassen sich die Regeln die durch die hexagonale Architektur definiert werden, automatisiert geprüft.
+
+```kotlin
+package com.spruhs.parkflow.architecture
+
+import com.tngtech.archunit.core.importer.ClassFileImporter
+import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes
+import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
+
+class HexagonalArchitectureTests {
+    private val basePackage = "com.spruhs.parkflow"
+    private val importedClasses = ClassFileImporter().importPackages(basePackage)
+
+    @Test
+    fun `domain should not depend on application or adapter`() {
+        noClasses()
+            .that().resideInAPackage("..domain..")
+            .should().dependOnClassesThat()
+            .resideInAnyPackage("..application..", "..adapter..")
+            .check(importedClasses)
+    }
+
+    @Test
+    fun `application should not depend on adapter`() {
+        noClasses()
+            .that().resideInAPackage("..application..")
+            .should().dependOnClassesThat()
+            .resideInAPackage("..adapter..")
+            .check(importedClasses)
+    }
+
+    @ParameterizedTest(name = "{index}: {0} should reside in {1} package")
+    @MethodSource("allowedNaming")
+    fun `allowed naming rules`(
+        naming: String,
+        packageName: String,
+    ) {
+        classes()
+            .that().haveSimpleNameEndingWith(naming)
+            .should().resideInAPackage(packageName)
+            .check(importedClasses)
+    }
+
+    companion object {
+        @JvmStatic
+        fun allowedNaming(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("Aggregate", "..domain.."),
+                Arguments.of("Repository", "..infrastructure.secondary.."),
+                Arguments.of("Adapter", "..infrastructure.."),
+                Arguments.of("Port", "..application.."),
+                Arguments.of("Command", "..application.."),
+                Arguments.of("Message", "..infrastructure.primary.."),
+                Arguments.of("Request", "..infrastructure.primary.."),
+                Arguments.of("Projection", "..domain.."),
+            )
+    }
+
+    @Test
+    fun `event should reside in api package`() {
+        classes()
+            .that().haveSimpleNameEndingWith("Event")
+            .should().resideInAnyPackage("..api..", "..common..")
+            .check(importedClasses)
+    }
+}
+```
+
+Mit den ersten beiden Test werden die Abhängigkeiten zwischen den Schichten der hexagonalen Architektur überprüft.
+Die nächsten Tests überprüfen, ob Klassen mit bestimmten Namenskonventionen in den richtigen Paketen liegen.
 
 == Aggregate Class
 
