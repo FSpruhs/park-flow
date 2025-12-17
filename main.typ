@@ -582,7 +582,7 @@ Auf der Rechten Seite ist eine Datenbank dargestellt.
 
 Eine verständliche und aktuelle Architekturdokumentation ist ein wesentlicher Bestandteil langlebiger Softwaresysteme.
 Das C4-Modell ist ein leichtgewichtiges Modell zur Beschreibung und Visualisierung von Softwarearchitekturen.
-Es verfolgt das Ziel, Architekturen auf unterschiedlichen Abstraktionsebenen klar, konsistent und zielgruppengerecht darzustellen. 
+Es verfolgt das Ziel, Architekturen auf unterschiedlichen Abstraktionsebenen klar, konsistent und zielgruppengerecht darzustellen.
 Das C4-Modell adressiert ein häufiges Problem klassischer Architekturdokumentationen.
 Diagramme sind entweder zu grob, um konkrete Designentscheidungen zu erklären, oder zu detailliert, um einen schnellen Überblick zu ermöglichen.
 
@@ -598,7 +598,7 @@ Gerade in domänengetriebenen und modularen Architekturen unterstützt das C4-Mo
 Das C4-Modell besteht aus vier aufeinander aufbauenden Diagrammtypen, die jeweils eine spezifische Abstraktionsebene abdecken @c4diagrams.
 
 - *Context Diagram (System Context)*: Das Context Diagram bietet die höchste Abstraktionsebene. Es zeigt das betrachtete Softwaresystem als Ganzes und stellt dessen Beziehungen zu externen Akteuren und Systemen dar. Ziel dieses Diagramms ist es, ein gemeinsames Verständnis darüber zu schaffen, welche Rolle das System im Gesamtkontext spielt und mit wem oder was es interagiert.
-- *Container Diagram*: Das Container Diagram zoomt eine Ebene tiefer in das System hinein. Es zeigt, aus welchen Containern das System besteht und wie diese miteinander kommunizieren.  
+- *Container Diagram*: Das Container Diagram zoomt eine Ebene tiefer in das System hinein. Es zeigt, aus welchen Containern das System besteht und wie diese miteinander kommunizieren.
 - *Component Diagram*: Das Component Diagram beschreibt die innere Struktur eines einzelnen Containers. Es zeigt, aus welchen Komponenten dieser besteht und wie diese zusammenarbeiten.
 - *Code Diagram (optional)*: Das Code Diagram stellt die detaillierteste Ebene dar und zeigt die konkrete Implementierung. Im C4-Modell ist dieses Diagramm optional. Der Grund dafür ist, dass der Quellcode selbst bereits eine sehr detaillierte und oft automatisch generierbare Dokumentation darstellt. Zudem ändern sich Code-Strukturen in der Regel häufiger als architektonische Konzepte.
 
@@ -904,7 +904,7 @@ Dabei ist die Subdomain `ParkingOperation` eine Core Domain, das verwalten des O
 Die Subdomains `CustomerAcces` und `ParkingInventory` sind Supporting Domains, sie sind notwendig um den Betrieb von Parkflow zu ermöglichen, stellen aber keinen direkten Wettbewerbsfaktor dar.
 Das verwalten von Kunden und Parkplätzen ist vergleichsweise einfach.
 Die Subdomain `Billing` ist eine Generic/Support Domain. Das berechnen von Gebühren und das Abwickeln von Zahlungen ist eine Standardaufgabe die von vielen Drittanbietern übernommen werden kann bei Parkflow wird diese Domaie aber selber entwickelt.
-Das Abweickeln von Zahlungen ist an sich Konplex, da es viele rechtliche und sicherheitsrelevante Aspekte gibt. 
+Das Abweickeln von Zahlungen ist an sich Konplex, da es viele rechtliche und sicherheitsrelevante Aspekte gibt.
 Das anbieten von online Zahlungen ist aber eine Tätigkeit die viele Unternehmen anbieten, weshalb es hier keinen Wettbewerbsvorteil gibt.
 Aus diesem Grund ist diese Domaine eine Generic Domain und soll in Parkflow von einem externen Zahlungssystem übernommen werden.
 
@@ -916,6 +916,120 @@ Aus diesem Grund ist diese Domaine eine Generic Domain und soll in Parkflow von 
 ) <subdomains>
 
 == Architektur
+
+In dem vorherigen Kapitel habe ich die Domain von Parkflow erkundet und modelliert.
+Auf dieser Grundlage werde ich in diesem Kapitel die Architektur von Parkflow entwerfen und dokumentieren.
+Die Architektur Dokumentation habe ich dabei nach dem C4-Modell erstellt #footnote[https://github.com/FSpruhs/park-flow/tree/master/doc/architecture/c4].
+Bei der Dokumentation habe ich auch teile dokumentiert die nicht in dieser Arbeit implementiert werden.
+Ich möchte insgesamt ein Bild vermitteln, wie eine vollständige Architektur für Parkflow aussehen könnte.
+
+=== System Context
+
+Im Zentrum von Abbildung @system-context ist das System Parkflow dargestellt.
+Es gibt 2 Akteure die mit dem System interagieren.
+Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars zuständig.
+Der Kunde ist für die Registrierung seiner Fahrzeuge und das Mieten von Parkplätzen zuständig.
+Es soll potentzielle Schnittstellen für externe Systeme geben die ebenfalls mit Parkflow interagieren können.
+Das könnte z.B. ein Ticketsystem sein bei einem Parkplatz an einem Fussballstadion.
+
+Weiterhin gibt es ein externes Zahlungssystem, das für die Abwicklung der Zahlungen zuständig ist und ein externes Authentifizierungssystem, das für die Authentifizierung und Autorisierung der Nutzer verantwortlich ist.
+Darüber hinaus verfügt der Parkplatz über verschiedene Sensoren, die die Aktionen der Fahrzeuge erkennen und entsprechende Events auslösen.
+
+#figure(
+  image("./doc/architecture/c4/level-1-system-context/level-1-0.svg"),
+  caption: [
+    System Context
+  ],
+) <system-context>
+
+=== Container
+
+Bei der Abbildung @container ist die Container-Architektur von Parkflow dargestellt.
+Die mit Rot markierten Container werden in dieser Arbeit nicht implementiert.
+Parkflow besteht zum einem aus dem Backend das als Modulith umgesetzt wird und die zentrale Geschäftslogik und Domäne enthält.
+Das Backend nutzt 2 Datenbanken und eine RabbitMQ:
+
+*MongoDB:*
+
+Einmal eine MongoDB für das Speichern der aktuellen Zustände der Read Models und der Aggregates für die kein Event Sourcing Mechanismus implementiert wird.
+
+MongoDB eignet sich besonders gut zur Speicherung von Aggregates, da ein Aggregate in DDD eine klare transaktionale Konsistenzgrenze bildet.
+Diese Grenze lässt sich in MongoDB sehr natürlich abbilden, indem ein gesamtes Aggregate als einzelnes Dokument unter einem eindeutigen Schlüssel (Key) gespeichert wird.
+Dadurch können Änderungen am Aggregate atomar durchgeführt werden, ohne dass verteilte Transaktionen oder komplexe Joins erforderlich sind.
+
+Auch für Read Models bietet MongoDB deutliche Vorteile.
+Read Models dürfen gezielt auf Lesezugriffe optimiert sein und müssen nicht der Struktur des Write Models entsprechen.
+Die dokumentenorientierte Struktur von MongoDB erlaubt es, unterschiedliche Sichten auf dieselben fachlichen Daten einfach abzubilden.
+Dabei wird bewusst in Kauf genommen, dass Daten mehrfach gespeichert oder denormalisiert werden, um Abfragen einfach, performant und verständlich zu halten.
+
+Der zentrale Vorteil dieses Ansatzes liegt in der Einfachheit.
+Der Fokus verschiebt sich weg von einer komplexen, stark normalisierten Datenhaltung hin zu einer klar strukturierten, fachlich motivierten Persistenz.
+Die zusätzliche Redundanz wird bewusst akzeptiert, da sie die Lesbarkeit, Wartbarkeit und Performance der Anwendung verbessert.
+
+Im Kontext eines Modulithen gilt zudem ein wichtiges Architekturprinzip.
+Jedes Modul darf ausschließlich auf seine eigenen persistenten Daten zugreifen.
+Daten dürfen niemals über Modulgrenzen hinweg gespeichert oder direkt gelesen werden.
+Diese strikte Trennung schützt die fachlichen Grenzen, verhindert enge Kopplung zwischen Modulen und unterstützt eine spätere Evolution der Architektur, beispielsweise hin zu Microservices.
+
+*Postgres:*
+
+PostgreSQL eignet sich sehr gut als Event Store, da eine tabellenartige Datenbankstruktur perfekt zu den Anforderungen passt.
+Jeder Event wird als einzelne Zeile gespeichert, wodurch die Events einfach nacheinander in die Tabelle geschrieben werden können.
+Da Events unveränderlich sind und niemals aktualisiert werden dürfen, passt die tabellarische Struktur ideal.
+Neue Einträge werden einfach angehängt, ohne bestehende Daten zu verändern.
+Dadurch lassen sich sowohl die chronologische Reihenfolge der Events als auch eine konsistente Historie leicht sicherstellen, was für Event-Sourcing-Ansätze zentral ist.
+
+*RabbitMQ:*
+
+RabbitMQ wird als Event Queue genutzt, um die von den Sensoren erzeugten Events zuverlässig an das Backend weiterzuleiten.
+Die Sensoren veröffentlichen ihre Events in der Queue, und das Backend liest sie asynchron aus.
+Dadurch entsteht eine entkoppelte, skalierbare Architektur, bei der das Backend nicht direkt an die Sensoren gebunden ist und Lastspitzen problemlos abgefangen werden können.
+
+#figure(
+  image("./doc/architecture/c4/level-2-container/level-2-0.svg"),
+  caption: [
+    Container
+  ],
+) <container>
+
+=== Component
+
+In Abbildung @component ist die Komponentenstruktur des Backend von Parkflow dargestellt.
+Für jeden der Bounded Context gibt es ein eigenes Modul.
+Die Pfeile zeigen den Fluss der Events zwischen den Modulen das über ein internes Event System realisiert wird.
+Die Module sind dabei so gestaltet, dass sie möglichst unabhängig voneinander arbeiten können.
+Zusätzlich dazu gibt es ein gemeinsames `common` Modul für gemeinsame Funktionalitäten das von den einzelnen Contexten genutzt werden darf.
+
+#figure(
+  image("./doc/architecture/c4/level-3-components/level-3-0.svg"),
+  caption: [
+    Component
+  ],
+) <component>
+
+=== Code
+
+In Abbildung @code ist die interne Struktur des Moduls `ParkingInventory` dargestellt.
+Jedes Modul besteht auf der obersten Ebene aus den zwei Paketen `api` und `core`.
+Das `api` Paket enthält den Code der von anderen Modulen genutzt werden darf.
+Dazu gehören die Events die ein Modul veröffentlich, die gemeinsam genutzten Value objects und Schnittstellen für die Interaktion mit dem Modul.
+
+Das `core` Paket enthält die interne Implementierung des Moduls und darf von anderen Modulen nicht genutzt werden.
+Dabei ist das `core` Paket als hexagonale Architektur umgesetzt.
+Das `core` Paket besteht aus 3 Hauptpaketen:
+- *infrastructure*: Die Infrastruktur enthält die technische Umsatzung die als Adapter implementiert werden. Über die Adapter werden die Datenbanken angebunden, die Rest und RabbitMQ Schnittstellen implementiert und weitere technische Details umgesetzt.
+- *application*: Die Application Schicht enthält die Ports die von den Adapter implementiert werden. Die Hauptaufgabe dieser Schicht ist es die Ressourcen die für einen Usecase benötigt werden zu koordinieren. Dabei soll möglichst wenig fachliche Logik implementiert werden.
+- *domain*: Die Domain Schicht enthält die fachliche Logik des Moduls. Hier werden die Aggregates, Entities, Value Objects und Domain Services implementiert. Diese Schicht ist der Kern der Anwendung. Alle Abhängigkeiten zeigen auf diese Schicht während die Schicht selber so wenig wie möglich Abhängkeiten hat.
+
+Darüber hinaus gibt es noch das `common` Paket, das gemeinsame Funktionalitäten enthält, die von mehreren Modulen genutzt werden können.
+In Parkflow enthält das Modul die die Implementierung für das Event-Sourcing System und das interne Event-System.
+
+#figure(
+  image("./doc/architecture/c4/level-3-code/level-4-0.svg"),
+  caption: [
+    Component
+  ],
+) <code>
 
 == Aggregate Class
 
