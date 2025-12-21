@@ -1,0 +1,17 @@
+@startuml
+abstract class AggregateRoot {
+  +aggregateId: String
+  +aggregateType: String
+  +changes: MutableList\<BaseEvent\>
+  +version: Int
+  --
+  #whenEvent(event: BaseEvent): void
+  +apply(event: BaseEvent): void
+  +raiseEvent(event: BaseEvent): void
+  +clearChanges(): void
+}
+
+class BaseEvent
+
+AggregateRoot "1" --> "*" BaseEvent : uses
+@enduml

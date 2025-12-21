@@ -43,10 +43,6 @@ abstract class AggregateRoot(open val aggregateId: String, open val aggregateTyp
         version++
     }
 
-    fun loadEvents(events: MutableList<BaseEvent>) {
-        events.forEach { whenEvent(it) }
-    }
-
     fun clearChanges() {
         changes.clear()
     }

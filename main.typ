@@ -206,7 +206,7 @@ Die zentralen Herausforderungen einer EDA sind:
 EDA benutzt Events auf verschiedene Weise.
 Dazu gehören:
 - *Event Notification*: Dabei werden Events versendet, sobald ein bestimmtes Ereignis in einem System eingetreten ist. Diese Events enthalten in der Regel nur sehr wenige Informationen über das Ereignis selbst. Meist wird lediglich mitgeteilt, dass etwas passiert ist, häufig ergänzt um relevante Identifikatoren der beteiligten Entitäten. In vielen Fällen benötigt der Empfänger keine weiteren Informationen, da es ausreichend ist, zu wissen, dass der betreffende Sachverhalt abgeschlossen wurde. Nur in speziellen Situationen muss der Empfänger zusätzliche Daten beim ursprünglichen System anfordern, um den vollständigen Kontext zu erhalten.
-- *Event Sourcing*: n diesem Ansatz werden alle Änderungen des Systemzustands als eine chronologische Abfolge von Events persistiert. Der aktuelle Zustand kann jederzeit durch das erneute Abspielen dieser Events rekonstruiert werden. Dadurch entsteht ein vollständig nachvollziehbarer Verlauf aller Zustandsänderungen.
+- *Event Sourcing*: In diesem Ansatz werden alle Änderungen des Systemzustands als eine chronologische Abfolge von Events persistiert. Der aktuelle Zustand kann jederzeit durch das erneute Abspielen dieser Events rekonstruiert werden. Dadurch entsteht ein vollständig nachvollziehbarer Verlauf aller Zustandsänderungen.
 - *Event-Carried State Transfer*: Hier werden Events verwendet, die eine Statusänderung samt aller dafür notwendigen Daten enthalten. Der Empfänger kann seinen eigenen Zustand dadurch direkt und ohne zusätzliche Anfragen aktualisieren. Das Event trägt somit den gesamten fachlichen Kontext, der für den State Transfer erforderlich ist.
 @stack2022[p.~4-6]
 
@@ -1151,9 +1151,145 @@ class HexagonalArchitectureTests {
 Mit den ersten beiden Test werden die Abhängigkeiten zwischen den Schichten der hexagonalen Architektur überprüft.
 Die nächsten Tests überprüfen, ob Klassen mit bestimmten Namenskonventionen in den richtigen Paketen liegen.
 
-== Aggregate Class
-
 == Event Store
+
+In diesem Kapitel werde ich die Implementierung des Event Stores in Parkflow erläutern.
+Der Event Store ist ein zentrales Element in einem Event-Sourcing-System.
+Er speichert alle Events, die benötigt werden um den Zustand der Aggregate zu rekonstruieren.
+
+Der Event Store soll dabei folgende Anforderungen erfüllen:
+Ein Event Store ist eine Liste von Events.
+Jeder Eintrag in die Liste ist ein eigenes Event.
+Neue Events werden einfach an das Ende der Liste angehängt.
+Bestehende Events werden niemals verändert oder gelöscht @stack2022[p.~10].
+
+Ziel dieses Abschnittes ist es einen Genersichen Mechanismus zu erstellen, der folgenes ermöglicht:
+- Speichern von Events für verschiedene Aggregate Typen.
+- Abrufen von Events für ein bestimmtes Aggregate in der richtigen Reihenfolge.
+- Wiederherstellen des Zustands eines Aggregates durch das Anwenden der gespeicherten Events.
+- Unterstützung von Transaktionen, um sicherzustellen, dass mehrere Events atomar gespeichert werden können.
+- Events sollen asynchron verarbeitet werden können, um die Skalierbarkeit und Performance des Systems zu verbessern.
+- Events sollen in der Anwendung veröffentlicht werden können, damit andere Teile der Anwendung auf diese reagieren können.
+- Ein Snapshot Mechanismus soll implementiert werden, um die Wiederherstellung von Aggregates zu beschleunigen.
+
+Die konkrete implementierung ist im Repository unter #link("park-flow/src/main/kotlin/com/spruhs/parkflow/common/es/EventSourcing.kt") zu finden.
+
+=== Events
+
+Um das zu realisieren benötigt Parkflow verschiedene arten von Events, da Eventes in verschiedenen Teilen der Anwendung andere Anforderungen erfüllen müssen.
+
+Beide Event Klassen haben dabei selber keine Eigenschaften sondern sind reine Daten Container und sind in @event dargestellt.
+
+Die Klasse BaseEvent wird für die Kommunikation innerhalb des Systems genutzt.
+Es handelt sich dabei um eine abstrakte Klasse die von allen Events die innerhalb des Systems genutzt werden, erweitert wird.
+Das BaseEvent wird nur dazu genutzt, um die Daten die bei einem Event von einem Aggregate benötigt werden, zu verteilen.
+Dabei hat die Klasse nur zwei Attribute:
+- *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem das Event gehört.
+- *metaData*: Zusätzliche (optionale) Metadaten zum Event, die als ByteArray gespeichert werden.
+
+Mit den Events soll es möglich sein, den Zustand eines Aggregates her zu stellen.
+Dazu müssen die Events die zu einem Aggregate gehöhren aus der Datenbanek abgerufen werden und immer in der gleichen Rheihenfolge verarbeitet werden @stack2022[p.~102].
+Um diese Aufgabe zu erfüllen, werden weitere Attribute benötigt.
+Die BaseEvent Klasse wird von unserer Event Klasse mit weiteren Daten angereichert und damit für den Event Store nutzbar gemacht.
+Dabei werden folgende Attribute benötigt:
+- *id*: Eine eindeutige Identifikationsnummer für das Event.
+- *type*: Der Typ des Events, der angibt, welche Art von Ereignis es ist z.B. GateCreatedEvent.
+- *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem das Event gehört.
+- *aggregateType*: Der Typ des Aggregates, zu dem das Event gehört z.B. Gate.
+- *version*: Die Versionsnummer des Events, die angibt, in welcher Reihenfolge die Events für ein bestimmtes Aggregate auftreten. Die Versionsnummer wird inkrementiert, wenn ein neues Event für dasselbe Aggregate hinzugefügt wird.
+- *data*: Die eigentlichen Daten des Events, die als ByteArray gespeichert werden. Hier werden die Daten aus dem BaseEvent serialisiert und gespeichert.
+- *metaData*: Zusätzliche (optionale) Metadaten zum Event, die als ByteArray gespeichert werden.
+- *timestamp*: Der Zeitstempel, der angibt, wann das Event erstellt wurde.
+
+#figure(
+  image("./doc/eventsourcing/Event-0.svg"),
+  caption: [
+    Event und BaseEvent Klassen
+  ],
+) <event>
+
+=== AggregateRoot
+
+Die AggregateRoot Klasse ist die Basisklasse für alle Aggregates in Parkflow die den Event Sourcing Mechanismus nutzen.
+Sie stellt die grundlegenden Funktionen bereit, die jedes Aggregate benötigt, um Events zu verwalten und den Zustand wiederherzustellen.
+Die Klasse ist in @aggregate-root dargestellt.
+Die AggregateRoot Klasse hat folgende Attribute:
+- *aggregateId*: Die eindeutige Identifikationsnummer des Aggregates.
+- *aggregateType*: Der Typ des Aggregates z.B. Gate.
+- *changes*: Eine Liste von BaseEvent Objekten, die die Änderungen (Events) repräsentieren, die während der Lebensdauer des Aggregates aufgetreten sind.
+- *version*: Die aktuelle Versionsnummer des Aggregates, die angibt, wie viele Events bereits angewendet wurden.
+
+Ich werde einmal kurz den Ablauf der Nutzung der AggregateRoot Klasse erläutern, damit die Funktionen der Klasse verständlich werden.
+In einem Späteren Kapitel werde ich den Ablauf dann noch tiefergehend erläutern.
+
+Ich beschreibe hier erstmal den Ablauf für ein bereits existierendes Aggregate.
+Also ein Aggregate das schon einmal erstellt wurde und das schon ein paar Zustandsänderungen durchlaufen hat.
+Das Aggregate existiert also in Form von mehreren Events im Event Store.
+Jedes Event repräsentiert dabei eine Zustandsänderung des Aggregates und hat eine eigene Versionsnummer.
+Wenn das Aggregate jetzt von der Anwendung benötigt wird, werden zuerst alle Events für das Aggregate aus dem Event Store abgerufen.
+Die Events werden dabei in der Reihenfolge ihrer Versionsnummer sortiert.
+Danach wird eine neue Instanz des Aggregates erstellt.
+Anschließend werden die Events nacheinander auf das Aggregate angewendet dies geschieht über die Methode `raiseEvent`.
+Diese Methode nimmt ein BaseEvent als Parameter und ruft intern die Methode `whenEvent` auf.
+Die `whenEvent` Methode ist abstrakt und muss von jeder konkreten Aggregate Klasse implementiert werden.
+In der `whenEvent` Methode wird die Logik implementiert, die den Zustand des Aggregates basierend auf dem Event ändert.
+Wenn das Aggregate alle Events angewendet hat, ist sein Zustand wiederhergestellt und es kann in der Anwendung verwendet werden.
+Bei der Verwendung des Aggregates können neue Events erzeugt werden, die den Zustand des Aggregates weiter ändern.
+Diese Events werden über die Methode `apply` hinzugefügt.
+Die `apply` Methode fügt das neue Event zur Liste `changes` der Änderungen hinzu und inkrementiert die Versionsnummer des Aggregates und ruft ebenfalls die `whenEvent` Methode auf um den Zustand des Aggreages an zu passen.
+Die Events die in der Liste `changes` gespeichert sind, können später in den Event Store gespeichert werden um den Zustand des Aggregates zu persistieren.
+Nach dem Speichern der Events im Event Store, wird die Liste mit `clearChanges` geleert.
+
+
+#figure(
+  image("./doc/eventsourcing/AggregateRoot-0.svg"),
+  caption: [
+    AggregateRoot
+  ],
+) <aggregate-root>
+
+=== Snapshot
+
+Snapshots sind eine Optimierungstechnik im Event Sourcing, die dazu dient, die Wiederherstellung des Zustands eines Aggregates zu beschleunigen.
+Anstatt jedesmal alle Events von Anfang an anzuwenden, wird der Zustand des Aggregates zu einem bestimmten Zeitpunkt als Snapshot gespeichert.
+Dabei ist der Snapshot eine Momentaufnahme des Aggregates, die den aktuellen Zustand repräsentiert.
+Snapshot sind nur für die optimierung des Ladevorgangs von Aggregates gedacht.
+Beim wiederherstellen eines Aggregates wird zuerst der letzte Snapshot geladen und danach werden nur die Events angewendet, die nach dem Snapshot aufgetreten sind.
+Sie eigenen sich nicht zum Abfragen von Aggregates mit einem bestimmten Zustand.
+Der Snpashot von Parkflow ist in @snapshot dargestellt. Es handelt sich dabei um eine Klasse die ein reiner Daten Container ist.
+Ein Snapshot hat folgende Attribute:
+- *id*: Eine eindeutige Identifikationsnummer für den Snapshot.
+- *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem der Snapshot gehört.
+- *aggregateType*: Der Typ des Aggregates, zu dem der Snapshot gehört z.B. Gate.
+- *data*: Die eigentlichen Daten des Snapshots, die als ByteArray gespeichert werden. Hier wird der Zustand des Aggregates zum Zeitpunkt des Snapshots serialisiert und gespeichert.
+- *metaData*: Zusätzliche (optionale) Metadaten zum Snapshot, die als ByteArray gespeichert werden.
+- *version*: Die Versionsnummer des Snapshots, die angibt, bis zu welchem Event der Snapshot den Zustand des Aggregates repräsentiert.
+- *timestamp*: Der Zeitstempel, der angibt, wann der Snapshot erstellt wurde.
+
+
+#figure(
+  image("./doc/eventsourcing/Snapshot-0.svg"),
+  caption: [
+    Snapshot
+  ],
+) <snapshot>
+
+=== Aggregate Store
+
+Das Herzstück des Event Sourcing Mechanismus ist der Aggregate Store.
+Er ist zentral dafür verantwortlich, Aggregates zu laden und zu speichern.
+Weiterhin kümmert er sich um die Verwaltung von Snapshots.
+Auch werden über den Aggregate Store die Events in der Anwendung veröffentlicht.
+Der Aggregate Store ist in @aggregate-store dargestellt.
+
+#figure(
+  image("./doc/eventsourcing/AggregateStore-0.svg"),
+  caption: [
+    Aggregate Store
+  ],
+) <aggregate-store>
+
+== Aggregate Class
 
 == Event System
 
@@ -1166,6 +1302,5 @@ Die nächsten Tests überprüfen, ob Klassen mit bestimmten Namenskonventionen i
 = Evaluierung
 
 #bibliography("literatur.bib")
-
 
 #pagebreak()

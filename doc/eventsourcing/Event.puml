@@ -1,0 +1,17 @@
+@startuml
+  class Event {
+  - id : String
+  - type : String
+  - aggregateId : String
+  - aggregateType : String
+  - version : Int
+  - data : ByteArray
+  - metadata : ByteArray
+  - timeStamp : LocalDateTime
+  }
+
+    abstract class BaseEvent {
+    - aggregateId : String
+    - metadata : ByteArray
+    }
+@enduml

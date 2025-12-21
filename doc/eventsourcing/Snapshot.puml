@@ -1,0 +1,11 @@
+@startuml
+  class Snapshot {
+    + id : UUID
+    + aggregateId : String
+    + aggregateType : String
+    + data : ByteArray
+    + metaData : ByteArray
+    + version : Int = 0
+    + timeStamp : LocalDateTime
+  }
+@enduml

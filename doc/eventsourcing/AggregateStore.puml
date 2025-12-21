@@ -1,0 +1,55 @@
+@startuml
+  interface AggregateStore {
+    +suspend saveEvents(events: List<Event>)
+    +suspend loadEvents(aggregateId: String, version: Int): MutableIterable<Event>
+    +suspend save<T : AggregateRoot>(aggregate: T)
+    +suspend load<T : AggregateRoot>(aggregateId: String, aggregateType: Class<T>): T
+  }
+
+  interface DatabaseClient
+  interface TransactionalOperator
+  interface EventPublisher
+
+  class AggregateStoreImpl {
+    - dbClient: DatabaseClient
+    - operator: TransactionalOperator
+    - eventPublisher: EventPublisher
+    - serializerFactory: SerializerFactory
+    - snapshotFrequency: Int
+    + saveEvents(...)
+    + loadEvents(...)
+    + save(...)
+    + load(...)
+  }
+
+  class SerializerFactory <<Component>> {
+    - serializer: List\<Serializer\>
+    + getSerializer(aggregateType: String): Serializer
+  }
+
+  interface Serializer {
+    + serialize(event: BaseEvent, aggregate: AggregateRoot): Event
+    + deserialize(event: Event): BaseEvent
+    + aggregateTypeName(): String
+  }
+
+  abstract class AggregateRoot
+
+  class BaseEvent
+  class Event
+  class Snapshot
+
+AggregateStoreImpl ..|> AggregateStore
+AggregateStoreImpl ..> SerializerFactory : uses
+SerializerFactory ..> Serializer : returns
+Serializer ..> BaseEvent : "maps to"
+Serializer ..> Event : "maps to"
+AggregateRoot o-- "0..*" BaseEvent : changes
+
+AggregateStoreImpl ..|> DatabaseClient
+AggregateStoreImpl ..|> TransactionalOperator
+AggregateStoreImpl ..|> EventPublisher
+EventPublisher ..> BaseEvent : publishes
+DatabaseClient ..> Event : stores
+DatabaseClient ..> Snapshot : stores
+@enduml
