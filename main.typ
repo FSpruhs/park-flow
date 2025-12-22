@@ -942,7 +942,7 @@ Darüber hinaus verfügt der Parkplatz über verschiedene Sensoren, die die Akti
   ],
 ) <system-context>
 
-=== Container
+=== Container <container-chapter>
 
 Bei der Abbildung @container ist die Container-Architektur von Parkflow dargestellt.
 Die mit Rot markierten Container werden in dieser Arbeit nicht implementiert.
@@ -1033,13 +1033,14 @@ In Parkflow enthält das Modul die die Implementierung für das Event-Sourcing S
 
 === Spring Modulith
 
-Spring Modulith ist ein ein ein offizielles Spring-Projekt, das speziell für die Entwicklung modularer Monolithen entwickelt wurde.
+Spring Modulith #footnote[org.springframework.modulith:spring-modulith-starter-test] ist ein ein ein offizielles Spring-Projekt, das speziell für die Entwicklung modularer Monolithen entwickelt wurde.
 Es bietet eine Reihe von Werkzeugen und Best Practices, um die Strukturierung, Kommunikation und Verwaltung von Modulen innerhalb eines Monolithen zu sicher zu stellen.
 Spring Modulith etabliert Regeln und Konventionen, die sicherstellen, dass Module klar abgegrenzt sind und nur über definierte Schnittstellen miteinander kommunizieren.
 Als Standard dürfen Module nur auf Code zugreifen, der in der Paketstruktur unterhalb des eigenen Moduls liegt.
 Dies verhindert unkontrollierte Abhängigkeiten zwischen Modulen.
 Zusätzlich dazu können einzelne Pakete innerhalb eines Moduls als interface deklariert werden.
-Nur dieses interface darf von anderen Modulen genutzt werden.
+Nur dieses interface darf von anderen Modulen genutzt werden @springModulith.
+
 Im folgenden Codebeispiel ist das `api` Paket des Moduls `parking-inventory` als interface deklariert.
 
 ```kotlin
@@ -1274,6 +1275,66 @@ Ein Snapshot hat folgende Attribute:
   ],
 ) <snapshot>
 
+=== PostgreSQL
+
+Für die persistente Speicherung der Events und Snapshots wird in Parkflow eine PostgreSQL Datenbank genutzt.
+PostgreSQL eignet sich sehr gut als Event Store, da eine tabellenartige Datenbankstruktur zu den Anforderungen passt #footnote[siehe @container-chapter].
+
+Um die PostgreSQL Datenbank mit der Anwendung zu verbinden, wird der Spring Starter für R2DBC #footnote[org.springframework.boot:spring-boot-starter-data-r2dbc] genutzt.
+R2DBC (Reactive Relational Database Connectivity) ist eine Spezifikation für reaktive Datenbankzugriffe.
+Dadurch können asynchrone und nicht-blockierende Datenbankoperationen durchgeführt werden, was die Skalierbarkeit und Performance der Anwendung verbessert @springR2dbc.
+
+Für die Schema Migration wird Flyway #footnote[org.flywaydb:flyway-core] genutzt.
+Damit wird beim Start der Anwendung automatisch überprüft, ob die Datenbank auf dem aktuellen Stand ist und gegebenenfalls die notwendigen Migrationen durchgeführt @flyway.
+
+Wenn noch kein Schema vorliegt, führt Flyway die Migration `V1__initial_setup.sql` #footnote[park-flow/src/main/resources/db/migration/V1\_\_initial_setup.sql] aus um die Tabellen für den Event Store zu erstellen.
+Dabei werden die zwei Tabellen für die Events und Snapshots erstellt.
+Weiterhin wird ein Index für die Events und Snapshots Tabelle auf dem Attribut `aggregate_id` und `version` erstellt, um die Abfrage der Events für ein bestimmtes Aggregate zu beschleunigen.
+Auch wird die Tabelle Events in eine Partitionierte Tabelle umgewandelt, um die Performance bei großen Datenmengen zu verbessern.
+Die Partitionierung erfolgt dabei auf Basis des Attributs `aggregate_id`, sodass Events für verschiedene Aggregate in separaten Partitionen gespeichert werden.
+Auf dise Weise sind alle Events für ein bestimmtes Aggregate in der gleiche Partition gespeichert.
+Beim Abrufen eines bestimmten Aggregates müssen nur die Events aus der entsprechenden Partition gelesen werden, was die Abfragezeit reduziert.
+
+```sql
+CREATE TABLE IF NOT EXISTS parkflow.events
+(
+    event_id       VARCHAR(250) NOT NULL CHECK ( event_id <> '' ),
+    aggregate_id   VARCHAR(250) NOT NULL CHECK ( aggregate_id <> '' ),
+    aggregate_type VARCHAR(250) NOT NULL CHECK ( aggregate_type <> '' ),
+    event_type     VARCHAR(250) NOT NULL CHECK ( event_type <> '' ),
+    data           BYTEA,
+    metadata       BYTEA,
+    version        SERIAL       NOT NULL,
+    timestamp      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                                 PRIMARY KEY (event_id, aggregate_id)
+    ) PARTITION BY HASH (aggregate_id);
+
+CREATE INDEX IF NOT EXISTS aggregate_id_aggregate_version_idx ON parkflow.events USING btree (aggregate_id, version ASC);
+
+CREATE TABLE IF NOT EXISTS events_partition_hash_1 PARTITION OF parkflow.events
+    FOR VALUES WITH (MODULUS 3, REMAINDER 0);
+
+CREATE TABLE IF NOT EXISTS events_partition_hash_2 PARTITION OF parkflow.events
+    FOR VALUES WITH (MODULUS 3, REMAINDER 1);
+
+CREATE TABLE IF NOT EXISTS events_partition_hash_3 PARTITION OF parkflow.events
+    FOR VALUES WITH (MODULUS 3, REMAINDER 2);
+
+CREATE TABLE IF NOT EXISTS parkflow.snapshots
+(
+    snapshot_id    UUID PRIMARY KEY         ,
+    aggregate_id   VARCHAR(250) UNIQUE NOT NULL CHECK ( aggregate_id <> '' ),
+    aggregate_type VARCHAR(250)        NOT NULL CHECK ( aggregate_type <> '' ),
+    data           BYTEA,
+    metadata       BYTEA,
+    version        SERIAL              NOT NULL,
+    timestamp      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                                 UNIQUE (aggregate_id)
+    );
+
+CREATE INDEX IF NOT EXISTS aggregate_id_aggregate_version_idx ON parkflow.snapshots USING btree (aggregate_id, version);
+```
+
 === Aggregate Store
 
 Das Herzstück des Event Sourcing Mechanismus ist der Aggregate Store.
@@ -1296,8 +1357,6 @@ Der Aggregate Store ist in @aggregate-store dargestellt.
 == Domain Modul
 
 == View Modul
-
-== Spring Modulith
 
 = Evaluierung
 
