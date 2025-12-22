@@ -1646,7 +1646,270 @@ class GateEventSerializer : Serializer {
 }
 ```
 
-== Aggregate Class
+=== Event Publisher
+
+Für das Veröffentlichen der Events in der Anwendung wird das Interface `EventPublisher` genutzt.
+
+```kotlin
+fun interface EventPublisher {
+    fun publish(events: List<BaseEvent>)
+}
+```
+
+Die konkrete Implementierung des Event Publishers erfolgt in der Klasse `EventPublisherImpl`.
+Hier wird der, von Spring zur Verfügung gestellte, ApplicationEventPublisher genutzt um die Events zu veröffentlichen.
+
+```kotlin
+@Service
+class EventPublisherImpl(
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val eventMetrics: EventMetrics,
+) : EventPublisher {
+    private val log = getLogger(javaClass)
+
+    override fun publish(events: List<BaseEvent>) {
+        events.forEach {
+            eventMetrics.springPublished.increment()
+
+            log.info("Publish event: ${it.javaClass.simpleName}, aggregateId: ${it.aggregateId}")
+            applicationEventPublisher.publishEvent(it)
+        }
+    }
+}
+```
+
+== Beispiel: Gate Aggregate
+
+In diesem Kapitel werde ich die Implementierung des Gate Aggregates und die dazugehörigen Events, Ports, Adapter und Projektionen erläutern.
+Dabei steht das Gate Aggregate stellvertretend für die Aggregates die in ParkingInventory und CustomerAccess benutzt werden.
+Die Struktur und die auftretenden Herasuforderungen ähneln sich bei allen Aggregates.
+Ziel ist ist es das Aggregate, dass bei der Modellierung in @bounded-contexts modelliert wurde, in Code umzusetzen und benutzbar zu machen.
+Die Architektur wurde bereits in @code dargestellt.
+
+=== Aggregate
+
+Bei der Implementierung fangen ich bei dem Kern der Anwendung an und erstelle zunächst das Aggregate selber im Domain Layer #footnote[com.spruhs.parkflow.parkinginventory.core.domain.Gate.kt].
+Das Gate Aggregate erbt von der AggregateRoot Klasse und überschreibt das Attribut `aggregateId` und `whenEvent`.
+Für den `aggregateType` wird eine Konstante genutzt.
+Dann werden weitere Attrbibute definiert die den Zustand des Gates repräsentieren.
+
+- *gateType*: Value Object das den Typ des Gates repräsentiert (Entrance, Exit) und im Api Modul definiert ist.
+- *name*: Value Object das den Namen des Gates repräsentiert. Die validierung des Namens erfolgt im Value Object selber.
+- *activationState*: Value Object das den Aktivierungszustand des Gates repräsentiert (Activated, Deactivated).
+- *removed*: Ein Boolean Attribut das angibt ob das Gate entfernt wurde. Beim entfernen von Gates bleibt das Gate im System erhalten um die Historie zu bewahren. Dies wird auch als Soft Delete bezeichnet.
+
+Als nächste werden die Commands als Methode definiert die das Gate Aggregate verarbeiten kann.
+Dabei wird das `CreateGateCommand` als statische Methode definiert, da das Gate Aggregate noch nicht existiert.
+An dieser Stelle wird die Hauptlogik der Commands implementiert #footnote[Das Gate Aggregate selber besitzt wenig Logik. Die anderen Aggregates haben deutlich mehr, werden aber aus gründen der Übersicht hier nicht Dargestellt, können aber im Repository angeschaut werden.].
+Bei den Command Methoden vom Gate Aggregate wird z.B. geprüft ob das Gate bereits entfernt wurde.
+Wenn das Ausführen einer Command Methode zu einem Zustandsveränderung des Gates führt, wird ein entsprechendes Event erzeugt und über die `apply` Methode hinzugefügt.
+Die Apply Methode sorgt dafür, dass das Event in der Liste der Änderungen gespeichert wird und die `whenEvent` Methode aufgerufen wird um den Zustand des Gates anzupassen.
+Die `whenEvent` Methode ist so überschrieben, dass die verschiedenen Event Typen verarbeitet werden und den Zustand des Gates anpassen.
+Beim speichern des Gates im Event Store werden dann die in der Liste gespeicherten Events persistiert und veröffentlicht.
+
+```kotlin
+class GateAggregate(override val aggregateId: String) : AggregateRoot(aggregateId, TYPE) {
+    var gateType: GateType = GateType.ENTRANCE
+    var name: GateName = GateName("DEFAULT")
+    var activationState: ActivationState = ActivationState.ACTIVE
+    var removed: Boolean = false
+
+    override fun whenEvent(event: BaseEvent) {
+        when (event) {
+            is GateCreatedEvent -> handleGateCreatedEvent(event)
+            is GateActivatedEvent -> this.activationState = ActivationState.ACTIVE
+            is GateDeactivatedEvent -> this.activationState = ActivationState.INACTIVE
+            is GateRemovedEvent -> this.removed = true
+
+            else -> throw UnknownEventTypeException(event)
+        }
+    }
+
+    private fun handleGateCreatedEvent(event: GateCreatedEvent) {
+        this.name = event.name
+        this.gateType = event.gateType
+    }
+
+    private fun ensureNotRemoved() {
+        require(!removed) { "ParkingSpot has been removed and cannot accept commands anymore." }
+    }
+
+    fun activate() {
+        ensureNotRemoved()
+        if (activationState == ActivationState.ACTIVE) return
+
+        apply(GateActivatedEvent(aggregateId))
+    }
+
+    fun deactivate() {
+        ensureNotRemoved()
+        if (activationState == ActivationState.INACTIVE) return
+
+        apply(GateDeactivatedEvent(aggregateId))
+    }
+
+    fun remove() {
+        ensureNotRemoved()
+
+        apply(GateRemovedEvent(aggregateId))
+    }
+
+    companion object {
+        const val TYPE = "Gate"
+
+        fun create(
+            gateType: GateType,
+            name: GateName,
+        ) = GateAggregate(generateId())
+            .also { it.apply(GateCreatedEvent(it.aggregateId, gateType, name)) }
+    }
+}
+```
+
+=== Projection
+
+Ebenfalls im Domain Layer befinden sich die Projektionen. 
+Dabei sind die Gate Events teil der ParkingInventory Projektion #footnote[com.spruhs.parkflow.parkinginventory.core.domain.ParkingInventory.kt].
+Projektionen sind dafür da, um den aktuellen Zustand von Read-Models zu verwalten.
+Die ParkingInventory Projektion verwaltet den aktuellen Zustand aller Gates und Parkplätze im System.
+Dabei enthalten Projektionen so wenig Logik wie möglich und sind hauptsächlich dafür da, um den aktuellen Zustand zu speichern und abzurufen.
+
+```kotlin
+data class ParkingInventoryProjection(
+    val gates: MutableList<GateProjection> = mutableListOf(),
+    val parkingSpots: MutableList<ParkingSpotProjection> = mutableListOf(),
+)
+
+data class GateProjection(
+    val gateId: String,
+    val name: String,
+    val type: GateType,
+    val state: ActivationState = ActivationState.ACTIVE,
+)
+
+data class ParkingSpotProjection(
+    val parkingSpotId: String,
+    val name: String,
+    val types: List<String>,
+    val state: ActivationState = ActivationState.ACTIVE,
+    val price: String?,
+)
+```
+
+=== UseCases
+
+Damit die Commands des Gate Aggregates von außen aufgerufen werden können, werden UseCases Ports im Application Layer erstellt #footnote[package com.spruhs.parkflow.parkinginventory.core.application.GateUseCases].
+Diese Ports können dann über die Adapter implementiert werden.
+Für jeden Command des Gate Aggregates wird eine Methode im UseCase Port definiert.
+Der ablauf in den UseCases ist immer sehr ähnlich.
+Zuerst wird der Aggregate Store genutzt um das entsprechende Aggregate zu laden.
+Danach wird die entsprechende Command Methode auf dem Aggregate aufgerufen.
+Zum Schluss wird das Aggregate wieder im Aggregate Store gespeichert und die Events werden veröffentlicht.
+Die UseCases übernehme aber auch noch zusätzliche Aufgaben wie z.B. das Laden von weiteren Ressourcen oder das Validieren von Zuständen die nicht innerhalb des Aggregate überprüft werden können.
+Insgesamt kann man sagen, dass die UseCases die Orchestrierung der verschiedenen Komponenten übernehmen um die Commands zu verarbeiten.
+
+Bei den Gate UseCases gibt es zwei Herausforderungen die gelöst werden müssen.
+
+1. Beim ausführen von Commands kann es zu konkurrierenden Schreibzugriffen auf das gleiche Gate kommen.
+   Dies kann passieren, wenn mehrere Commands gleichzeitig auf das gleiche Gate ausgeführt werden.
+   Dies kann zu Inkonsistenzen im Zustand des Gates führen.
+2. Beim erstellen von neuen Gates muss geprüft werden, ob der Name des Gates bereits existiert.
+   Da GateAggregates nicht dafür zuständig sind, den globalen Zustand zu kennen, muss diese Prüfung außerhalb des Aggregates erfolgen.
+   Genau dafür sind die Projektionen da.
+   Hier ergibt sich jedoch das Problem, dass durch die eventuelle Konsistenz der Projektionen.
+   Wenn ein Command bereits erstellt hat, aber die Projektion noch nicht aktualisiert wurde, könnte es passieren, dass der Name des Gates doppelt vergeben wird.
+
+Die erste Herausforderung lässt sich durch einen Mutex aus dem kotlinx.coroutines Paket lösen.
+Mit einem Mutex kann ein kritischer Abschnitt geschützt werden, sodass immer nur ein Command gleichzeitig auf das gleiche Gate zugreifen kann.
+Mit der Mutex Klasse implementiere ich einen generischen Lock Mechanismus mit dem das Laden und Speichern von Aggregates geschützt werden kann #footnote[com.spruhs.parkflow.common.helper.KeyedMutex.kt].
+
+Die Klasse KeyedMutex enthält eine ConcurrentHashMap die für jeden Schlüssel (in diesem Fall die AggregateId) einen eigenen Mutex speichert.
+Mit der Methode `withKeyLock` kann ein kritischer Abschnitt geschützt werden.
+Die Methode bekommt einen Schlüssel und einen Block als Parameter.
+Zuerst wird der Mutex für den Schlüssel aus der Map geholt oder neu erstellt.
+Dann wird ein neuer geschützter Abschnitt mit dem Mutex erstellt in dem der Block ausgeführt wird.
+Anschließend wird der Mutex aus der Map entfernt.
+Auf diese Weise wird sichergestellt, dass immer nur ein Command gleichzeitig auf das gleiche Aggregate zugreifen kann.
+Dadurch kann die gleiche Funktion mehrere verschiedene Aggregates nebenläufig verarbeiten ohne sich gegenseitig zu blockieren und gleichzeitig konkurrierende Schreibzugriffe auf das gleiche Aggregate verhindern.
+
+```kotlin
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.ConcurrentHashMap
+
+class KeyedMutex<K> {
+    private val mutexes = ConcurrentHashMap<K, Mutex>()
+
+    suspend fun <T> withKeyLock(
+        key: K,
+        block: suspend () -> T,
+    ): T {
+        val mutex = mutexes.computeIfAbsent(key) { Mutex() }
+
+        return try {
+            mutex.withLock {
+                block()
+            }
+        } finally {
+            mutexes.remove(key, mutex)
+        }
+    }
+}
+```
+
+Mit dem KeyedMutex kann die erste Herausforderung in den Gate UseCases gelöst werden.
+Für die zweite Herausforderung wird der ParkingInventoryService genutzt #footnote[der Service wird noch für andere Aufgaben genutzt, aber hier wird nur die Gate Name Reservierung erläutert. com.spruhs.parkflow.parkinginventory.core.application.ParkingInventoryService.kt].
+Der ParkingInventoryService stellt Methoden bereit um auf die ParkingInventory Projektion zuzugreifen.
+Der Service bietet die Methode `reserveGateName` an um einen Gate Namen zu reservieren.
+Der Service hat eine eigene Map mit reservierten Gate Namen und einem TimeStamp.
+Wenn ein Gate Name reserviert werden soll, wird zuerst geprüft ob der Name bereits in der Map existiert.
+Weiterhin wird geprüft ob der Name in der Projektion existiert.
+Wenn der Name bisher nicht existiert, wird der Name in der Map mit dem aktuellen TimeStamp gespeichert.
+Wenn dann ein Gate erstellt wurde, wird der Service über das `GateCreatedEvent` informiert um den Namen aus der Map zu entfernen.
+Ebenfalls hat der Service eine Scheduled Methode aus dem Spring Framework, die intervallmäßig die reservierten Namen überprüft und alle Einträge entfernt, die älter als eine bestimmte Zeit sind.
+Da der Service vor dem erstellen eines Gates den Namen reserviert, kann sichergestellt werden, dass der Name nicht doppelt vergeben wird wenn mehrere Commands gleichzeitig ausgeführt werden und die Projektion eventuell noch nicht aktuell ist.
+Bei dem Service handelt es sich um einen Spring Service der in der Anwendung nur einmal existiert (Singleton).
+Somit erfolgt die Verwaltung der reservierten Namen zentral und konsistent.
+
+```kotlin
+@Service
+class ParkingInventoryService(private val repository: ParkingInventoryRepositoryPort) {
+
+    ...
+    
+    private val reservedGateNames: MutableMap<GateName, Instant> = mutableMapOf()
+    
+    @Scheduled(fixedRate = 60 * 1000)
+        private fun cleanupExpiredReservations() {
+            val now = Instant.now()
+            reservedGateNames.entries.removeIf { (_, reservedAt) -> isReservationTimeOver(reservedAt, now) }
+    
+            reservedParkingSpotNames.entries.removeIf { (_, reservedAt) -> isReservationTimeOver(reservedAt, now) }
+        }
+
+    private fun isReservationTimeOver(
+        reservedAt: Instant,
+        now: Instant,
+    ) = Duration.between(reservedAt, now).toMinutes() > RESERVATION_TIME_IN_MINUTES
+        
+    suspend fun reserveGateName(name: GateName) {
+        require(name !in reservedGateNames.keys) { "Gate name already exists" }
+        require(!repository.existsGateName(name)) { "Gate name already exists" }
+
+        reservedGateNames[name] = Instant.now()
+    }
+    
+    suspend fun handleGateCreatedEvent(event: GateCreatedEvent) {
+        repository.save(event.toProjection())
+
+        reservedGateNames.remove(event.name)
+    }
+                
+    ...
+}
+```
+
+
 
 == Event System
 
