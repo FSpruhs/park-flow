@@ -1350,6 +1350,302 @@ Der Aggregate Store ist in @aggregate-store dargestellt.
   ],
 ) <aggregate-store>
 
+
+*AggregateStore:*
+
+Der Aggregate Store stellt seine Funktionalität über das Interface `AggregateStore` bereit.
+
+```kotlin
+interface AggregateStore {
+    suspend fun saveEvents(events: List<Event>)
+
+    suspend fun loadEvents(
+        aggregateId: String,
+        version: Int,
+    ): MutableIterable<Event>
+
+    suspend fun <T : AggregateRoot> save(aggregate: T)
+
+    suspend fun <T : AggregateRoot> load(
+        aggregateId: String,
+        aggregateType: Class<T>,
+    ): T
+}
+```
+
+Es gibt jeweils eine Methode zum Speichern und Laden von Events und Aggregates.
+Die Methoden haben alle das `suspend` Schlüsselwort.
+Das bedeutet, dass diese Funktionen blockieren können.
+Die Funktionen können nur innerhalb einer Coroutine aufgerufen werden.
+Wenn beim ausführen der Funktion eine blockierende Operation durchgeführt werden muss, wird die Coroutine pausiert und der aktuelle Thread kann für andere Aufgaben genutzt werden.
+Dadurch wird asynchrones und nicht-blockierendes Verhalten ermöglicht, was die Skalierbarkeit und Performance der Anwendung verbessert @coroutinesBasics.
+
+*AggregateStoreImpl:*
+
+Die konkrete Implementierung des Aggregate Stores erfolgt in der Klasse `AggregateStoreImpl`.
+Diese Klasse implementiert das Interface `AggregateStore` und nutzt dabei folgende Komponenten, Pakete und Attribute:
+- *DatabaseClient*: Der DatabaseClient von R2DBC wird genutzt, um asynchrone und nicht-blockierende Datenbankoperationen durchzuführen.
+- *TransactionalOperator*: Der TransactionalOperator von Spring wird genutzt, um Transaktionen zu verwalten und sicherzustellen, dass mehrere asynchrone Datenbankoperationen atomar ausgeführt werden.
+- *EventPublisher*: Der EventPublisher wird genutzt, um Events in der Anwendung zu veröffentlichen, damit andere Teile der Anwendung auf diese reagieren können.
+- *SerializerFactory*: Die SerializerFactory wird genutzt, um die Serialisierung und Deserialisierung der Events zu verwalten.
+- *snapshotInterval*: Das snapshotInterval Attribut gibt an, wie viele Events zwischen zwei Snapshots liegen sollen.
+
+In der Klasse werden merhere SQL-Statements, für das laden und speichern von Events und Snpashots, als Konstante definiert.
+Über den DatabaseClient werden diese SQL-Statements asynchron ausgeführt.
+Als Beispiel ist hier das Speichern und Laden von Events dargestellt.
+
+```kotlin
+
+    override suspend fun saveEvents(events: List<Event>) {
+        return events.forEach { saveEvent(it) }
+    }
+
+    private suspend fun saveEvent(event: Event) {
+        return dbClient.sql(SAVE_EVENT_QUERY)
+            .bind(EventSourcingConstants.EVENT_ID, event.id ?: "")
+            .bind(EventSourcingConstants.AGGREGATE_ID, event.aggregateId)
+            .bind(EventSourcingConstants.AGGREGATE_TYPE, event.aggregateType)
+            .bind(EventSourcingConstants.EVENT_TYPE, event.type)
+            .bind(EventSourcingConstants.VERSION, event.version)
+            .bind(EventSourcingConstants.DATA, event.data)
+            .bind(EventSourcingConstants.METADATA, event.metadata)
+            .bind(EventSourcingConstants.TIMESTAMP, event.timeStamp)
+            .await()
+    }
+
+    private const val SAVE_EVENT_QUERY = """
+            INSERT INTO parkflow.events
+                (event_id, aggregate_id, aggregate_type, event_type, data, metadata, version, timestamp)
+            VALUES
+                (:event_id, :aggregate_id, :aggregate_type, :event_type, :data, :metadata, :version, :timestamp)
+        """
+
+        override suspend fun loadEvents(
+            aggregateId: String,
+            version: Int,
+        ): MutableIterable<Event> {
+            return withContext(Dispatchers.IO) {
+                dbClient.sql(LOAD_EVENTS_QUERY)
+                    .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
+                    .bind(EventSourcingConstants.VERSION, version)
+                    .map { row, meta -> eventFromRow(row, meta) }
+                    .all()
+                    .toIterable()
+            }
+        }
+
+    private fun eventFromRow(
+                row: Row,
+                meta: RowMetadata,
+            ) = Event(
+                type = row.get(EventSourcingConstants.EVENT_TYPE, String::class.java) ?: "",
+                aggregateId = row.get(EventSourcingConstants.AGGREGATE_ID, String::class.java) ?: "",
+                aggregateType = row.get(EventSourcingConstants.AGGREGATE_TYPE, String::class.java) ?: "",
+                id = row.get(EventSourcingConstants.EVENT_ID, String::class.java) ?: "",
+                version = row.get(EventSourcingConstants.VERSION, Int::class.java) ?: 0,
+                data = row.get(EventSourcingConstants.DATA, ByteArray::class.java) ?: byteArrayOf(),
+                metadata = row.get(EventSourcingConstants.METADATA, ByteArray::class.java) ?: byteArrayOf(),
+                timeStamp = row.get(EventSourcingConstants.TIMESTAMP, LocalDateTime::class.java) ?: LocalDateTime.now(),
+            )
+
+    private const val LOAD_EVENTS_QUERY = """
+            SELECT event_id, aggregate_id, aggregate_type, event_type, data, metadata, version, timestamp
+            FROM parkflow.events e
+            WHERE e.aggregate_id = :aggregate_id
+              AND e.version > :version
+            ORDER BY e.version ASC
+        """
+```
+*Speichern von Aggregates:*
+
+Das Speichern von Aggregates erfolgt über die Methode `save`.
+Diese Methode bekommt ein Aggregate als Parameter.
+Die Methode speichert alle neuen Events die im Aggregate in der Liste `changes` gespeichert sind.
+Danach wird die Liste geleert.
+Im ersten Schritt holt sich die Methode über die SerializerFactory den passenden Serializer für das Aggregate.
+Danach werden die BaseEvents in Events umgewandelt.
+Im nächsten Schritt wird ein neuer reactiver Transactional Context erstellt mit der spring Methode `operator.executeAndAwait`.
+Innerhalb dieses Contexts ist das ausführen von `suspend` Funktionen möglich und alle Datenbankoperationen werden in einer Transaktion ausgeführt.
+In dem Context wird als erstes eine Lock für das Aggregate gesetzt um konkurrierende Schreibzugriffe zu verhindern.
+Wenn die gesamte Transaktion erfolgreich abgeschlossen wurde, wird der Lock automatisch wieder freigegeben.
+Danach werden die Events nacheinander gespeichert.
+Weiterhin wird geprüft, ob ein Snapshot erstellt werden muss.
+Wenn ein Snapshot erstellt werden muss, wird dieser ebenfalls gespeichert.
+Dabei wird der aktuelle Snapshot des Aggregates überschrieben, wenn einer existiert.
+Dadurch gibt es immer nur einen Snapshot pro Aggregate.
+Danach werden die Events über den EventPublisher in der Anwendung veröffentlicht.
+Zum Schluss wird die Liste der Änderungen im Aggregate geleert, damit diese nicht erneut gespeichert werden.
+
+```kotlin
+    override suspend fun <T : AggregateRoot> save(aggregate: T) {
+        val serializer = serializerFactory.getSerializer(aggregate::class.java.simpleName)
+        val events = aggregate.changes.map { serializer.serialize(it, aggregate) }
+
+        operator.executeAndAwait {
+            if (aggregate.version > 1) handleConcurrency(aggregate.aggregateId)
+
+            saveEvents(events)
+
+            if (aggregate.version % snapshotFrequency == 0) saveSnapshot(aggregate)
+
+            eventPublisher.publish(aggregate.changes.filter { !it.metadata.imported })
+            aggregate.clearChanges()
+        }
+    }
+    
+        private suspend fun handleConcurrency(aggregateId: String) {
+            dbClient.sql(HANDLE_CONCURRENCY_QUERY)
+                .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
+                .await()
+        }
+        
+        private const val HANDLE_CONCURRENCY_QUERY = """
+        SELECT aggregate_id
+        FROM parkflow.events
+        WHERE aggregate_id = :aggregate_id
+        ORDER BY version
+        LIMIT 1
+        FOR UPDATE
+    """
+```
+
+*Laden von Aggregates:*
+
+Das Laden von Aggregates erfolgt über die Methode `load`.
+Diese Methode bekommt die Identifikationsnummer und den Typ des Aggregates als Parameter.
+Im ersten Schritt holt sich die Methode über die SerializerFactory den passenden Serializer für das Aggregate.
+Danach wird geprüft ob für das Aggregate ein Snapshot existiert.
+Anschließend wird aus dem Snapshot das Aggregate wiederhergestellt.
+Wenn kein Snapshot gefunden wurde, wird eine neue Instanz des Aggregates erstellt.
+Danach werden alle Events die nach dem Snapshot aufgetreten sind, aus dem Event Store geladen und nacheinander auf das Aggregate angewendet.
+Zum Schluss wird das wiederhergestellte Aggregate zurückgegeben.
+
+```kotlin
+    override suspend fun <T : AggregateRoot> load(
+        aggregateId: String,
+        aggregateType: Class<T>,
+    ): T {
+        val serializer = serializerFactory.getSerializer(aggregateType.simpleName)
+        val snapshot = loadSnapshot(aggregateId)
+
+        val aggregate = getAggregateFromSnapshotClass(snapshot, aggregateId, aggregateType)
+
+        loadEvents(aggregateId, aggregate.version)
+            .map { serializer.deserialize(it) }
+            .forEach { aggregate.raiseEvent(it) }
+
+        if (aggregate.version == 0) throw AggregateNotFoundException(aggregateId, aggregateType.name)
+
+        return aggregate
+    }
+    
+    private suspend fun <T : AggregateRoot> getAggregateFromSnapshotClass(
+        snapshot: Snapshot?,
+        aggregateId: String,
+        aggregateType: Class<T>,
+    ): T {
+        if (snapshot == null) {
+            val defaultSnapshot =
+                EventSourcingUtils.snapshotFromAggregate(aggregate = getAggregate(aggregateId, aggregateType))
+            return EventSourcingUtils.getAggregateFromSnapshot(defaultSnapshot, aggregateType)
+        }
+
+        return EventSourcingUtils.getAggregateFromSnapshot(snapshot, aggregateType)
+    }
+```
+
+=== Serializer
+
+Um die Events in der Datenbank zu speichern, müssen diese serialisiert werden.
+Dazu gibt es für jeden Aggregate Typ einen eigenen Serializer.
+Die Serializer Factory verwaltet die verschiedenen Serializer und stellt den passenden Serializer für einen bestimmten Aggregate Typ bereit.
+
+```kotlin
+@Component
+class SerializerFactory(
+    private val serializer: List<Serializer>,
+) {
+    fun getSerializer(aggregateType: String): Serializer {
+        return serializer.firstOrNull {
+            it.aggregateTypeName() == aggregateType
+        } ?: throw IllegalArgumentException("Unknown aggregate type: $aggregateType")
+    }
+}
+```
+
+Ein Serializer implementiert das Interface `Serializer`.
+Dieses Interface definiert die Methoden zum Serialisieren und Deserialisieren von Events.
+
+```kotlin
+interface Serializer {
+    fun serialize(
+        event: BaseEvent,
+        aggregate: AggregateRoot,
+    ): Event
+
+    fun deserialize(event: Event): BaseEvent
+
+    fun aggregateTypeName(): String
+}
+```
+
+Jedes Aggregate hat einen eigenen Serializer der das Interface implementiert.
+Der Serializer wird in dem Api Modul des jeweiligen Bounded Contexts implementiert und somit vom Modul selber bereitgestellt.
+Als Beispiel ist hier der Serializer für das Gate Aggregate dargestellt.
+Über das enum GateEvent werden die verschiedenen Event Typen des Gate Aggregates definiert.
+Dabei bekommt jedes Event eine Version um spätere Änderungen an den Events zu ermöglichen.
+
+```kotlin
+enum class GateEvent {
+    GATE_CREATED_V1,
+    GATE_ACTIVATED_V1,
+    GATE_DEACTIVATED_V1,
+    GATE_REMOVED_V1,
+}
+
+@Component
+class GateEventSerializer : Serializer {
+    private val typeMapping: Map<Class<out BaseEvent>, GateEvent> =
+        mapOf(
+            GateCreatedEvent::class.java to GateEvent.GATE_CREATED_V1,
+            GateActivatedEvent::class.java to GateEvent.GATE_ACTIVATED_V1,
+            GateDeactivatedEvent::class.java to GateEvent.GATE_DEACTIVATED_V1,
+            GateRemovedEvent::class.java to GateEvent.GATE_REMOVED_V1,
+        )
+
+    private val classMapping: Map<String, Class<out BaseEvent>> =
+        typeMapping.entries.associateBy(
+            { it.value.name },
+            { it.key },
+        )
+
+    override fun serialize(
+        event: BaseEvent,
+        aggregate: AggregateRoot,
+    ): Event {
+        val type =
+            typeMapping[event::class.java]
+                ?: throw UnknownEventTypeException(event)
+
+        return Event(
+            aggregate = aggregate,
+            eventType = type.name,
+            data = EventSourcingUtils.writeValueAsBytes(event),
+            metadata = EventSourcingUtils.writeValueAsBytes(event.metadata),
+        )
+    }
+
+    override fun deserialize(event: Event): BaseEvent {
+        val clazz =
+            classMapping[event.type]
+                ?: throw UnknownEventTypeException("Unknown event type: ${event.type}")
+        return EventSourcingUtils.readValue(event.data, clazz)
+    }
+
+    override fun aggregateTypeName(): String = "GateAggregate"
+}
+```
+
 == Aggregate Class
 
 == Event System

@@ -46,9 +46,9 @@ Serializer ..> BaseEvent : "maps to"
 Serializer ..> Event : "maps to"
 AggregateRoot o-- "0..*" BaseEvent : changes
 
-AggregateStoreImpl ..|> DatabaseClient
-AggregateStoreImpl ..|> TransactionalOperator
-AggregateStoreImpl ..|> EventPublisher
+AggregateStoreImpl ..> DatabaseClient : uses
+AggregateStoreImpl ..> TransactionalOperator : uses
+AggregateStoreImpl ..> EventPublisher : uses
 EventPublisher ..> BaseEvent : publishes
 DatabaseClient ..> Event : stores
 DatabaseClient ..> Snapshot : stores

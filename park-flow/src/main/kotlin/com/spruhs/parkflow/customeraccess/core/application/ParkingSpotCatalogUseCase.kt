@@ -33,7 +33,7 @@ class ParkingSpotCatalogCommandPort(private val service: ParkingSpotCatalogServi
             is ParkingSpotActivatedEvent -> service.handleParkingSpotActivated(event)
             is ParkingSpotDeactivatedEvent -> service.handleParkingSpotDeactivated(event)
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 }

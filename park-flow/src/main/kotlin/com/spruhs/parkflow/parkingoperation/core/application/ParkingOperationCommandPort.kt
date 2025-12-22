@@ -41,7 +41,7 @@ class ParkingOperationCommandPort(private val service: ParkingOperatorService) {
 
             is ParkingSpotReprovidedEvent -> service.handleParkingSpotReprovided(event)
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 

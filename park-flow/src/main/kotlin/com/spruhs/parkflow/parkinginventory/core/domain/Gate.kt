@@ -24,7 +24,7 @@ class GateAggregate(override val aggregateId: String) : AggregateRoot(aggregateI
             is GateDeactivatedEvent -> this.activationState = ActivationState.INACTIVE
             is GateRemovedEvent -> this.removed = true
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 

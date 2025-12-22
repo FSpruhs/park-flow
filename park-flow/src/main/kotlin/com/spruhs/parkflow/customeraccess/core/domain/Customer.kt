@@ -30,7 +30,7 @@ class CustomerAggregate(override val aggregateId: String) : AggregateRoot(aggreg
             is CustomerParkingSpotRentedEvent -> handleRentedEvent(event)
             is CustomerParkingSpotCanceledEvent -> handleCanceledEvent(event)
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 

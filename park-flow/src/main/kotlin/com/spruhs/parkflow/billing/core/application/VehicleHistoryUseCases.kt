@@ -26,7 +26,7 @@ class VehicleHistoryCommandPort(private val service: VehicleHistoryService) {
             is CustomerVehicleAddedEvent -> service.handleVehicleAdded(event)
             is CustomerVehicleRemovedEvent -> service.handleVehicleRemoved(event)
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 }

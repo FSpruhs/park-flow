@@ -50,7 +50,7 @@ class ParkingInventoryCommandPort(private val service: ParkingInventoryService) 
             is GateDeactivatedEvent -> service.handleGateDeactivated(event)
             is GateRemovedEvent -> service.handleGateRemoved(event)
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 }

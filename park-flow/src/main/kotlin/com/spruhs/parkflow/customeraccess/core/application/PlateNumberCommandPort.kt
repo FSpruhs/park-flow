@@ -13,7 +13,7 @@ class PlateNumberCommandPort(private val service: PlateNumberService) {
             is CustomerVehicleAddedEvent -> service.handlePlateNumberAdded(event.plateNumber)
             is CustomerCreatedEvent -> service.handlePlateNumberAdded(event.plateNumber)
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 }

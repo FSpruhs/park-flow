@@ -24,7 +24,7 @@ class CustomerListCommandPort(private val service: CustomerListService) {
             is CustomerParkingSpotRentedEvent -> service.handleParkingSpotRented(event)
             is CustomerParkingSpotCanceledEvent -> service.handleParkingSpotCanceled(event)
 
-            else -> UnknownEventTypeException(event)
+            else -> throw UnknownEventTypeException(event)
         }
     }
 }
