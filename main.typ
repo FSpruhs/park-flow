@@ -196,11 +196,13 @@ Dabei werden die Vorteile der losen Kopplung genutzt, um Systeme zu entwickeln, 
 EDA ist eng mit Domain-Driven Design (DDD) verbunden, da Events in DDD eine zentrale Rolle einnehmen @khononov2022[p.~263].
 
 Zu den Vorteilen einer EDA gehören:
+
 - *Resilienz*: Durch die lose Kopplung der Komponenten können Fehler oder Ausfälle isoliert werden, ohne das Gesamtsystem zu beeinträchtigen.
 - *Agile Entwicklung*: Unabhängig arbeitende Teams können verschiedene Komponenten parallel entwickeln. Neue Komponenten lassen sich leicht an das bestehende System anbinden.
 - *Skalierbarkeit*: Komponenten können unabhängig voneinander skaliert werden, um unterschiedlichen Lastanforderungen gerecht zu werden.
 
 Die zentralen Herausforderungen einer EDA sind:
+
 - *Eventual Consistency*: Änderungen in einer Komponente werden nicht sofort global sichtbar.
 - *Verteilte und asynchrone Workflows*: Die Koordination von Abläufen über mehrere Komponenten hinweg kann komplex sein.
 
@@ -208,6 +210,7 @@ Die zentralen Herausforderungen einer EDA sind:
 
 EDA benutzt Events auf verschiedene Weise.
 Dazu gehören:
+
 - *Event Notification*: Dabei werden Events versendet, sobald ein bestimmtes Ereignis in einem System eingetreten ist. Diese Events enthalten in der Regel nur sehr wenige Informationen über das Ereignis selbst. Meist wird lediglich mitgeteilt, dass etwas passiert ist, häufig ergänzt um relevante Identifikatoren der beteiligten Entitäten. In vielen Fällen benötigt der Empfänger keine weiteren Informationen, da es ausreichend ist, zu wissen, dass der betreffende Sachverhalt abgeschlossen wurde. Nur in speziellen Situationen muss der Empfänger zusätzliche Daten beim ursprünglichen System anfordern, um den vollständigen Kontext zu erhalten.
 - *Event Sourcing*: In diesem Ansatz werden alle Änderungen des Systemzustands als eine chronologische Abfolge von Events persistiert. Der aktuelle Zustand kann jederzeit durch das erneute Abspielen dieser Events rekonstruiert werden. Dadurch entsteht ein vollständig nachvollziehbarer Verlauf aller Zustandsänderungen.
 - *Event-Carried State Transfer*: Hier werden Events verwendet, die eine Statusänderung samt aller dafür notwendigen Daten enthalten. Der Empfänger kann seinen eigenen Zustand dadurch direkt und ohne zusätzliche Anfragen aktualisieren. Das Event trägt somit den gesamten fachlichen Kontext, der für den State Transfer erforderlich ist.
@@ -296,6 +299,7 @@ Die Domain beschreibt somit den fachlichen Kontext, in dem die Software operiert
 
 Damit die Ziele der Domain erreicht werden können, wird sie in mehrere Subdomains unterteilt.
 Subdomains lassen sich in drei Kategorien einordnen:
+
 - *Core Subdomain*: Die Core Subdomain stellt die Haupttätigkeit der Organisation dar. Sie definiert, wodurch sich die Organisation von ihren Wettbewerbern abhebt, und repräsentiert das, was die Organisation besonders macht. Die Hauptentwicklung sollte sich auf die Core Subdomain konzentrieren, da hier der größte Mehrwert liegt.
 - *Supporting Subdomain*: Supporting Subdomains unterstützen die Core Subdomain dabei, ihre Ziele zu erreichen, bilden aber nicht das Hauptbetätigungsfeld der Organisation. Sie sind für den Gesamterfolg wichtig, liefern jedoch keinen direkten Wettbewerbsvorteil.
 - *Generic Subdomain*: Generic Subdomains sind allgemeine, standardisierte Bereiche, die viele Organisationen ebenfalls besitzen. Sie sind nicht spezifisch für die Organisation und bieten keinen Wettbewerbsvorteil. Solche Domains können häufig durch Standardlösungen oder Drittanbieter abgedeckt werden.
@@ -310,6 +314,7 @@ Ein zentrales Element von DDD ist die Ubiquitous Language („allgegenwärtige S
 Sie besagt, dass alle Beteiligten #footnote[z.B. Entwickler, Fachexperten, Architekten und weitere Stakeholder] eine gemeinsame Sprache verwenden, die sich aus der Domain ableitet.
 
 Die Ubiquitous Language dient mehreren Zwecken:
+
 - Sie erleichtert die Verständigung zwischen allen Beteiligten und stellt sicher, dass fachliche Anforderungen klar, präzise und einheitlich kommuniziert werden können.
 - Sie verhindert Übersetzungen zwischen unterschiedlichen Begrifflichkeiten, die in der Softwareentwicklung häufig zu Missverständnissen führen. In Projekten, in denen Entwickler, Product Owner und Fachexperten unterschiedliche Worte für dasselbe Konzept verwenden, entstehen oft Fehler, unklare Anforderungen oder ungenaue Implementierungen.
 - Sie bindet technische Begriffe nur insoweit ein, wie sie die fachliche Sprache unterstützen, und verhindert, dass technisches Vokabular die fachliche Sicht überlagert.
@@ -387,19 +392,14 @@ Aggregates gehören zu den zentralen Bausteinen von DDD.
 Sie spielen eine grundlegende Rolle, weil sie:
 
 - *Konsistenz garantieren*: Die innerhalb eines Aggregates definierten Regeln gelten immer und können nicht umgangen werden.
-
 - *Komplexität kontrollieren*: Statt große, schwer beherrschbare Objektstrukturen zu modellieren, zerschneidet man die Domäne in kleinere, klar abgegrenzte Einheiten.
-
 - *Transaktionen begrenzen*: Jedes Aggregate bildet den Rahmen für eine Transaktion. Dies verhindert ineffiziente oder gefährliche verteilte Transaktionen über mehrere Aggregate hinweg.
-
 - *Skalierbarkeit unterstützen*: Durch die Entkopplung der Aggregate können Systeme leichter horizontal skaliert werden.
-
 - *Einen stabilen Architekturrahmen schaffen*: Aggregates wirken als zentrale Strukturierungselemente, an denen sich Services, Anwendungslogik und Persistenz orientieren.
 
 Die Modellierung sinnvoller Aggregate ist eine der anspruchsvollsten Aufgaben im DDD @vernon2013[p.~347]. Typische Herausforderungen sind:
 
 - *Das richtige Granularitätsniveau finden*: Ein Aggregate darf nicht zu groß sein, da sonst Transaktionen schwerfällig werden. Ist es zu klein, gehen Konsistenzregeln verloren oder müssen außerhalb des Aggregats kontrolliert werden.
-
 - *Konsistenz vs. Performance ausbalancieren*: Zu viele invariantenbedingte Abhängigkeiten führen zu unnötig großen Aggregaten. Zu wenige führen zu verteilten, schwer kontrollierbaren Geschäftsregeln.
 
 === Domain Events
@@ -415,6 +415,7 @@ Alle Aggregates, die an dieser Zustandsänderung interessiert sind, können das 
 Auf diese Weise entsteht eine lose Kopplung zwischen den Aggregates, und Änderungen können asynchron verarbeitet werden.
 
 Domain Events haben zudem eine fachliche Bedeutung über die reine technische Umsetzung hinaus:
+
 - Sie dokumentieren, dass etwas tatsächlich geschehen ist, und machen Zustandsänderungen nachvollziehbar.
 - Sie fördern die Nachvollziehbarkeit und Transparenz innerhalb der Domäne, da jedes Event einen konkreten fachlichen Sachverhalt beschreibt.
 - Sie erleichtern die Kommunikation zwischen Entwicklern und Fachexperten, da sie direkt auf die Ubiquitous Language der Domäne abgebildet werden können.
@@ -474,6 +475,7 @@ Monolithen zeichnen sich durch ihre strukturelle Einfachheit aus. Da alle Kompon
 Dies macht sie insbesondere in frühen Projektphasen oder für kleinere Teams attraktiv.
 
 Vorteile von Monolithen sind:
+
 - *Einfache Entwicklung und Bereitstellung*: Da alle Komponenten in einer einzigen Anwendung enthalten sind, ist die Entwicklung und das Deployment vergleichsweise unkompliziert.
 - *Geringer Overhead*: Monolithen benötigen keine komplexe Infrastruktur für die Kommunikation zwischen verschiedenen Diensten, was den Overhead reduziert.
 - *Einfache Tests*: Integrationstests können leichter durchgeführt werden, da alle Komponenten in einer einzigen Anwendung laufen.
@@ -482,6 +484,7 @@ Mit zunehmender Größe eines Systems treten jedoch auch deutliche Nachteile zut
 
 Ein Monolith ohne klare modulare oder fachliche Struktur tendiert dazu, sich im Laufe der Zeit zu einem sogenannten Big Ball of Mud zu entwickeln @vernon2017[p.~16].
 Typische Symptome sind:
+
 - Komponenten referenzieren sich gegenseitig ohne klare Regeln.
 - Änderungen an einer Stelle führen zu unerwarteten Seiteneffekten an anderen Stellen.
 - Die Codebasis wird immer schwerer zu verstehen, weiterzuentwickeln und zu testen.
@@ -497,6 +500,7 @@ Häufig bildet ein Microservice einen oder mehrere Bounded Contexts ab und kapse
 Zudem kann jeder Service genau die Technologien, Datenbanken und Programmiersprachen verwenden, die für seine spezifische Aufgabe am besten geeignet sind @khononov2022[p.~255–256].
 
 Microservices bieten mehrere Vorteile:
+
 - Unabhängiges Deployment: Jeder Dienst kann getrennt entwickelt, veröffentlicht und aktualisiert werden, ohne dass andere Dienste neu ausgerollt werden müssen.
 - Skalierbarkeit: Dienste können individuell horizontal skaliert werden — dort, wo Last anfällt.
 - Höhere Fehlertoleranz: Der Ausfall eines einzelnen Dienstes muss nicht zwingend zu einem Ausfall der gesamten Anwendung führen, sofern geeignete Mechanismen eingesetzt werden.
@@ -557,6 +561,7 @@ Technische Aspekte wie werden nicht direkt innerhalb der Domäne implementiert.
 Damit die Domäne mit der Außenwelt kommunizieren kann, werden sogenannte Ports und Adapters #footnote[Deswegen wird die Hexagonale Architektur auch als Ports and Adapters Architektur bezeichnet].
 Ports definieren dabei die Schnittstellen, über die die Domäne mit externen Systemen interagiert.
 Dabei gibt es zwei Arten von Ports:
+
 - *Primary Ports* #footnote[Auch bekannt als Driving, Aktive oder Inbound Ports]: Diese Ports werden von externen Systemen aufgerufen, um Aktionen innerhalb der Domäne auszulösen. Sie repräsentieren die Eingangsseite der Domäne.
 - *Secondary Ports* #footnote[Auch bekannt als Driven oder Outbound Ports]: Diese Ports werden von der Domäne verwendet, um auf externe Systeme zuzugreifen. Sie repräsentieren die Ausgangsseite der Domäne.
 
@@ -693,81 +698,92 @@ Zusammen mit Spring Boot ergeben sich konkrete Werkzeuge und Frameworks, um die 
 Spring Boot unterstützt modulare Anwendungen, interne Event-Systeme und reactive Programmierung, wodurch die Umsetzung von EDA, Event Sourcing und modularem Aufbau vereinfacht wird.
 
 Insgesamt zeigt sich, dass die vorgestellten Konzepte und Technologien auf mehreren Ebenen ineinandergreifen:
+
 - DDD liefert die fachliche Modellierung und klare Abgrenzung von Verantwortlichkeiten.
 - Modulithen und hexagonale Architektur stellen eine saubere technische Struktur bereit.
 - EDA und Event Sourcing ermöglichen nachvollziehbare, asynchrone Kommunikation und Zustandsverwaltung.
--Kotlin und Spring Boot bieten die technische Grundlage für effiziente Implementierung, Nebenläufigkeit und Skalierbarkeit.
+- Kotlin und Spring Boot bieten die technische Grundlage für effiziente Implementierung, Nebenläufigkeit und Skalierbarkeit.
 
 Durch diese Kombination entsteht eine Softwarearchitektur, die sowohl fachlich präzise als auch technisch robust ist, leicht erweiterbar, wartbar und skalierbar und damit den Herausforderungen moderner, komplexer Anwendungen gerecht wird.
 
 = Implementierung
 
-In diesem Kapitel werde ich die Umsetzung der in den vorherigen Kapiteln vorgestellten Konzepte und Technologien in Form eines Beispielprojekts erläutern.
-Das Ziel ist es, die praktische Anwendung der theoretischen Grundlagen zu demonstrieren und aufzuzeigen, wie diese miteinander kombiniert werden können, um eine modulare, wartbare und skalierbare Softwarelösung zu erstellen.
-Als Domain für das Beispielprojekt habe ich eine fiktive Parkplatzverwaltungsanwendung gewählt.
-Der Grund für die Wahl dieser Domain liegt zum einen daran, dass ein Parkplatz zum einen einen klar abgegrenzten fachlichen Kontext darstellt der in der physischen Welt liegt.
-Die Anzahl der User ist an die reale Kapazität des Parkplatzes gebunden.
-Plötzliche Lastspitzen sind unwahrscheinlich.
-Zum anderen bieten Parkplätze eine gute Dynamik die mit Events dargestellt werden können.
-Fahrzeuge Fahren ein und aus, Parkplätze werden reserviert oder freigegeben.
-Die Domaine ist einfach erklärt und braucht kein Spezielles Fachwissen, darüber hinaus lassen sich schnell Anwendungsfälle beschreiben die Notwendig sind um Aspekte von DDD und EDA zu demonstrieren
-Der Code zu diesem Projekt ist auf meinem Github-Account unter #link("https://github.com/FSpruhs/park-flow") zu finden #footnote[In der README.md ist eine Kurzanleitung für das Repository].
+In diesem Kapitel wird die Umsetzung der in den vorherigen Kapiteln vorgestellten Konzepte und Technologien anhand eines Beispielprojekts erläutert. 
+Ziel ist es, die praktische Anwendung der theoretischen Grundlagen darzustellen und zu zeigen, wie diese miteinander kombiniert werden können, um eine modulare, wartbare und skalierbare Softwarelösung zu realisieren.
 
-== Vorstellung Parkflow
+Als Domain für das Beispielprojekt wurde eine fiktive Parkplatzverwaltungsanwendung gewählt. 
+Diese Domain zeichnet sich durch einen klar abgegrenzten fachlichen Kontext aus, der in der physischen Welt verortet ist. 
+Die Anzahl der Nutzer ist dabei an die reale Kapazität des Parkplatzes gebunden, wodurch plötzliche Lastspitzen als unwahrscheinlich angesehen werden können.
 
-Das Beispielprojekt trägt den Namen Parkflow.
-Mit der Anwendung soll es möglich sein Parkplätze zu verwalten, dabei sollen alle Eingänge und Ausgänge und jeder Parkplatz mit Sensoren#footnote[Das verhalten der Sensoren wird in dieser Arbeit simuliert] bestückt werden die die Aktionen der Fahrzeuge erkennen und entsprechende Events auslösen.
-Dadurch soll es möglich sein, viele Abläufe zu automatisieren.
+Darüber hinaus weist die Parkplatzdomain eine Reihe von Zustandsänderungen auf, die sich gut durch Events abbilden lassen. 
+Innerhalb des Systems entsteht dadurch ein dynamisches Verhalten, da Events fortlaufend den Zustand der Domain verändern und weitere fachliche Reaktionen auslösen können. 
+Dazu zählen unter anderem das Ein- und Ausfahren von Fahrzeugen sowie das Reservieren und Freigeben von Parkplätzen. 
+Die Domain ist vergleichsweise einfach verständlich und erfordert kein spezielles Fachwissen. 
+Gleichzeitig lassen sich typische Anwendungsfälle klar definieren, die notwendig sind, um zentrale Aspekte von DDD und EDA zu demonstrieren.
 
-Im ersten Schritt soll der Parkplatzbetreiber in der Lage sein, Parkplätze, Ein- und Ausgänge im System anzulegen und zu verwalten#footnote[Inventar löschen, kurzfristig deaktivieren/aktivieren, Preise Festlegen, Typen ändern].
-Dabei kann er verschiedene Typen von Parkplätzen anlegen, in dieser Arbeit gibt es Reguläre-Parkpätze, Behinderten-Parkplätze, Pakplätze für Elektrofahrzeuge und monatlich Mietbare Parkplätze geben.
+Der vollständige Quellcode des Beispielprojekts ist in meinem GitHub-Repository verfügbar. 
+In der Datei `README.md` befindet sich eine kurze Anleitung zur Nutzung des Repositories#footnote[GitHub-Repository: #link("https://github.com/FSpruhs/park-flow")].
 
-Als Kunde des Parkplatzes soll es zum einen Möglich sein, einen Account anzulegen und hier Zahlungsinformationen zu hinterlegen.
-Weiterhin kann der Kunde verschiedene Fahrzeuge zu registrieren über das Nummernschild.
-Auch soll es möglich sein, Parkplätze für einen Monat zu mieten.
+== Vorstellung von Parkflow
 
-Zu dem Verwalten der Parkplätze und Kunden gibt es auch einen laufenden Parkbetrieb der gesteuert werden soll.
-Wenn ein Fahrzeug bei einem Eingang vor Fährt wird über einen Sensor das Nummernschild eingelesen und geprüft ob das Fahrzeug registriert ist.
-Wenn das Fahrzeug registriert ist wird dem Fahrzeug ein Parkplatz zugewiese und angezeigt.
-Danach wird das Tor geöffnet und das Fahrzeug kann einfahren.
-Über den Sensor am Parkplatz wird dem System mitgeteilt welches Fahrzeug auf dem Parkplatz parkt.
-Wenn das Fahrzeug den Parkplatz wieder verlässt wird über den Sensor am Ausgang das Nummernschild gescannt, das Tor wird geöffnet und das Fahrzeug kann ausfahren.
-Gleichzeit wird eine Rechnung über die Parkdauer erstellt und automatisch vom hinterlegten Zahlungsmittel abgebucht.
+Das Beispielprojekt trägt den Namen *Parkflow*.
+Ziel der Anwendung ist die Verwaltung eines Parkplatzes sowie die Steuerung des laufenden Parkbetriebs.
+Hierbei wird angenommen, dass sämtliche Ein- und Ausgänge sowie alle Parkplätze mit Sensoren ausgestattet sind, die Aktionen von Fahrzeugen erkennen und entsprechende Ereignisse auslösen#footnote[Das Verhalten der Sensoren wird in dieser Arbeit simuliert.]. 
+Auf dieser Grundlage können verschiedene Abläufe innerhalb des Systems automatisiert werden.
 
-Mit dem Anwendung soll es Möglichsein, den Parkplatzbetrieb für Parkplätze aller Größenordnungen zu verwalten.
-Nur Registrierte Fahrzeuge sollen den Parkplatz betreten können.
-Über das Zuordnen der Parkplätze zu den Fahrzeugen soll eine optimale Auslastung des Parkplatzes erreicht werden.
-Ausserdemm sollen Parkplätze mit einem speziellen Zweck, wie Behindertenparkplätze oder Elektrofahrzeugparkplätze, bevorzugt an die entsprechenden Fahrzeuge vergeben werden.
-Das Vorgehen wie Parkplätze zugewiesen werden, soll flexibel anpassbar sein.
-Ein Parkplatzbetreiber soll zwischen verschiedenen Strategien wählen können die er im laufe des Betriebes wechseln kann.
-Zum Beispiel könnte ein Parkplatz von einem Fussballstdion Parkplätze an einem Spieltag nur an Kunden mit gültigen Tickets vermieten wollen und an nicht Spieltagen auch anderen Kunden zur Verfügung stellen.
+In einem ersten Schritt soll der Parkplatzbetreiber in der Lage sein, Parkplätze sowie Ein- und Ausgänge im System anzulegen und zu verwalten. 
+Dazu zählen unter anderem das Anlegen und Entfernen von Inventar, das temporäre Aktivieren oder Deaktivieren einzelner Elemente, die Festlegung von Preisen sowie die Änderung von Parkplatztypen#footnote[Beispiele: Entfernen von Inventar, temporäres Deaktivieren oder Aktivieren, Preisgestaltung, Änderung von Parkplatztypen.].
+Innerhalb des Beispielprojekts werden mehrere Parkplatztypen berücksichtigt, darunter reguläre Parkplätze, Behindertenparkplätze, Parkplätze für Elektrofahrzeuge sowie monatlich mietbare Parkplätze.
 
-Da es sich um ein Beispielprojekt handelt, werde ich mich auf die Kernfunktionen konzentrieren, die notwendig sind, um die in dieser Arbeit vorgestellten Konzepte zu demonstrieren.
-Folgende Aspekte werden in der Implementierung nicht berücksichtigt:
-- Sicherheitsaspekte wie Authentifizierung und Autorisierung#footnote[Standard Flows wie OAuth2 sollten aber Problemlos nachrüstbar sein].
-- Bei den meisten Usecases wird der Happy-Path implementiert und meistens ein bis zwei Fehlerfälle behandelt. Eine detailierte Behandlung aller Edge-Cases würde den Rahmen dieser Arbeit sprengen.
-- Es gibt keine Benutzeroberfläche.
-- Rechtliche und regulatorische Anforderungen werden nicht berücksichtigt.
-- Nur Fahrzeuge mit Registrierung werden berücksichtigt.
-- Nur Fahrzeuge mit deutschen Kennzeichen werden berücksichtigt.
-- Die Lage der einzelnen Parkplätze spielt keine Rolle.
+Auf Seiten der Parkplatznutzer besteht die Möglichkeit, einen Benutzeraccount anzulegen und Zahlungsinformationen zu hinterlegen. 
+Darüber hinaus können Fahrzeuge über ihr Kennzeichen registriert werden. 
+Zusätzlich ist vorgesehen, dass Parkplätze für einen Monat angemietet werden können.
+
+Neben der Verwaltung von Parkplätzen und Nutzern umfasst das System auch den laufenden Parkbetrieb. 
+Fährt ein Fahrzeug an einen Eingang heran, wird das Kennzeichen über einen Sensor erfasst und geprüft, ob das Fahrzeug im System registriert ist. 
+Ist dies der Fall, wird dem Fahrzeug ein geeigneter Parkplatz zugewiesen und angezeigt. 
+Anschließend wird das Einfahrtstor geöffnet und das Fahrzeug kann einfahren. 
+Über einen Sensor am Parkplatz wird dem System mitgeteilt, welches Fahrzeug dort abgestellt wurde. 
+Verlässt das Fahrzeug den Parkplatz, wird das Kennzeichen am Ausgang erneut erfasst, das Ausfahrtstor geöffnet und der Ausfahrvorgang ermöglicht. 
+Gleichzeitig wird auf Basis der Parkdauer eine Rechnung erstellt und das hinterlegte Zahlungsmittel belastet.
+
+Die Anwendung ist darauf ausgelegt, den Parkplatzbetrieb für Anlagen unterschiedlicher Größenordnungen zu unterstützen. 
+Dabei dürfen ausschließlich registrierte Fahrzeuge den Parkplatz betreten. 
+Durch die Zuordnung von Fahrzeugen zu Parkplätzen soll eine möglichst effiziente Auslastung der verfügbaren Stellflächen erreicht werden. 
+Parkplätze mit besonderem Zweck, wie beispielsweise Behinderten- oder Elektrofahrzeugparkplätze, werden bevorzugt an entsprechend geeignete Fahrzeuge vergeben. 
+Das Verfahren zur Parkplatzzuweisung ist dabei flexibel gestaltet, sodass der Parkplatzbetreiber zwischen verschiedenen Strategien wählen und diese auch während des laufenden Betriebs wechseln kann. 
+Ein mögliches Szenario ist beispielsweise ein Parkplatz eines Fußballstadions, bei dem an Spieltagen ausschließlich Fahrzeuge von Ticketinhabern zugelassen werden, während an spielfreien Tagen auch andere Nutzer berücksichtigt werden.
+
+Da es sich bei Parkflow um ein Beispielprojekt handelt, konzentriert sich die Implementierung auf die Kernfunktionen, die erforderlich sind, um die in dieser Arbeit vorgestellten Konzepte zu demonstrieren. 
+Die folgenden Aspekte werden daher nicht berücksichtigt:
+
+- Sicherheitsmechanismen wie Authentifizierung und Autorisierung#footnote[Standardisierte Verfahren wie OAuth 2.0 könnten grundsätzlich ergänzt werden, sind jedoch nicht Teil dieser Arbeit.].
+- In den meisten Anwendungsfällen wird primär der reguläre Ablauf (Happy Path) implementiert. Ergänzend werden lediglich ausgewählte Fehlerfälle betrachtet. Eine vollständige Behandlung aller Rand- und Sonderfälle würde den Rahmen dieser Arbeit überschreiten.
+- Es wird keine grafische Benutzeroberfläche implementiert.
+- Rechtliche und regulatorische Anforderungen bleiben unberücksichtigt.
+- Es werden ausschließlich registrierte Fahrzeuge betrachtet.
+- Es werden ausschließlich Fahrzeuge mit deutschen Kennzeichen berücksichtigt.
+- Die räumliche Lage einzelner Parkplätze wird nicht modelliert.
 
 == Erkunden der Domain
 
-Das Erkunden der Domain werde ich über einen Event Storming Workshop durchführen.
-Aus Mangel an Fachexperten werde ich die Rolle des Fachexperten selbst übernehmen und den Workshop alleine durchführen.
-In diesen Rollen werde ich die Usecases Modellieren die für diese Arbeit implementiert werden sollen.
-Aufgrund der Fehlenden Disskussionen lässt sich der Workshop nur bedingt darstellen.
-Mir geht es auch weniger darum ein perfektes Modell zu erstellen, sondern vielmehr darum, den Prozess des Event Stormings zu demonstrieren und zu Zeigen, warum auch Events hier eine wichtige Rolle spielen.
-Auch wenn dies suboptimal ist, da der Austausch zwischen verschiedenen Perspektiven fehlt, ist es dennoch möglich, die Domäne zu modellieren und die wichtigsten Konzepte zu identifizieren.
-Um die übersicht zu behalten werde ich nicht alle Schritte hier Grafisch darstellen.
-Alle Bilder zu dem Workshop sind in der Dokumentation von Pakflow zu finden unter #link("https://github.com/FSpruhs/park-flow/doc/eventstorming").
+Die Domain des Beispielprojekts wird im Rahmen eines Event Storming Workshops exploriert. 
+Event Storming wird in der Regel als kollaborativer Prozess mit mehreren Teilnehmern durchgeführt, um unterschiedliche Perspektiven in die Modellierung einzubeziehen.
+Aufgrund fehlender externer Fachexperten wird die Rolle des Domänenexperten in dieser Arbeit jedoch von mir selbst übernommen, wodurch der Workshop allein durchgeführt wird. 
+In dieser Rolle werden die Use Cases modelliert, die im Rahmen dieser Arbeit implementiert werden sollen.
 
+Da keine Diskussionen mit weiteren Teilnehmern stattfinden, lässt sich der Workshop nur eingeschränkt abbilden. 
+Ziel ist nicht die Erstellung eines vollständigen oder perfekten Modells, sondern die Demonstration des Event Storming-Prozesses und die Verdeutlichung der Bedeutung von Events innerhalb der Domain.
+
+Auch wenn die fehlende Perspektivenvielfalt den Prozess einschränkt, ist es dennoch möglich, die Domäne zu modellieren und die zentralen Konzepte zu identifizieren. 
+Um die Übersichtlichkeit zu wahren, werden nicht alle Schritte grafisch dargestellt. 
+Sämtliche Abbildungen zum Workshop sind in der Dokumentation von Parkflow verfügbar#footnote("/doc/eventstorming").
 
 === Schritt 1: Unstrukturiertes Erforschen
 
-Im ersten Scrhitt Schreiben die Teilnehmer nur den Namen von Events, die Ihnen zu der Domaine einfallen, auf einen orongefarbenen Klebezettel und Kleben diese unstrukturiert auf eine Wand#footnote[Workshops können auch mit entsprechenden Tools digital durchgeführt werden].
-Events sind dabei fachliche Ereignisse in der Vergangenheitsform @khononov2022[p.~217].
+Im ersten Schritt notieren die Teilnehmer ausschließlich die Namen von Ereignissen, die ihnen zur Domain einfallen, auf orangefarbenen Klebezetteln und platzieren diese zunächst unstrukturiert an einer Wand#footnote[Workshops können auch mit entsprechenden digitalen Tools durchgeführt werden.].
+
+Bei den Ereignissen handelt es sich um fachliche Ereignisse in der Vergangenheitsform @khononov2022[p.~217].
 
 #figure(
   image("./doc/eventstorming/01-unstrukturiertes-erforschen.svg"),
@@ -778,10 +794,10 @@ Events sind dabei fachliche Ereignisse in der Vergangenheitsform @khononov2022[p
 
 === Schritt 2: Zeitache
 
-Im zweiten Schritt werden die Events auf einer horizontale Zeitachse angeordnet.
-Begonnen wird mit dem frühesten Event links und endet mit dem aktuellsten Event rechts.
-Bei der Anordnung der Events geht man von dem Happy-Path aus.
-Events, die gleichzeitig auftreten, werden vertikal untereinander angeordnet @khononov2022[p.~218].
+Im zweiten Schritt werden die Events auf einer horizontalen Zeitachse angeordnet. 
+Dabei beginnt die Darstellung mit dem frühesten Event links und endet mit dem aktuellsten Event rechts. 
+Bei der Anordnung wird vom Happy Path ausgegangen. 
+Events, die gleichzeitig auftreten, werden vertikal untereinander platziert @khononov2022[p.~218].
 
 #figure(
   image("./doc/eventstorming/02-zeitachse.svg"),
@@ -790,43 +806,48 @@ Events, die gleichzeitig auftreten, werden vertikal untereinander angeordnet @kh
   ],
 ) <zeitachse>
 
-In der Abbildung @zeitachse sieht man, dass die unstrukturierten Events in 5 verschiedene Zeitachse unterteilt werden.
-Dabei haben ergeben sich 3 Zeitachsen für die Verwaltung von Parkplätzen, Toren und Kunden.
-Diese sind alle sehr ähnlich aufgebaut.
-Zuerst wird das Objekt anglegt, danach kann man verschiedene Eigentschaften ändern, hinzufügen oder entfernen.
-Bei der 4 Zeitache wird der Lifecycle eines Fahrzeuges bei einem Parkplatzbesuch dargestellt.
-Dabei gibt es einen Punkt an dem sich die Zeitache in zwei Pfade aufteilt und dann später wieder zusammenführt.
-Und zwar wenn ein Fahrzeug auf einem Parkplatz parkt kann es entweder auf demm Parken der ihm zugewiesen wurde oder auf einem anderen Parkplatz parken.
-Bei dem Parken auf einem falschen Parkplatz werden zusätzliche Events ausgelöst.
-Bei der letzten Zeitachse wird der Bezahlvorgang dargestellt.
+In Abbildung @zeitachse ist zu erkennen, dass die zuvor unstrukturierten Events in fünf verschiedene Zeitachsen unterteilt wurden.
+Drei Zeitachsen betreffen die Verwaltung von Parkplätzen, Toren und Kunden, die in ihrer Struktur sehr ähnlich aufgebaut sind. 
+Zunächst wird das jeweilige Objekt angelegt. 
+Anschließend können verschiedene Eigenschaften geändert, hinzugefügt oder entfernt werden.
+
+Die vierte Zeitachse zeigt den Lifecycle eines Fahrzeugs während eines Parkplatzbesuchs. 
+An einem Punkt teilt sich die Zeitachse in zwei Pfade und führt später wieder zusammen. 
+Dies geschieht, wenn ein Fahrzeug auf einem Parkplatz parkt. 
+Es kann entweder auf dem zugewiesenen Parkplatz oder auf einem anderen Parkplatz abgestellt werden. 
+Im Falle des Parkens auf einem nicht zugewiesenen Parkplatz werden zusätzliche Events ausgelöst.
+
+Die fünfte Zeitachse stellt den Bezahlvorgang dar.
 
 === Schritt 3: Pain Points
 
-Im dritten Schritt werden Pain Points identifiziert und markiert.
-Pain Points sind Stellen im Prozess, die problematisch, ineffizient oder fehleranfällig sind.
-Diese werden mit rautenförmigen und pinkfarbenen Klebezetteln dargestellt @khononov2022[p.~219].
+Im dritten Schritt werden Pain Points identifiziert und markiert. 
+Dabei handelt es sich um Stellen im Prozess, die problematisch, ineffizient oder fehleranfällig sein können. 
+Pain Points werden mit rautenförmigen, pinkfarbenen Klebezetteln dargestellt @khononov2022[p.~219].
 
-Für Parkflow erstelle ich einen Paint Point beim den Events `ParkedOn` und `ParkedOnWrong`.
-Damit weise ich auf die Gefahr hin, dass eine unkontrolierte Dynamik entstehen kann, wenn Fahrzeuge sich sich gegenseitig die zugewiesenen Parkplätze wegnehmen und die neu zugewiesenen Parkplätze den Fahrer nicht erreichen.
+Für Parkflow wird ein Pain Point bei den Events ParkedOn und ParkedOnWrong identifiziert. 
+Dies verdeutlicht die potenzielle Gefahr einer unkontrollierten Dynamik, die entstehen kann, wenn Fahrzeuge einander die zugewiesenen Parkplätze „wegnehmen“ und die neu zugewiesenen Parkplätze nicht korrekt beim jeweiligen Fahrzeug ankommen.
 
 === Schritt 4: Pivotal Events
 
-Im vierten Schritt werden Pivotal Events identifiziert und markiert.
-Dabei handelt es sich um Events die dafür sorgen, dass der Prozess in eine andere Phase übergeht.
-Diese werden mit einem vertikalen strich markiert @khononov2022[p.~219-220].
+Im vierten Schritt werden Pivotal Events identifiziert und markiert. 
+Dabei handelt es sich um Events, die einen Übergang des Prozesses in eine andere Phase auslösen. 
+Pivotal Events werden mit einem vertikalen Strich dargestellt @khononov2022[p.~219-220].
 
 === Schritt 5: Commands
 
-Im fünften Schritt werden Commands identifiziert.
-Bei Commands handelt es sich um Anweisungen, die eine Aktion innerhalb des Systems auslösen.
-Commands führen zu einem Event, wenn die Aktion erfolgreich abgeschlossen wurde.
-Aus diesem Grund werden Commands, auf einem hellblauen Klebezettel, vor einem Event platziert.
-Zusätzlich dazu kann ein Actor der diese Commands ausführt auf einem gelben Klebezettel vermerkt werden und an den Command geklebt werden.
-Wenn eine Folge von Commands von demselben Actor ausgeführt wird, kann dieser Actor auch über die gesamte Folge hinweg dargestellt werden @khononov2022[p.~220-221].
+Im fünften Schritt werden Commands identifiziert. 
+Bei Commands handelt es sich um Anweisungen, die eine Aktion innerhalb des Systems auslösen. 
+Ein Command führt zu einem Event, sobald die entsprechende Aktion erfolgreich abgeschlossen wurde. 
+Aus diesem Grund werden Commands auf hellblauen Klebezetteln vor dem zugehörigen Event platziert.
 
-In Parkflow gibt es zwei Actor, den Parkplatzbetreiber und den Kunden.
-Der Parkplatzbetreiber ist für die Verwaltung des Parkplatz Inventar zuständig und führt die entsprechenden Commands aus.
-Der Kunde ist für die Registrierung seiner Fahrzeuge und das Mieten von Parkplätzen zuständig und führt die entsprechenden Commands aus.
+Zusätzlich kann ein Actor, der einen Command ausführt, auf einem gelben Klebezettel vermerkt und an den jeweiligen Command angeheftet werden. 
+Wird eine Folge von Commands von demselben Actor ausgeführt, kann der Actor auch über die gesamte Abfolge hinweg dargestellt werden @khononov2022[p.~220-221].
+
+Für Parkflow werden zwei Actor unterschieden. 
+Der Parkplatzbetreiber und der Kunde. 
+Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars zuständig und führt die entsprechenden Commands aus. 
+Der Kunde ist für die Registrierung seiner Fahrzeuge sowie das Mieten von Parkplätzen verantwortlich und führt die entsprechenden Commands aus.
 
 #figure(
   image("./doc/eventstorming/05-commands.svg"),
@@ -837,57 +858,62 @@ Der Kunde ist für die Registrierung seiner Fahrzeuge und das Mieten von Parkpl�
 
 === Schritt 6: Policies
 
-Im sechsten Schritt werden Policies identifiziert.
-Policies sind Regeln oder Bedingungen, die bestimmen, wie das System auf bestimmte Ereignisse reagieren soll.
-Das sind in der Regel Commands die durch keinen Actor ausgelöst werden, sondern automatisch als Reaktion auf ein Event.
-Plicies werden auf einem lila-farbenen Klebezettel dargestellt und zwischen dem auslösenden Event und dem resultierenden Command platziert @khononov2022[p.~221].
+Im sechsten Schritt werden Policies identifiziert. 
+Policies sind Regeln oder Bedingungen, die festlegen, wie das System auf bestimmte Events reagieren soll. 
+Dabei handelt es sich in der Regel um Commands, die nicht von einem Actor ausgelöst werden, sondern automatisch als Reaktion auf ein Event ausgeführt werden. 
+Policies werden auf lilafarbenen Klebezetteln dargestellt und zwischen dem auslösenden Event und dem resultierenden Command platziert @khononov2022[p.~221].
 
-Bei Parkflow gibt es zum Beispiel die Policy, dass wenn ein Fahrzeug an einem Eingang erkannt wird, automatisch der Command `ProvideParkingSpot` ausgelöst wird um dem Fahrzeug einen Parkplatz zuzuweisen.
-Auch wird durch eine Policy eine Rechnung erstellt, wenn die Fahrzeug den Parkplatz verlassen.
+Für Parkflow existieren beispielsweise folgende Policies. 
+Wird ein Fahrzeug an einem Eingang erkannt, löst das System automatisch den Command `ProvideParkingSpot` aus, um dem Fahrzeug einen Parkplatz zuzuweisen. Ebenso wird durch eine Policy automatisch eine Rechnung erstellt, sobald das Fahrzeug den Parkplatz verlässt.
 
 === Schritt 7: Read Models
 
-Im siebten Schritt werden Read Models identifiziert.
-Read models werden vom Actor verwendet, um entscheidungen zum ausführen von Commands zu treffen.
-Dabei handelt es sich nicht um technische Darstellung von Datenbanken, sondern um fachliche Konzepte die dem Actor helfen den aktuellen Zustand der Domäne zu verstehen.
-Read Models werden auf einem grünen Klebezettel dargestellt.
+Im siebten Schritt werden Read Models identifiziert. 
+Read Models werden von einem Actor verwendet, um Entscheidungen über das Ausführen von Commands zu treffen. 
+Dabei handelt es sich nicht um technische Darstellungen von Datenbanken, sondern um fachliche Konzepte, die dem Actor helfen, den aktuellen Zustand der Domäne zu verstehen.
+Viele Read Models lassen sich direkt aus realen Konzepten ableiten, wie beispielsweise der aktuelle Parkplatzbestand oder die Historie der Fahrzeuge. 
+Dies erleichtert die Abbildung des Systems in einer Weise, die für die Domainakteure verständlich und nachvollziehbar ist. 
+Read Models werden auf grünen Klebezetteln dargestellt. 
 Da der Actor die Informationen benötigt, bevor er die Commands ausführt, werden die Read Models vor den Commands platziert @khononov2022[p.~222].
 
 Bei Parkflow ergeben sich folgende Read Models:
-- *ParkingInventory*: Ein Überblick über alle Parkplätze und Ein- und Ausgänge, deren Status und deren Typen. Dieses Read Model hilft dem Parkplatzbetreiber, den aktuellen Zustand des Parkplatzes zu verstehen und Entscheidungen über die Verwaltung des Inventars zu treffen.
-- *ParkingSpotCatalog*: Gibt dem Kunden einen Überblick über die mietbaren Parkplätze und deren Preise.
-- *ParkingMap*: Eine Karte die den laufenden Betrieb des Parkplatzes darstellt. Sie zeigt an, welche Parkplätze belegt oder frei sind und zeigt an welche Fahrzeuge sich in diesem Zeitpunkt im System sind. Das hilft dem System, dem Fahrzeug einen geeigneten Parkplatz zuzuweisen.
-- *FeeCatalog*: Eine Übersicht über die verschiedenen Parkgebühren und deren Berechnungsgrundlagen. Dieses Read Model unterstützt das System dabei, die korrekten Gebühren für die Parkdauer zu berechnen.
-- *VehicleHistory*: Eine Historie über die Action eines Fahrzeugs im System. Dieses Read Model hilft dabei eine Rechnung zu erstellen, wenn das Fahrzeug den Parkplatz verlässt.
+
+- *ParkingInventory*: Gibt einen Überblick über alle Parkplätze sowie Ein- und Ausgänge, deren Status und Typen. Dieses Read Model unterstützt den Parkplatzbetreiber dabei, den aktuellen Zustand des Parkplatzes zu verstehen und Entscheidungen über die Verwaltung des Inventars zu treffen.
+- *ParkingSpotCatalog*: Bietet dem Kunden einen Überblick über die mietbaren Parkplätze und deren Preise.
+- *ParkingMap*: Stellt den laufenden Betrieb des Parkplatzes dar. Es zeigt an, welche Parkplätze belegt oder frei sind und welche Fahrzeuge sich zu diesem Zeitpunkt im System befinden. Dieses Read Model unterstützt das System bei der Zuweisung eines geeigneten Parkplatzes an ein Fahrzeug.
+- *FeeCatalog*: Bietet eine Übersicht über die verschiedenen Parkgebühren und deren Berechnungsgrundlagen. Dieses Read Model ermöglicht dem System, die korrekten Gebühren für die Parkdauer zu berechnen.
+- *VehicleHistory*: Dokumentiert die Aktionen eines Fahrzeugs im System. Dieses Read Model unterstützt die Erstellung einer Rechnung, sobald das Fahrzeug den Parkplatz verlässt.
 
 === Schritt 8: Externe Systeme
 
-Im achten Schritt werden externe Systeme identifiziert.
-Externe Systeme sind Systeme außerhalb der eigenen Domäne, mit denen interagiert wird.
-Das können zum Beispiel Zahlungssysteme, Benachrichtigungssysteme oder andere Drittanbietersysteme sein.
-Externe Systeme werden auf einem pinkfarbenen Klebezettel dargestellt und an den entsprechenden Stellen im Prozess platziert, an denen die Interaktion mit dem externen System stattfindet @khononov2022[p.~223].
+Im achten Schritt werden externe Systeme identifiziert. 
+Externe Systeme sind Systeme außerhalb der eigenen Domäne, mit denen das System interagiert. 
+Dies können beispielsweise Zahlungssysteme, Benachrichtigungssysteme oder andere Drittanbietersysteme sein. 
+Externe Systeme werden auf pinkfarbenen Klebezetteln dargestellt und an den Stellen im Prozess platziert, an denen die Interaktion mit dem externen System erfolgt @khononov2022[p.~223].
 
-Bei Parkflow wird ein externes Zahlungssystem verwendet, um die Parkgebühren automatisch vom hinterlegten Zahlungsmittel des Kunden abzubuchen, wenn das Fahrzeug den Parkplatz verlässt.
+Für Parkflow wird ein externes Zahlungssystem genutzt, um die Parkgebühren automatisch vom hinterlegten Zahlungsmittel des Kunden abzubuchen, sobald das Fahrzeug den Parkplatz verlässt.
 
 === Schritt 9: Aggregates
 
-Im neunten Schritt werden Aggregates identifiziert.
-Hierzu werden die Aggregates als grosser gelber Klebezettel dargestellt. Um diesen Zettel werden auf der Linken Seite die Commands und auf der Rechten Seite die Events platziert, die zu dem Aggregate gehören.
-Auf diese Weise wird deutlich, welche Commands und Events zu welchem Aggregate gehören @khononov2022[p.~223].
+Im neunten Schritt werden Aggregates identifiziert. 
+Aggregates werden auf großen gelben Klebezetteln dargestellt. 
+Um jeden Aggregate-Klebezettel werden auf der linken Seite die zugehörigen Commands und auf der rechten Seite die zugehörigen Events platziert @khononov2022[p.~223]. 
+Auf diese Weise wird ersichtlich, welche Commands und Events zu welchem Aggregate gehören.
 
-Nach diesem Schritt ergeben sich für Parflow die Aggregates `ParkingSpot`, `Gate`, `Customer`, `ParkingOperator` und `Invoice`.
+Für Parkflow ergeben sich nach diesem Schritt die Aggregates `ParkingSpot`, `Gate`, `Customer`, `ParkingOperator` und `Invoice`.
 
 === Schritt 10: Bounded Contexts
 
-Im zehnten und letzten Schritt werden Bounded Contexts identifiziert.
-Bounded Contexts sind klar abgegrenzte Bereiche innerhalb der Domäne, die eine eigene Sprache und ein eigenes Modell besitzen.
-Sie werden durch einen Rahmen dargestellt, der die zugehörigen Aggregates, Commands, Events, Read Models und externen Systeme umfasst @khononov2022[p.~224].
+Im zehnten und letzten Schritt werden Bounded Contexts identifiziert. 
+Bounded Contexts sind klar abgegrenzte Bereiche innerhalb der Domain, die jeweils eine eigene Sprache und ein eigenes Modell besitzen @khononov2022[p.~224].
+Sie werden durch einen Rahmen dargestellt, der die zugehörigen Aggregates, Commands, Events, Read Models und externen Systeme umfasst.
 
-Parkflow lässt sich, wie in @bounded-contexts zu sehen, in diese Bounded Contexts unterteilen:
-- *ParkingInventory*: Verwaltung des Parkplatzinventars, einschließlich der Parkplätze und Ein- und Ausgänge.
-- *CustomerAcces*: Gibt dem Kunden die Möglichkeit, sich zu registrieren und Fahrzeuge zu hinterlegen.
+Für Parkflow lassen sich, wie in Abbildung @bounded-contexts zu sehen, folgende Bounded Contexts unterscheiden:
+
+- *ParkingInventory*: Verwaltung des Parkplatzinventars, einschließlich der Parkplätze sowie Ein- und Ausgänge.
+- *CustomerAcces*: Ermöglicht dem Kunden, sich zu registrieren und Fahrzeuge zu hinterlegen.
 - *ParkingOperation*: Steuert den laufenden Betrieb des Parkplatzes, einschließlich der Zuweisung von Parkplätzen und der Überwachung des Parkvorgangs.
-- *Billing*: Verwaltet die Abrechnung und Zahlung der Parkgebühren.
+- *Billing*: Verantwortlich für die Abrechnung und Zahlung der Parkgebühren.
 
 #figure(
   image("./doc/eventstorming/10-bounded-contexts.svg"),
@@ -898,18 +924,16 @@ Parkflow lässt sich, wie in @bounded-contexts zu sehen, in diese Bounded Contex
 
 === Subdomains <subdomains-chapter>
 
-In disem Schritt werden die verschiedenen Subdomains identifiziert und den 3 Typen zugeordnet.
-Dazu nutzte ich die Definition aus @khononov2022[p.~35].
-Hier wird die Domaine nach dem Verhältniss zwischen Komplexität der Business Logik und dem Wettbewerbsforteil gegenüber konkurenz eingeteilt.
+In diesem Schritt werden die verschiedenen Subdomains identifiziert und den drei in DDD bekannten Typen zugeordnet.
+Dazu wird die Definition aus @khononov2022[p.~35], verwendet.
+Die Einteilung erfolgt nach dem Verhältnis zwischen der Komplexität der Business-Logik und dem möglichen Wettbewerbsvorteil gegenüber Konkurrenten.
 
-In @subdomains ist die Einteilung der Subdomains von Parkflow dargestellt.
-Dabei ist die Subdomain `ParkingOperation` eine Core Domain, das verwalten des Operatiiven Betriebs ist der zentrale Wettbewerbsfaktor von Parkflow und beinhaltet die meiste Komplexität. Diese ergibt sich, da viele Events Zeitnah verabeitet werden müssen und entstehende Konflikte schnell gelöst werden müssen.
-Die Subdomains `CustomerAcces` und `ParkingInventory` sind Supporting Domains, sie sind notwendig um den Betrieb von Parkflow zu ermöglichen, stellen aber keinen direkten Wettbewerbsfaktor dar.
-Das verwalten von Kunden und Parkplätzen ist vergleichsweise einfach.
-Die Subdomain `Billing` ist eine Generic/Support Domain. Das berechnen von Gebühren und das Abwickeln von Zahlungen ist eine Standardaufgabe die von vielen Drittanbietern übernommen werden kann bei Parkflow wird diese Domaie aber selber entwickelt.
-Das Abweickeln von Zahlungen ist an sich Konplex, da es viele rechtliche und sicherheitsrelevante Aspekte gibt.
-Das anbieten von online Zahlungen ist aber eine Tätigkeit die viele Unternehmen anbieten, weshalb es hier keinen Wettbewerbsvorteil gibt.
-Aus diesem Grund ist diese Domaine eine Generic Domain und soll in Parkflow von einem externen Zahlungssystem übernommen werden.
+In Abbildung @subdomains ist die Einteilung der Subdomains von Parkflow dargestellt.
+
+- Die Subdomain ParkingOperation stellt eine Core Domain dar. Die Verwaltung des operativen Betriebs ist der zentrale Wettbewerbsfaktor von Parkflow und beinhaltet die höchste Komplexität. Diese Domain macht die Anwendung besonders und soll sie von Konkurrenzprodukten abheben. Die Komplexität ergibt sich daraus, dass viele Events zeitnah verarbeitet werden müssen und entstehende Konflikte schnell gelöst werden müssen.
+- Die Subdomains CustomerAccess und ParkingInventory sind Supporting Domains. Sie sind notwendig, um den Betrieb von Parkflow zu ermöglichen, stellen jedoch keinen direkten Wettbewerbsvorteil dar. Die Verwaltung von Kunden und Parkplätzen ist vergleichsweise einfach.
+- Die Subdomain Billing wird als Supporting/Generic Domain eingeordnet. Sie ist für die Abrechnung der Parkgebühren verantwortlich, stellt aber keinen zentralen Wettbewerbsvorteil dar.
+- Der Zahlungsprozess selbst wird als Generic Domain eingeordnet. Die Abwicklung von Zahlungen ist rechtlich und sicherheitstechnisch komplex, stellt jedoch eine Standardaufgabe dar, die von vielen Drittanbietern übernommen werden kann. Für Parkflow wird daher vorgesehen, dass dieser Prozess über ein externes Zahlungssystem abgewickelt wird.
 
 #figure(
   image("./pictures/subdomains.svg"),
@@ -934,7 +958,7 @@ Ich möchte insgesamt ein Bild vermitteln, wie eine vollständige Architektur f�
 === System Context
 
 Im Zentrum von Abbildung @system-context ist das System Parkflow dargestellt.
-Es gibt 2 Akteure die mit dem System interagieren.
+Es gibt zwei Akteure die mit dem System interagieren.
 Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars zuständig.
 Der Kunde ist für die Registrierung seiner Fahrzeuge und das Mieten von Parkplätzen zuständig.
 Es soll potentzielle Schnittstellen für externe Systeme geben die ebenfalls mit Parkflow interagieren können.
@@ -955,7 +979,7 @@ Darüber hinaus verfügt der Parkplatz über verschiedene Sensoren, die die Akti
 Bei der Abbildung @container ist die Container-Architektur von Parkflow dargestellt.
 Die mit Rot markierten Container werden in dieser Arbeit nicht implementiert.
 Parkflow besteht zum einem aus dem Backend das als Modulith umgesetzt wird und die zentrale Geschäftslogik und Domäne enthält.
-Das Backend nutzt 2 Datenbanken und eine RabbitMQ:
+Das Backend nutzt zwei Datenbanken und eine RabbitMQ:
 
 *MongoDB:*
 
@@ -1024,7 +1048,8 @@ Dazu gehören die Events die ein Modul veröffentlich, die gemeinsam genutzten V
 
 Das `core` Paket enthält die interne Implementierung des Moduls und darf von anderen Modulen nicht genutzt werden.
 Dabei ist das `core` Paket als hexagonale Architektur umgesetzt.
-Das `core` Paket besteht aus 3 Hauptpaketen:
+Das `core` Paket besteht aus drei Hauptpaketen:
+
 - *infrastructure*: Die Infrastruktur enthält die technische Umsatzung die als Adapter implementiert werden. Über die Adapter werden die Datenbanken angebunden, die Rest und RabbitMQ Schnittstellen implementiert und weitere technische Details umgesetzt.
 - *application*: Die Application Schicht enthält die Ports die von den Adapter implementiert werden. Die Hauptaufgabe dieser Schicht ist es die Ressourcen die für einen Usecase benötigt werden zu koordinieren. Dabei soll möglichst wenig fachliche Logik implementiert werden.
 - *domain*: Die Domain Schicht enthält die fachliche Logik des Moduls. Hier werden die Aggregates, Entities, Value Objects und Domain Services implementiert. Diese Schicht ist der Kern der Anwendung. Alle Abhängigkeiten zeigen auf diese Schicht während die Schicht selber so wenig wie möglich Abhängkeiten hat.
@@ -1173,6 +1198,7 @@ Neue Events werden einfach an das Ende der Liste angehängt.
 Bestehende Events werden niemals verändert oder gelöscht @stack2022[p.~10].
 
 Ziel dieses Abschnittes ist es einen Genersichen Mechanismus zu erstellen, der folgenes ermöglicht:
+
 - Speichern von Events für verschiedene Aggregate Typen.
 - Abrufen von Events für ein bestimmtes Aggregate in der richtigen Reihenfolge.
 - Wiederherstellen des Zustands eines Aggregates durch das Anwenden der gespeicherten Events.
@@ -1193,6 +1219,7 @@ Die Klasse BaseEvent wird für die Kommunikation innerhalb des Systems genutzt.
 Es handelt sich dabei um eine abstrakte Klasse die von allen Events die innerhalb des Systems genutzt werden, erweitert wird.
 Das BaseEvent wird nur dazu genutzt, um die Daten die bei einem Event von einem Aggregate benötigt werden, zu verteilen.
 Dabei hat die Klasse nur zwei Attribute:
+
 - *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem das Event gehört.
 - *metaData*: Zusätzliche (optionale) Metadaten zum Event, die als ByteArray gespeichert werden.
 
@@ -1201,6 +1228,7 @@ Dazu müssen die Events die zu einem Aggregate gehöhren aus der Datenbanek abge
 Um diese Aufgabe zu erfüllen, werden weitere Attribute benötigt.
 Die BaseEvent Klasse wird von unserer Event Klasse mit weiteren Daten angereichert und damit für den Event Store nutzbar gemacht.
 Dabei werden folgende Attribute benötigt:
+
 - *id*: Eine eindeutige Identifikationsnummer für das Event.
 - *type*: Der Typ des Events, der angibt, welche Art von Ereignis es ist z.B. GateCreatedEvent.
 - *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem das Event gehört.
@@ -1223,6 +1251,7 @@ Die AggregateRoot Klasse ist die Basisklasse für alle Aggregates in Parkflow di
 Sie stellt die grundlegenden Funktionen bereit, die jedes Aggregate benötigt, um Events zu verwalten und den Zustand wiederherzustellen.
 Die Klasse ist in @aggregate-root dargestellt.
 Die AggregateRoot Klasse hat folgende Attribute:
+
 - *aggregateId*: Die eindeutige Identifikationsnummer des Aggregates.
 - *aggregateType*: Der Typ des Aggregates z.B. Gate.
 - *changes*: Eine Liste von BaseEvent Objekten, die die Änderungen (Events) repräsentieren, die während der Lebensdauer des Aggregates aufgetreten sind.
@@ -1267,6 +1296,7 @@ Beim wiederherstellen eines Aggregates wird zuerst der letzte Snapshot geladen u
 Sie eigenen sich nicht zum Abfragen von Aggregates mit einem bestimmten Zustand.
 Der Snpashot von Parkflow ist in @snapshot dargestellt. Es handelt sich dabei um eine Klasse die ein reiner Daten Container ist.
 Ein Snapshot hat folgende Attribute:
+
 - *id*: Eine eindeutige Identifikationsnummer für den Snapshot.
 - *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem der Snapshot gehört.
 - *aggregateType*: Der Typ des Aggregates, zu dem der Snapshot gehört z.B. Gate.
@@ -1392,6 +1422,7 @@ Dadurch wird asynchrones und nicht-blockierendes Verhalten ermöglicht, was die 
 
 Die konkrete Implementierung des Aggregate Stores erfolgt in der Klasse `AggregateStoreImpl`.
 Diese Klasse implementiert das Interface `AggregateStore` und nutzt dabei folgende Komponenten, Pakete und Attribute:
+
 - *DatabaseClient*: Der DatabaseClient von R2DBC wird genutzt, um asynchrone und nicht-blockierende Datenbankoperationen durchzuführen.
 - *TransactionalOperator*: Der TransactionalOperator von Spring wird genutzt, um Transaktionen zu verwalten und sicherzustellen, dass mehrere asynchrone Datenbankoperationen atomar ausgeführt werden.
 - *EventPublisher*: Der EventPublisher wird genutzt, um Events in der Anwendung zu veröffentlichen, damit andere Teile der Anwendung auf diese reagieren können.
@@ -2095,6 +2126,7 @@ Die Aufgabe des ParkingOperator Aggregates ist es, die Parkvorgänge zu verwalte
 
 Der ParkingOperator erbt von der AggregateRoot Klasse und überschreibt das Attribut `aggregateId` und `whenEvent`.
 Weiterhin werden verschiedene Attribute definiert die den Zustand des ParkingOperators repräsentieren:
+
 - *parkingSpots*: Ist eine Map die alle Parkplätze im Parkhaus verwaltet. Der Schlüssel ist die ParkingSpotId und der Wert ist ein Value Objekt Parking Spot, dass in dem Domain Layer definiert ist.
 - *gates*: Ist eine Map die alle Gates im Parkhaus verwaltet. Der Schlüssel ist die GateId und der Wert ist ein Value Objekt Gate, dass in dem Domain Layer definiert ist.
 - *vehicles*: Ist eine Map die alle Fahrzeuge verwaltet die sich im Parkhaus befinden. Der Schlüssel ist die PlateNumber und der Wert ist ein Value Objekt Vehicle, dass in dem Domain Layer definiert ist.
@@ -2204,7 +2236,7 @@ Diese kommen von den Sensoren und werden vom ParkingOperator verarbeitet um den 
 Wie in @bounded-contexts beschrieben, werden die Commands für den ParkingOperator über Events ausgelöst.
 Der ParkingOperator stellt dabei Methoden zur Verfügung um die verschiedenen Events zu verarbeiten.
 
-Insgesamt werden 4 Methoden zur Verarbeitung von Events zur Verfügung gestellt.
+Insgesamt werden vier Methoden zur Verarbeitung von Events zur Verfügung gestellt.
 
 Die on VehicleArrival Methode verarbeitet es, wenn ein Fahrzeug an einem Gate ankommt.
 Die Methode erstellt ein neues Vehicle Object für das Fahrzeug und weist ihm einen Parkplatz zu.
