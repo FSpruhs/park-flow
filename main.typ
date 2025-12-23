@@ -1993,7 +1993,7 @@ class ParkingInventoryListenerAdapter(
 
 Die Projektionen werden in einer MongoDB Datenbank gespeichert.
 Dafür wird der Spring Starter MongoDB Reactive genutzt #footnote[org.springframework.boot:spring-boot-starter-data-mongodb-reactive].
-Das ist eine reaktive und nicht-blockierende Implementierung des MongoDB Treibers @springDataMongoDBReactive.
+Das ist eine reaktive und nicht-blockierende Implementierung des MongoDB Treibers @springMongo.
 
 Für die ParkingInventory Projektion wird ein Interface im Infrastructure Layer erstellt #footnote[com.spruhs.parkflow.parkinginventory.core.application.ParkingInventoryService.kt].
 Dieses Interface ist der Port für die ParkingInventory Projektion und definiert die verschiedenen Methoden zum Abfragen und Speichern.
