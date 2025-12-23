@@ -71,10 +71,13 @@
     stroke: (x: none, y: none),
     table.header([*Abkürzung*], [*Bedeutung*]),
 
-    "DDD", "Domain driven design",
-    "ES", "Event Sourcing",
-    "EDA", "Event Driven Architecture",
     "CQRS", "Command Query Responsibility Segregation",
+    "DDD", "Domain driven design",
+    "EDA", "Event Driven Architecture",
+    "ES", "Event Sourcing",
+    "R2DBC", "Reactive Relational Database Connectivity",
+    "REST", "Representational State Transfer",
+
 )
 
 #pagebreak()
@@ -893,7 +896,7 @@ Parkflow lässt sich, wie in @bounded-contexts zu sehen, in diese Bounded Contex
   ],
 ) <bounded-contexts>
 
-=== Subdomains
+=== Subdomains <subdomains-chapter>
 
 In disem Schritt werden die verschiedenen Subdomains identifiziert und den 3 Typen zugeordnet.
 Dazu nutzte ich die Definition aus @khononov2022[p.~35].
@@ -914,6 +917,11 @@ Aus diesem Grund ist diese Domaine eine Generic Domain und soll in Parkflow von 
     Subdomains
   ],
 ) <subdomains>
+
+=== Ubiquitous Language 
+
+Für die Ubiquitous Language habe ich in der Dokumentation von Parkflow einen Glossar #footnote[/doc/glossary] erstellt.
+Dieser Glossar enthält die wichtigsten Begriffe und Konzepte, die in den verschiedenen Bounded Contexts von Parkflow verwendet werden.
 
 == Architektur
 
@@ -1492,13 +1500,13 @@ Zum Schluss wird die Liste der Änderungen im Aggregate geleert, damit diese nic
             aggregate.clearChanges()
         }
     }
-    
+
         private suspend fun handleConcurrency(aggregateId: String) {
             dbClient.sql(HANDLE_CONCURRENCY_QUERY)
                 .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
                 .await()
         }
-        
+
         private const val HANDLE_CONCURRENCY_QUERY = """
         SELECT aggregate_id
         FROM parkflow.events
@@ -1538,7 +1546,7 @@ Zum Schluss wird das wiederhergestellte Aggregate zurückgegeben.
 
         return aggregate
     }
-    
+
     private suspend fun <T : AggregateRoot> getAggregateFromSnapshotClass(
         snapshot: Snapshot?,
         aggregateId: String,
@@ -1768,7 +1776,7 @@ class GateAggregate(override val aggregateId: String) : AggregateRoot(aggregateI
 
 === Projection
 
-Ebenfalls im Domain Layer befinden sich die Projektionen. 
+Ebenfalls im Domain Layer befinden sich die Projektionen.
 Dabei sind die Gate Events teil der ParkingInventory Projektion #footnote[com.spruhs.parkflow.parkinginventory.core.domain.ParkingInventory.kt].
 Projektionen sind dafür da, um den aktuellen Zustand von Read-Models zu verwalten.
 Die ParkingInventory Projektion verwaltet den aktuellen Zustand aller Gates und Parkplätze im System.
@@ -1876,14 +1884,14 @@ Somit erfolgt die Verwaltung der reservierten Namen zentral und konsistent.
 class ParkingInventoryService(private val repository: ParkingInventoryRepositoryPort) {
 
     ...
-    
+
     private val reservedGateNames: MutableMap<GateName, Instant> = mutableMapOf()
-    
+
     @Scheduled(fixedRate = 60 * 1000)
         private fun cleanupExpiredReservations() {
             val now = Instant.now()
             reservedGateNames.entries.removeIf { (_, reservedAt) -> isReservationTimeOver(reservedAt, now) }
-    
+
             reservedParkingSpotNames.entries.removeIf { (_, reservedAt) -> isReservationTimeOver(reservedAt, now) }
         }
 
@@ -1891,31 +1899,557 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
         reservedAt: Instant,
         now: Instant,
     ) = Duration.between(reservedAt, now).toMinutes() > RESERVATION_TIME_IN_MINUTES
-        
+
     suspend fun reserveGateName(name: GateName) {
         require(name !in reservedGateNames.keys) { "Gate name already exists" }
         require(!repository.existsGateName(name)) { "Gate name already exists" }
 
         reservedGateNames[name] = Instant.now()
     }
-    
+
     suspend fun handleGateCreatedEvent(event: GateCreatedEvent) {
         repository.save(event.toProjection())
 
         reservedGateNames.remove(event.name)
     }
-                
+
     ...
 }
 ```
 
+=== Rest Adapter
+
+Die Rest Adapter für das Gate Aggregate befinden sich im Infrastructure Layer des ParkingInventory Moduls #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.primary.GateRest.kt].
+Für die Adapter wird der Spring Starter für WebFlux genutzt um reaktive Rest Endpunkte zu erstellen #footnote[org.springframework.boot:spring-boot-starter-webflux].
+Mit den Spring Annotationen werden die verschiedenen Endpunkte definiert.
+Durch WebFlux sind die Endpunkte asynchron und nicht-blockierend @springWebFlux.
+
+Für das ausführen der Commands werden Endpunkte erstellt.
+Die definierten Endpunkte implementieren die Gate UseCases (Ports) und führen diese aus.
+
+```kotlin
+@RestController
+@RequestMapping("/api/v1/parking-inventory/gates")
+class GateRestAdapter(private val commandPort: GateCommandPort) {
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    suspend fun createGate(
+        @RequestBody body: CreateGateRequest,
+    ) = commandPort.create(body.toCommand())
+
+    @PostMapping("/{gateId}/activation-state")
+    suspend fun updateActivationState(
+        @PathVariable gateId: String,
+        @RequestParam state: String,
+    ) = when (ActivationState.valueOf(state)) {
+        ActivationState.ACTIVE -> commandPort.activate(GateId(gateId))
+        ActivationState.INACTIVE -> commandPort.deactivate(GateId(gateId))
+    }
+
+    @DeleteMapping("/{gateId}")
+    suspend fun removeGate(
+        @PathVariable gateId: String,
+    ) = commandPort.remove(GateId(gateId))
+}
+```
+
+=== Event Listener Adapter
+
+Die verschiedenen Event Listener Adapter befinden sich ebenfalls im Infrastructure Layer.
+Die Listener sind nicht speziell für das Gatge Aggregate gedacht, können aber Events des Gate Aggregates verarbeiten.
+Im ParkingInventory Modul gibt es einen Listener für die Aktualisierung der ParkingInventory #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.primary.ParkingInventoryListenerAdapter.kt].
+Über die Spring Annotation `@EventListener` werden die verschiedenen Event Typen definiert die der Listener verarbeiten kann.
+Der Listener gibt dann das Event an einen Port weiter der diesen verarbeitet.
+Dabei wird eine neue Coroutine gestartet um das Event asynchron zu verarbeiten.
+
+```kotlin
+@Component("parkingInventoryInventoryListenerAdapter")
+class ParkingInventoryListenerAdapter(
+    private val eventExecutionStrategy: EventExecutionStrategy,
+    private val commandPort: ParkingInventoryCommandPort,
+) {
+    @EventListener(
+        ParkingSpotCreatedEvent::class,
+        ParkingSpotRemovedEvent::class,
+        ParkingSpotTypesRemovedEvent::class,
+        ParkingSpotTypesAddedEvent::class,
+        ParkingSpotRenamedEvent::class,
+        ParkingSpotActivatedEvent::class,
+        ParkingSpotDeactivatedEvent::class,
+        GateCreatedEvent::class,
+        GateActivatedEvent::class,
+        GateDeactivatedEvent::class,
+        GateRemovedEvent::class,
+    )
+    fun onEvent(event: BaseEvent) {
+        eventExecutionStrategy.execute {
+            commandPort.handleEvent(event)
+        }
+    }
+}
+```
+
+=== MongoDB Adapter
+
+Die Projektionen werden in einer MongoDB Datenbank gespeichert.
+Dafür wird der Spring Starter MongoDB Reactive genutzt #footnote[org.springframework.boot:spring-boot-starter-data-mongodb-reactive].
+Das ist eine reaktive und nicht-blockierende Implementierung des MongoDB Treibers @springDataMongoDBReactive.
+
+Für die ParkingInventory Projektion wird ein Interface im Infrastructure Layer erstellt #footnote[com.spruhs.parkflow.parkinginventory.core.application.ParkingInventoryService.kt].
+Dieses Interface ist der Port für die ParkingInventory Projektion und definiert die verschiedenen Methoden zum Abfragen und Speichern.
+
+```kotlin
+interface ParkingInventoryRepositoryPort {
+    suspend fun getInventory(): ParkingInventoryProjection
+
+    suspend fun getGate(gateId: String): GateProjection?
+
+    suspend fun getParkingSpot(parkingSpotId: String): ParkingSpotProjection?
+
+    suspend fun save(gateProjection: GateProjection)
+
+    suspend fun save(parkingSpotProjection: ParkingSpotProjection)
+
+    suspend fun existsGateName(name: GateName): Boolean
+
+    suspend fun existsParkingSpotName(name: ParkingSpotName): Boolean
+
+    suspend fun removeParkingSpot(parkingSpotId: String)
+
+    suspend fun removeGate(gateId: String)
+}
+```
+
+Dieser Port wird dann im Infrastructure Layer von einem Adapter implementiert #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.secondary.ParkingInventoryMongoDB.kt]. 
+Dieser Adapter nutzt das Spring Data MongoDB Reactive Repository um die Daten in der MongoDB zu speichern und abzurufen.
+Aus Performancegründen werden die Gates und ParkingSpots in eigenen Collections gespeichert um diese auch getrennt abfragen zu können.
 
 
-== Event System
+```kotlin
+@Service
+class ParkingInventoryRepositoryAdapter(
+    private val gateRepository: GateRepository,
+    private val parkingSpotRepository: ParkingSpotRepository,
+) : ParkingInventoryRepositoryPort {
+    override suspend fun getInventory() =
+        ParkingInventoryProjection(
+            gates = gateRepository.findAll().map { it.toProjection() }.collectList().awaitSingle(),
+            parkingSpots = parkingSpotRepository.findAll().map { it.toProjection() }.collectList().awaitSingle(),
+        )
 
-== Domain Modul
+    override suspend fun getGate(gateId: String) =
+        gateRepository.findById(gateId)
+            .awaitSingleOrNull()
+            ?.toProjection()
 
-== View Modul
+    override suspend fun getParkingSpot(parkingSpotId: String) =
+        parkingSpotRepository.findById(parkingSpotId)
+            .awaitSingleOrNull()
+            ?.toProjection()
+
+    override suspend fun save(gateProjection: GateProjection) {
+        gateRepository.save(gateProjection.toDocument()).awaitSingle()
+    }
+
+    override suspend fun save(parkingSpotProjection: ParkingSpotProjection) {
+        parkingSpotRepository.save(parkingSpotProjection.toDocument()).awaitSingle()
+    }
+
+    override suspend fun existsGateName(name: GateName) = gateRepository.existsByName(name.value).awaitSingle()
+
+    override suspend fun existsParkingSpotName(name: ParkingSpotName) =
+        parkingSpotRepository.existsByName(name.value).awaitSingle()
+
+    override suspend fun removeParkingSpot(parkingSpotId: String) {
+        parkingSpotRepository.deleteById(parkingSpotId).awaitSingleOrNull()
+    }
+
+    override suspend fun removeGate(gateId: String) {
+        gateRepository.deleteById(gateId).awaitSingleOrNull()
+    }
+}
+
+@Repository
+interface GateRepository : ReactiveMongoRepository<GateDocument, String> {
+    fun existsByName(name: String): Mono<Boolean>
+}
+
+@Repository
+interface ParkingSpotRepository : ReactiveMongoRepository<ParkingSpotDocument, String> {
+    fun existsByName(name: String): Mono<Boolean>
+}
+```
+
+== Beispiel: ParkingOperation
+
+In diesem Kapitel werde ich die Implementierung des ParkingOperation Bounded Contexts erläutern.
+Wie beim @subdomains-chapter herausgearbeitet handelt es sich hierbei um die Core Domain der Anwendung.
+Weiterhin soll diese Domain die Events in Echtzeit verarbeiten um den aktuellen Zustand der Parkvorgänge zu verwalten.
+Damit kommen besondere Herausforderungen auf die Implementierung zu.
+Bei der Vorstellung gehe ich wieder von dem Kern der Anwendung, dem Aggregate, aus und arbeite mich zu den Adaptern im Infrastructure Layer vor.
+
+=== ParkingOperator Aggregate
+
+Das ParkingOperation Aggregate befindet sich im Domain Layer des ParkingOperation Moduls #footnote[com.spruhs.parkflow.parkingoperation.core.domain.ParkingOperator.kt].
+Die Aufgabe des ParkingOperator Aggregates ist es, die Parkvorgänge zu verwalten.
+
+Der ParkingOperator erbt von der AggregateRoot Klasse und überschreibt das Attribut `aggregateId` und `whenEvent`.
+Weiterhin werden verschiedene Attribute definiert die den Zustand des ParkingOperators repräsentieren:
+- *parkingSpots*: Ist eine Map die alle Parkplätze im Parkhaus verwaltet. Der Schlüssel ist die ParkingSpotId und der Wert ist ein Value Objekt Parking Spot, dass in dem Domain Layer definiert ist.
+- *gates*: Ist eine Map die alle Gates im Parkhaus verwaltet. Der Schlüssel ist die GateId und der Wert ist ein Value Objekt Gate, dass in dem Domain Layer definiert ist.
+- *vehicles*: Ist eine Map die alle Fahrzeuge verwaltet die sich im Parkhaus befinden. Der Schlüssel ist die PlateNumber und der Wert ist ein Value Objekt Vehicle, dass in dem Domain Layer definiert ist.
+- *parkingSpotProvider*: Ist eine Schnittstelle die verschiedene Strategien zur Verfügung stellt um einen passenden Parkplatz für ein Fahrzeug zu finden und zuzuweisen. Die Implementierung der Schnittstelle befindet sich im Domain Layer und kann bei Bedarf ausgetauscht werden um verschiedene Strategien zu nutzen. Bei der Parkflow Anwendung ist eine sehr einfache Strategie implementiert die erst Prüft ob ein Parkplatz mit einem passenden Typen frei ist und anonsten den ersten Möglichen zuweist.
+
+```kotlin
+class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot(aggregateId, TYPE) {
+    private val log = getLogger(javaClass)
+
+    val parkingSpots: MutableMap<ParkingSpotId, ParkingSpot> = mutableMapOf()
+    val gates: MutableMap<GateId, Gate> = mutableMapOf()
+    val vehicles: MutableMap<PlateNumber, Vehicle> = mutableMapOf()
+
+    private var parkingSpotProvider: ParkingSpotProvider = DefaultParkingSpotProvider()
+    
+    ...
+}
+```
+
+Der ParkingOperator nutzt verschiedene Value Objects die auch in anderen Contexten existieren (ParkingSpot, Gate, Vehicle).
+Diese werden im ParkingOperation Context neu definiert und zwar so, wie der Context sie benötigt.
+Dadurch wird eines der Grundsätze von DDD umgesetzt, dass die gleichen Subjekte in verschiedenen Contexten eine andere Rolle haben können und somit auch unterschiedlich modelliert werden müssen.
+Weiterhin wird so die Abhängigkeit zu anderen Contexten reduziert.
+
+Das Value Object ParkingSpot repräsentiert einen Parkplatz im Parkhaus.
+Zu den bisherigen Attributen aus dem ParkingInventory Context kommt noch ein weiteres Attribut `rental` hinzu.
+Dieses Attribut repräsentiert eine mögliche Vermietung des Parkplatzes an ein Fahrzeug über einen bestimmten Zeitraum.
+Mit der Methode `isRented` kann geprüft werden, ob der Parkplatz aktuell vermietet ist.
+Weiterhin wurden zwei Attribute `parkingVehicle` und `reservedForVehicle` hinzugefügt.
+Diese werden genutzt um zu speichern, welches Fahrzeug aktuell auf dem Parkplatz parkt und für welches Fahrzeug der Parkplatz reserviert ist.
+
+```kotlin
+data class ParkingSpot(
+    val parkingSpotId: ParkingSpotId,
+    val types: MutableSet<ParkingSpotType> = mutableSetOf(),
+    var parkingVehicle: PlateNumber? = null,
+    var reservedForVehicle: PlateNumber? = null,
+    var isActive: Boolean = true,
+    var rental: Rental? = null,
+) {
+    fun isRented(): Boolean {
+        if (rental == null) {
+            return false
+        }
+
+        val today = LocalDate.now()
+
+        if (today.isBefore(rental?.from)) return false
+
+        if (rental?.to != null && today.isAfter(rental?.to)) return false
+
+        if (rental?.to == null && today.isAfter(rental?.from)) return false
+
+        return true
+    }
+}
+
+data class Rental(
+    val plateNumber: PlateNumber,
+    val from: LocalDate,
+    val to: LocalDate? = null,
+)
+```
+
+Das Value Object Gate repräsentiert ein Gate im Parkhaus.
+Es gibt zwei verschiedene Typen von Gates Entrance und Exit.
+
+
+```kotlin
+sealed class Gate(open val gateId: GateId, open var isActive: Boolean = true) {
+    data class Exit(override val gateId: GateId, override var isActive: Boolean = true) : Gate(gateId, isActive)
+
+    data class Entrance(override val gateId: GateId, override var isActive: Boolean = true) : Gate(gateId, isActive)
+}
+```
+
+Das Value Object Vehicle repräsentiert ein Fahrzeug im Parkhaus.
+Das Attribut `state` repräsentiert den aktuellen Zustand des Fahrzeugs im Parkhaus.
+
+
+```kotlin
+data class Vehicle(
+    val plateNumber: PlateNumber,
+    val hasDisabilityCard: Boolean = false,
+    var state: VehicleAction,
+)
+
+sealed class VehicleAction {
+    object DrivingAround : VehicleAction()
+
+    data class OnGate(val gate: Gate) : VehicleAction()
+
+    data class OnParkingSpot(val parkingSpotId: ParkingSpotId) : VehicleAction()
+}
+```
+
+Um die parkingSpots und gates zu verwalten verarbeitet der ParkingOperator verschiedene Events vom ParkingInventory Bounded Context.
+Dafür werden in der `whenEvent` Methode die entsprechenden Event Typen verarbeitet und die Maps aktualisiert.
+Hierbei entsteht das Problem, dass die Events beim Speichern automatisch veröffentlicht werden.
+Das soll darf aber nicht passieren, da der ParkingOperator fachlich gesehen kein Gate oder ParkingSpot erstellt, sondern nur den aktuellen Zustand verwaltet.
+Aus diesem Grund werden diese Events als imported Events markiert.
+Bei den Metadaten der Events wird ein Flag `imported` gesetzt.
+Der AggregateStore prüft dieses Flag bevor die Events veröffentlicht werden.
+
+Die Parkvorgänge werden durch Events repräsentiert wie z.B. VehicleArrived.
+Diese kommen von den Sensoren und werden vom ParkingOperator verarbeitet um den Zustand der Fahrzeuge zu verwalten.
+Wie in @bounded-contexts beschrieben, werden die Commands für den ParkingOperator über Events ausgelöst.
+Der ParkingOperator stellt dabei Methoden zur Verfügung um die verschiedenen Events zu verarbeiten.
+
+Insgesamt werden 4 Methoden zur Verarbeitung von Events zur Verfügung gestellt.
+
+Die on VehicleArrival Methode verarbeitet es, wenn ein Fahrzeug an einem Gate ankommt.
+Die Methode erstellt ein neues Vehicle Object für das Fahrzeug und weist ihm einen Parkplatz zu.
+Es wird eine GateRepsonse zurückgegeben die angibt.
+Damit kann die Anwendung dann eine Entsprechende Aktion durchführen wie z.B. das Tor öffnen, den Zugewiesenen Parkplatz mitteilen oder eine Fehlermeldung mitteilen.
+Bei einer State Veränderung des Aggregates wird ein entsprechendes Event erzeugt und über die apply Methode hinzugefügt.
+
+```kotlin
+fun onVehicleArrival(
+    gateId: GateId,
+    plateNumber: PlateNumber,
+    hasDisabilityCard: Boolean,
+): GateResponse {
+    val gate = gates[gateId] ?: return GateResponse.Error.NotFoundError
+    val arrivedVehicle = Vehicle(plateNumber, hasDisabilityCard, VehicleAction.OnGate(gate))
+
+    return determineArriveAction(gate, arrivedVehicle)
+        .also { apply(VehicleArrivedEvent(aggregateId, gateId, arrivedVehicle)) }
+}
+    
+sealed class GateResponse {
+    sealed class Error : GateResponse() {
+        object PlateNumberNotRegisteredError : Error()
+
+        object NoParkingSpotAvailableError : Error()
+
+        object NotFoundError : Error()
+    }
+
+    sealed class Action : GateResponse() {
+        data class ProvideParkingSpot(val parkingSpotId: ParkingSpotId) : Action()
+
+        object LetVehicleOut : Action()
+    }
+```    
+
+Die weiteren Methoden verarbeiten das Durchfahren eines Gates, das Parken auf einem Parkplatz und das Verlassen eines Parkplatzes.
+Auch diese Methoden erzeugen entsprechende Events bei einer Zustandsveränderung des Aggregates.
+In der `whenEvent` Methode werden die Events verarbeitet und der Zustand des Aggregates angepasst.
+
+```kotlin 
+fun onVehicleDroveThrough(
+    gateId: GateId,
+    plateNumber: PlateNumber,
+) {
+    when (gates[gateId] ?: return) {
+        is Gate.Entrance ->
+            apply(
+                VehicleEnteredParkingLotEvent(
+                    aggregateId,
+                    gateId,
+                    plateNumber,
+                    vehicles[plateNumber]?.hasDisabilityCard ?: false,
+                ),
+            )
+    
+        is Gate.Exit -> apply(VehicleLeavedParkingLotEvent(aggregateId, gateId, plateNumber))
+    }
+}
+        
+fun onVehicleParkedOn(
+    parkingSpotId: ParkingSpotId,
+    plateNumber: PlateNumber,
+) {
+    val parkingSpot = parkingSpots[parkingSpotId] ?: return
+    if (parkingSpot.parkingVehicle != null) {
+        log.error("CRASH $plateNumber on $parkingSpotId is already vehicle parked!")
+    }
+        
+    if (parkingSpot.reservedForVehicle == plateNumber) {
+        parkCorrect(parkingSpotId, plateNumber)
+    } else {
+        parkIncorrect(plateNumber, parkingSpot)
+    }
+}
+            
+fun onVehicleParkedOff(
+    parkingSpotId: ParkingSpotId,
+    plateNumber: PlateNumber,
+) = apply(VehicleParkedOffEvent(aggregateId, parkingSpotId, plateNumber))
+```
+
+=== Parking Operator Service
+
+Der ParkingOperatorService befindet sich im Application Layer des ParkingOperation Moduls #footnote[com.spruhs.parkflow.parkingoperation.core.application.ParkingOperatorService.kt].
+Der Service ist dafür Zuständig den ParkingOperator zu laden, zu speichern, die Events dem Operator zu übergeben und die Antwort des Operators zu verarbeiten.
+Er verwaltet den ParkingOperator und orchestriert die verschiedenen Aktionen die er verarbeitet.
+
+Der Service ist ein Spring Service und wird als Singleton in der Anwendung genutzt.
+Die Anwendung soll nur einen ParkingOperator besitzen.
+Der Service lädt beim Starten der Anwendung den ParkingOperator aus dem Aggregate Store oder erstellt einen neuen wenn noch keiner existiert.
+Auch hier besteht wieder die Herausforderung mit konkurrierenden Schreibzugriffen.
+Grundsälich könnte man dies mit einem Mutex lösen.
+Da ich hier aber gerne mehr Kontrolle über das habe, wie Methoden aufgerufen werden, habe ich hier das Actor Pattern implementiert.
+Der Actor ist eine Klasse die einen Channel besitzt und alle Anfragen an den Actor in einer eigenen Coroutine verarbeitet.
+Beim Starten des Actors wird eine Coroutine gestartet die auf dem Channel auf Anfragen wartet und diese nacheinander verarbeitet.
+Darüber hinaus wird eine `execute` Methode bereitgestellt die es ermöglicht, eine Aktion auf dem Actor auszuführen und das Ergebnis zurückzugeben.
+Die Methode wartet, bis die Aktion verarbeitet wurde und gibt das Ergebnis zurück.
+Weiterhin speichert die Methode den ParkingOperator nach jeder Aktion im AggregateStore.
+Dabei wird immer nur die Events gespeichert, die seit dem letzten speichern hinzugekommen sind.
+Diese werden dann auch veröffentlicht.
+Dadurch ist der State in der Datenbank immer aktuell und die Events werden in Echtzeit veröffentlicht.
+Der Channel sorgt dafür, dass die Aktionen in einer Warteschlagen abgearbeitet werden und immer nur eine Aktion gleichzeitig verarbeitet wird.
+
+```kotlin
+@Service
+class ParkingOperatorService(
+    private val store: AggregateStore,
+    private val gateController: GateControllerPort,
+    private val customerPort: CustomerOperationApiPort,
+    private val notificationPort: CustomerNotificationPort,
+    eventExecutionStrategy: EventExecutionStrategy,
+) {
+    ...
+    
+    private lateinit var actor: ParkingOperatorActor
+    
+    init {
+        eventExecutionStrategy.execute {
+            actor = loadParkingSpotOperator()
+        }
+    }  
+    
+    private suspend fun loadParkingSpotOperator() =
+        try {
+            val aggregate = store.load(PARKING_SPOT_OPERATOR_AGGREGATE_ID, ParkingOperatorAggregate::class.java)
+            ParkingOperatorActor(aggregate, store)
+        } catch (_: AggregateNotFoundException) {
+            log.info("Parking spot operator aggregate was not found. Creating a new parking spot operator.")
+            ParkingOperatorActor(ParkingOperatorAggregate(PARKING_SPOT_OPERATOR_AGGREGATE_ID), store)
+        }    
+    ...
+}
+
+class ParkingOperatorActor(
+    private val aggregate: ParkingOperatorAggregate,
+    private val aggregateStore: AggregateStore,
+) {
+    private val commandChannel = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    init {
+        scope.launch {
+            for (cmd in commandChannel) {
+                cmd()
+            }
+        }
+    }
+
+    suspend fun <T> execute(command: suspend ParkingOperatorAggregate.() -> T): T {
+        val deferred = CompletableDeferred<T>()
+        commandChannel.send {
+            try {
+                val result = aggregate.command()
+                aggregateStore.save(aggregate)
+                deferred.complete(result)
+            } catch (e: Throwable) {
+                deferred.completeExceptionally(e)
+            }
+        }
+        return deferred.await()
+    }
+}
+```
+
+Der Service stellt verschiedene Methoden zur Verfügung um die Events zu verarbeiten.
+Die meisten sind eher trivial und rufen nur die entsprechende Methode auf dem ParkingOperator auf.
+Die Methode für das Ankommen eines Fahrzeugs ist etwas komplexer.
+Zuerst wird in der Methode synchron über die CustomerAccess Api geprüft, ob das Fahrzeug registriert ist.
+Wenn das Fahrzeug nicht registriert ist, wird eine Fehlermeldung an das Gate gesendet.
+Ansonsten wird die `onVehicleArrival` Methode auf dem ParkingOperator Actor ausgeführt und die Antwort verarbeitet.
+Beim erfolgreichen Zuweisen eines Parkplatz wird über einen GateController Port das Gate geöffnet.
+Der Controller Port kann von einem verschiedenen Adapter implementiert werden um die Aktion auszuführen.
+In diser Anwendung wird hier ein dummy Adapter genutzt.
+Das gleiche gilt auch für das mitteilen von den Parkplätzen.
+Hier wird ebenfalls über einen Port der der Parkplatz mitgeteilt.
+Dies kann dann von verschiedenen Adapter implementiert werden und z.B. den Parkplatz über ein Display am Gate anzeigen und/oder per App mitteilen.
+
+```kotlin
+suspend fun handleCarArrived(
+    gateId: GateId,
+    plateNumber: PlateNumber,
+    hasDisabilityCard: Boolean,
+) {
+    if (!isPlateRegistered(plateNumber)) {
+        gateController.showError(gateId, plateNumber, GateResponse.Error.PlateNumberNotRegisteredError)
+        return
+    }
+
+    val response = actor.execute { onVehicleArrival(gateId, plateNumber, hasDisabilityCard) }
+
+    handleGateResponse(response, gateId, plateNumber)
+}
+
+private suspend fun handleGateResponse(
+    response: GateResponse,
+    gateId: GateId,
+    plateNumber: PlateNumber,
+) {
+    when (response) {
+        is GateResponse.Action.LetVehicleOut -> gateController.openGate(gateId, plateNumber)
+        is GateResponse.Action.ProvideParkingSpot -> {
+            gateController.showProvidedParkingSpot(gateId, response.parkingSpotId, plateNumber)
+        }
+
+        is GateResponse.Error -> gateController.showError(gateId, plateNumber, response)
+    }
+}
+```
+
+=== Vehicle Sensor Adapter
+
+Die Vehicle Sensor Adapter befinden sich im Infrastructure Layer des ParkingOperation Moduls #footnote[com.spruhs.parkflow.parkingoperation.core.infrastructure.primary.VehVehicleEventListenerAdapter.kt].
+Dieser Adapter ist dafür zuständig die Events von den Sensoren, die über RabbitMQ veröffentlicht werden, zu empfangen und an den ParkingOperatorService weiterzuleiten.
+Dafür wird der Spring Starter für AMQP genutzt #footnote[org.springframework.boot:spring-boot-starter-amqp].
+Mit der Spring Annotation `@RabbitListener` werden die verschiedenen Queues definiert die der Listener überwachen soll.
+Beim empfangen eines Events wird dieses in einer neuen Coroutine asynchron verarbeitet und an den ParkingOperatorService weitergeleitet.
+
+```kotlin
+@Service
+class VehicleEventListenerAdapter(
+    private val commandPort: ParkingOperationCommandPort,
+    private val eventExecutionStrategy: EventExecutionStrategy,
+    private val metrics: EventMetrics,
+) {
+    private val log = getLogger(javaClass)
+
+    @RabbitListener(queues = [QUEUE_ARRIVED])
+    fun handleVehicleArrived(event: CarArrivedSensorEvent) {
+        log.info("VehicleArrivedEvent received: $event")
+        metrics.rabbitReceived.increment()
+        eventExecutionStrategy.execute {
+            commandPort.vehicleArrived(GateId(event.gateId), PlateNumber(event.plateNumber), event.hasDisabilityCard)
+        }
+    }
+    
+    ...
+    
+}
+```
+
+=== Zusammenfassung
+ 
+Mit Spring und Kotlin war es dabei möglich von auf allen Ebenen asynchrone und nicht-blockierende Komponenten zu erstellen.
+Die dabei auftretenden Herausforderungen wie konkurrierende Schreibzugriffe und eventuelle Konsistenz der Projektionen konnten mit einfachen Mitteln, von Spring und Kotlin, gelöst werden.
 
 = Evaluierung
 

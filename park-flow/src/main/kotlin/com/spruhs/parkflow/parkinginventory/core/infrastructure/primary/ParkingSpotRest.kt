@@ -76,17 +76,21 @@ class ParkingSpotExceptionHandler {
     private val log = getLogger(javaClass)
 
     @ExceptionHandler
-    fun handleParkingSpotNotFoundException(ex: ParkingSpotNotFoundException) =
+    fun handleParkingSpotNotFoundException(ex: ParkingSpotNotFoundException): ResponseEntity<String> =
         ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message)
             .also { log.error(ex.message, it) }
 
     @ExceptionHandler
-    fun handleDisabledParkingSpotsNotRentableException(ex: DisabledParkingSpotsNotRentableException) =
+    fun handleDisabledParkingSpotsNotRentableException(
+        ex: DisabledParkingSpotsNotRentableException
+    ): ResponseEntity<String> =
         ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
             .also { log.error(ex.message, it) }
 
     @ExceptionHandler
-    fun handleRentableParkingSpotWithoutPriceException(ex: RentableParkingSpotWithoutPriceException) =
+    fun handleRentableParkingSpotWithoutPriceException(
+        ex: RentableParkingSpotWithoutPriceException
+    ): ResponseEntity<String> =
         ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
             .also { log.error(ex.message, it) }
 }

@@ -21,6 +21,8 @@ repositories {
 }
 
 extra["springModulithVersion"] = "1.4.4"
+val mockkVersion = "1.12.0"
+val archUnitVersion = "1.4.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -46,8 +48,8 @@ dependencies {
     runtimeOnly("org.springframework.modulith:spring-modulith-observability")
 
     testImplementation("org.assertj:assertj-core")
-    testImplementation("io.mockk:mockk:1.12.0")
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("com.tngtech.archunit:archunit-junit5:$archUnitVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

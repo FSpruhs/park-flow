@@ -11,7 +11,7 @@ class GlobalExceptionHandler() {
     private val log = getLogger(javaClass)
 
     @ExceptionHandler
-    fun handleIllegalArgumentException(ex: IllegalArgumentException) =
+    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<String> =
         ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
             .also { log.error(ex.message, it) }
 }

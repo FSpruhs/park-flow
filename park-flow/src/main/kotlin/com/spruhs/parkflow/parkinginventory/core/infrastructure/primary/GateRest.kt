@@ -32,7 +32,7 @@ class GateRestAdapter(private val commandPort: GateCommandPort) {
 
     @PostMapping("/{gateId}/activation-state")
     suspend fun updateActivationState(
-        @PathVariable("gateId") gateId: String,
+        @PathVariable gateId: String,
         @RequestParam state: String,
     ) = when (ActivationState.valueOf(state)) {
         ActivationState.ACTIVE -> commandPort.activate(GateId(gateId))
@@ -41,7 +41,7 @@ class GateRestAdapter(private val commandPort: GateCommandPort) {
 
     @DeleteMapping("/{gateId}")
     suspend fun removeGate(
-        @PathVariable("gateId") gateId: String,
+        @PathVariable gateId: String,
     ) = commandPort.remove(GateId(gateId))
 }
 
@@ -50,7 +50,7 @@ class GateExceptionHandler {
     private val log = getLogger(javaClass)
 
     @ExceptionHandler
-    fun handleGateNotFoundException(ex: GateNotFoundException) =
+    fun handleGateNotFoundException(ex: GateNotFoundException): ResponseEntity<String> =
         ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message)
             .also { log.error(ex.message, it) }
 }
