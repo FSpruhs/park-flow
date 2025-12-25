@@ -518,6 +518,7 @@ Ohne klare Domänengrenzen, ein durchdachtes Deployment-Konzept und ausgereifte 
 
 Ein Modulith ist ein Architekturmuster, das die Vorteile von Monolithen und Microservices vereint.
 Die Anwendung wird als eine einzige, gemeinsam deployte Einheit bereitgestellt, ist intern jedoch in klar abgegrenzte, fachlich motivierte Module strukturiert @stack2022[p.~41].
+Diese Module habe eine konkrete Schnittstelle und kommunizieren untereinander über diese Schnittstellen.
 Diese Module bilden eigenständige Verantwortungsbereiche ab und orientieren sich häufig an Bounded Contexts aus dem Domain-Driven Design.
 
 Vom klassischen Monolithen übernimmt der Modulith vor allem die einfache Bereitstellung und den geringen infrastrukturellen Overhead.
@@ -708,53 +709,53 @@ Durch diese Kombination entsteht eine Softwarearchitektur, die sowohl fachlich p
 
 = Implementierung
 
-In diesem Kapitel wird die Umsetzung der in den vorherigen Kapiteln vorgestellten Konzepte und Technologien anhand eines Beispielprojekts erläutert. 
+In diesem Kapitel wird die Umsetzung der in den vorherigen Kapiteln vorgestellten Konzepte und Technologien anhand eines Beispielprojekts erläutert.
 Ziel ist es, die praktische Anwendung der theoretischen Grundlagen darzustellen und zu zeigen, wie diese miteinander kombiniert werden können, um eine modulare, wartbare und skalierbare Softwarelösung zu realisieren.
 
-Als Domain für das Beispielprojekt wurde eine fiktive Parkplatzverwaltungsanwendung gewählt. 
-Diese Domain zeichnet sich durch einen klar abgegrenzten fachlichen Kontext aus, der in der physischen Welt verortet ist. 
+Als Domain für das Beispielprojekt wurde eine fiktive Parkplatzverwaltungsanwendung gewählt.
+Diese Domain zeichnet sich durch einen klar abgegrenzten fachlichen Kontext aus, der in der physischen Welt verortet ist.
 Die Anzahl der Nutzer ist dabei an die reale Kapazität des Parkplatzes gebunden, wodurch plötzliche Lastspitzen als unwahrscheinlich angesehen werden können.
 
-Darüber hinaus weist die Parkplatzdomain eine Reihe von Zustandsänderungen auf, die sich gut durch Events abbilden lassen. 
-Innerhalb des Systems entsteht dadurch ein dynamisches Verhalten, da Events fortlaufend den Zustand der Domain verändern und weitere fachliche Reaktionen auslösen können. 
-Dazu zählen unter anderem das Ein- und Ausfahren von Fahrzeugen sowie das Reservieren und Freigeben von Parkplätzen. 
-Die Domain ist vergleichsweise einfach verständlich und erfordert kein spezielles Fachwissen. 
+Darüber hinaus weist die Parkplatzdomain eine Reihe von Zustandsänderungen auf, die sich gut durch Events abbilden lassen.
+Innerhalb des Systems entsteht dadurch ein dynamisches Verhalten, da Events fortlaufend den Zustand der Domain verändern und weitere fachliche Reaktionen auslösen können.
+Dazu zählen unter anderem das Ein- und Ausfahren von Fahrzeugen sowie das Reservieren und Freigeben von Parkplätzen.
+Die Domain ist vergleichsweise einfach verständlich und erfordert kein spezielles Fachwissen.
 Gleichzeitig lassen sich typische Anwendungsfälle klar definieren, die notwendig sind, um zentrale Aspekte von DDD und EDA zu demonstrieren.
 
-Der vollständige Quellcode des Beispielprojekts ist in meinem GitHub-Repository verfügbar. 
+Der vollständige Quellcode des Beispielprojekts ist in meinem GitHub-Repository verfügbar.
 In der Datei `README.md` befindet sich eine kurze Anleitung zur Nutzung des Repositories#footnote[GitHub-Repository: #link("https://github.com/FSpruhs/park-flow")].
 
 == Vorstellung von Parkflow
 
 Das Beispielprojekt trägt den Namen *Parkflow*.
 Ziel der Anwendung ist die Verwaltung eines Parkplatzes sowie die Steuerung des laufenden Parkbetriebs.
-Hierbei wird angenommen, dass sämtliche Ein- und Ausgänge sowie alle Parkplätze mit Sensoren ausgestattet sind, die Aktionen von Fahrzeugen erkennen und entsprechende Ereignisse auslösen#footnote[Das Verhalten der Sensoren wird in dieser Arbeit simuliert.]. 
+Hierbei wird angenommen, dass sämtliche Ein- und Ausgänge sowie alle Parkplätze mit Sensoren ausgestattet sind, die Aktionen von Fahrzeugen erkennen und entsprechende Ereignisse auslösen#footnote[Das Verhalten der Sensoren wird in dieser Arbeit simuliert.].
 Auf dieser Grundlage können verschiedene Abläufe innerhalb des Systems automatisiert werden.
 
-In einem ersten Schritt soll der Parkplatzbetreiber in der Lage sein, Parkplätze sowie Ein- und Ausgänge im System anzulegen und zu verwalten. 
+In einem ersten Schritt soll der Parkplatzbetreiber in der Lage sein, Parkplätze sowie Ein- und Ausgänge im System anzulegen und zu verwalten.
 Dazu zählen unter anderem das Anlegen und Entfernen von Inventar, das temporäre Aktivieren oder Deaktivieren einzelner Elemente, die Festlegung von Preisen sowie die Änderung von Parkplatztypen#footnote[Beispiele: Entfernen von Inventar, temporäres Deaktivieren oder Aktivieren, Preisgestaltung, Änderung von Parkplatztypen.].
 Innerhalb des Beispielprojekts werden mehrere Parkplatztypen berücksichtigt, darunter reguläre Parkplätze, Behindertenparkplätze, Parkplätze für Elektrofahrzeuge sowie monatlich mietbare Parkplätze.
 
-Auf Seiten der Parkplatznutzer besteht die Möglichkeit, einen Benutzeraccount anzulegen und Zahlungsinformationen zu hinterlegen. 
-Darüber hinaus können Fahrzeuge über ihr Kennzeichen registriert werden. 
+Auf Seiten der Parkplatznutzer besteht die Möglichkeit, einen Benutzeraccount anzulegen und Zahlungsinformationen zu hinterlegen.
+Darüber hinaus können Fahrzeuge über ihr Kennzeichen registriert werden.
 Zusätzlich ist vorgesehen, dass Parkplätze für einen Monat angemietet werden können.
 
-Neben der Verwaltung von Parkplätzen und Nutzern umfasst das System auch den laufenden Parkbetrieb. 
-Fährt ein Fahrzeug an einen Eingang heran, wird das Kennzeichen über einen Sensor erfasst und geprüft, ob das Fahrzeug im System registriert ist. 
-Ist dies der Fall, wird dem Fahrzeug ein geeigneter Parkplatz zugewiesen und angezeigt. 
-Anschließend wird das Einfahrtstor geöffnet und das Fahrzeug kann einfahren. 
-Über einen Sensor am Parkplatz wird dem System mitgeteilt, welches Fahrzeug dort abgestellt wurde. 
-Verlässt das Fahrzeug den Parkplatz, wird das Kennzeichen am Ausgang erneut erfasst, das Ausfahrtstor geöffnet und der Ausfahrvorgang ermöglicht. 
+Neben der Verwaltung von Parkplätzen und Nutzern umfasst das System auch den laufenden Parkbetrieb.
+Fährt ein Fahrzeug an einen Eingang heran, wird das Kennzeichen über einen Sensor erfasst und geprüft, ob das Fahrzeug im System registriert ist.
+Ist dies der Fall, wird dem Fahrzeug ein geeigneter Parkplatz zugewiesen und angezeigt.
+Anschließend wird das Einfahrtstor geöffnet und das Fahrzeug kann einfahren.
+Über einen Sensor am Parkplatz wird dem System mitgeteilt, welches Fahrzeug dort abgestellt wurde.
+Verlässt das Fahrzeug den Parkplatz, wird das Kennzeichen am Ausgang erneut erfasst, das Ausfahrtstor geöffnet und der Ausfahrvorgang ermöglicht.
 Gleichzeitig wird auf Basis der Parkdauer eine Rechnung erstellt und das hinterlegte Zahlungsmittel belastet.
 
-Die Anwendung ist darauf ausgelegt, den Parkplatzbetrieb für Anlagen unterschiedlicher Größenordnungen zu unterstützen. 
-Dabei dürfen ausschließlich registrierte Fahrzeuge den Parkplatz betreten. 
-Durch die Zuordnung von Fahrzeugen zu Parkplätzen soll eine möglichst effiziente Auslastung der verfügbaren Stellflächen erreicht werden. 
-Parkplätze mit besonderem Zweck, wie beispielsweise Behinderten- oder Elektrofahrzeugparkplätze, werden bevorzugt an entsprechend geeignete Fahrzeuge vergeben. 
-Das Verfahren zur Parkplatzzuweisung ist dabei flexibel gestaltet, sodass der Parkplatzbetreiber zwischen verschiedenen Strategien wählen und diese auch während des laufenden Betriebs wechseln kann. 
+Die Anwendung ist darauf ausgelegt, den Parkplatzbetrieb für Anlagen unterschiedlicher Größenordnungen zu unterstützen.
+Dabei dürfen ausschließlich registrierte Fahrzeuge den Parkplatz betreten.
+Durch die Zuordnung von Fahrzeugen zu Parkplätzen soll eine möglichst effiziente Auslastung der verfügbaren Stellflächen erreicht werden.
+Parkplätze mit besonderem Zweck, wie beispielsweise Behinderten- oder Elektrofahrzeugparkplätze, werden bevorzugt an entsprechend geeignete Fahrzeuge vergeben.
+Das Verfahren zur Parkplatzzuweisung ist dabei flexibel gestaltet, sodass der Parkplatzbetreiber zwischen verschiedenen Strategien wählen und diese auch während des laufenden Betriebs wechseln kann.
 Ein mögliches Szenario ist beispielsweise ein Parkplatz eines Fußballstadions, bei dem an Spieltagen ausschließlich Fahrzeuge von Ticketinhabern zugelassen werden, während an spielfreien Tagen auch andere Nutzer berücksichtigt werden.
 
-Da es sich bei Parkflow um ein Beispielprojekt handelt, konzentriert sich die Implementierung auf die Kernfunktionen, die erforderlich sind, um die in dieser Arbeit vorgestellten Konzepte zu demonstrieren. 
+Da es sich bei Parkflow um ein Beispielprojekt handelt, konzentriert sich die Implementierung auf die Kernfunktionen, die erforderlich sind, um die in dieser Arbeit vorgestellten Konzepte zu demonstrieren.
 Die folgenden Aspekte werden daher nicht berücksichtigt:
 
 - Sicherheitsmechanismen wie Authentifizierung und Autorisierung#footnote[Standardisierte Verfahren wie OAuth 2.0 könnten grundsätzlich ergänzt werden, sind jedoch nicht Teil dieser Arbeit.].
@@ -767,16 +768,16 @@ Die folgenden Aspekte werden daher nicht berücksichtigt:
 
 == Erkunden der Domain
 
-Die Domain des Beispielprojekts wird im Rahmen eines Event Storming Workshops exploriert. 
+Die Domain des Beispielprojekts wird im Rahmen eines Event Storming Workshops exploriert.
 Event Storming wird in der Regel als kollaborativer Prozess mit mehreren Teilnehmern durchgeführt, um unterschiedliche Perspektiven in die Modellierung einzubeziehen.
-Aufgrund fehlender externer Fachexperten wird die Rolle des Domänenexperten in dieser Arbeit jedoch von mir selbst übernommen, wodurch der Workshop allein durchgeführt wird. 
+Aufgrund fehlender externer Fachexperten wird die Rolle des Domänenexperten in dieser Arbeit jedoch von mir selbst übernommen, wodurch der Workshop allein durchgeführt wird.
 In dieser Rolle werden die Use Cases modelliert, die im Rahmen dieser Arbeit implementiert werden sollen.
 
-Da keine Diskussionen mit weiteren Teilnehmern stattfinden, lässt sich der Workshop nur eingeschränkt abbilden. 
+Da keine Diskussionen mit weiteren Teilnehmern stattfinden, lässt sich der Workshop nur eingeschränkt abbilden.
 Ziel ist nicht die Erstellung eines vollständigen oder perfekten Modells, sondern die Demonstration des Event Storming-Prozesses und die Verdeutlichung der Bedeutung von Events innerhalb der Domain.
 
-Auch wenn die fehlende Perspektivenvielfalt den Prozess einschränkt, ist es dennoch möglich, die Domäne zu modellieren und die zentralen Konzepte zu identifizieren. 
-Um die Übersichtlichkeit zu wahren, werden nicht alle Schritte grafisch dargestellt. 
+Auch wenn die fehlende Perspektivenvielfalt den Prozess einschränkt, ist es dennoch möglich, die Domäne zu modellieren und die zentralen Konzepte zu identifizieren.
+Um die Übersichtlichkeit zu wahren, werden nicht alle Schritte grafisch dargestellt.
 Sämtliche Abbildungen zum Workshop sind in der Dokumentation von Parkflow verfügbar#footnote("/doc/eventstorming").
 
 === Schritt 1: Unstrukturiertes Erforschen
@@ -794,9 +795,9 @@ Bei den Ereignissen handelt es sich um fachliche Ereignisse in der Vergangenheit
 
 === Schritt 2: Zeitache
 
-Im zweiten Schritt werden die Events auf einer horizontalen Zeitachse angeordnet. 
-Dabei beginnt die Darstellung mit dem frühesten Event links und endet mit dem aktuellsten Event rechts. 
-Bei der Anordnung wird vom Happy Path ausgegangen. 
+Im zweiten Schritt werden die Events auf einer horizontalen Zeitachse angeordnet.
+Dabei beginnt die Darstellung mit dem frühesten Event links und endet mit dem aktuellsten Event rechts.
+Bei der Anordnung wird vom Happy Path ausgegangen.
 Events, die gleichzeitig auftreten, werden vertikal untereinander platziert @khononov2022[p.~218].
 
 #figure(
@@ -807,46 +808,46 @@ Events, die gleichzeitig auftreten, werden vertikal untereinander platziert @kho
 ) <zeitachse>
 
 In Abbildung @zeitachse ist zu erkennen, dass die zuvor unstrukturierten Events in fünf verschiedene Zeitachsen unterteilt wurden.
-Drei Zeitachsen betreffen die Verwaltung von Parkplätzen, Toren und Kunden, die in ihrer Struktur sehr ähnlich aufgebaut sind. 
-Zunächst wird das jeweilige Objekt angelegt. 
+Drei Zeitachsen betreffen die Verwaltung von Parkplätzen, Toren und Kunden, die in ihrer Struktur sehr ähnlich aufgebaut sind.
+Zunächst wird das jeweilige Objekt angelegt.
 Anschließend können verschiedene Eigenschaften geändert, hinzugefügt oder entfernt werden.
 
-Die vierte Zeitachse zeigt den Lifecycle eines Fahrzeugs während eines Parkplatzbesuchs. 
-An einem Punkt teilt sich die Zeitachse in zwei Pfade und führt später wieder zusammen. 
-Dies geschieht, wenn ein Fahrzeug auf einem Parkplatz parkt. 
-Es kann entweder auf dem zugewiesenen Parkplatz oder auf einem anderen Parkplatz abgestellt werden. 
+Die vierte Zeitachse zeigt den Lifecycle eines Fahrzeugs während eines Parkplatzbesuchs.
+An einem Punkt teilt sich die Zeitachse in zwei Pfade und führt später wieder zusammen.
+Dies geschieht, wenn ein Fahrzeug auf einem Parkplatz parkt.
+Es kann entweder auf dem zugewiesenen Parkplatz oder auf einem anderen Parkplatz abgestellt werden.
 Im Falle des Parkens auf einem nicht zugewiesenen Parkplatz werden zusätzliche Events ausgelöst.
 
 Die fünfte Zeitachse stellt den Bezahlvorgang dar.
 
 === Schritt 3: Pain Points
 
-Im dritten Schritt werden Pain Points identifiziert und markiert. 
-Dabei handelt es sich um Stellen im Prozess, die problematisch, ineffizient oder fehleranfällig sein können. 
+Im dritten Schritt werden Pain Points identifiziert und markiert.
+Dabei handelt es sich um Stellen im Prozess, die problematisch, ineffizient oder fehleranfällig sein können.
 Pain Points werden mit rautenförmigen, pinkfarbenen Klebezetteln dargestellt @khononov2022[p.~219].
 
-Für Parkflow wird ein Pain Point bei den Events ParkedOn und ParkedOnWrong identifiziert. 
+Für Parkflow wird ein Pain Point bei den Events ParkedOn und ParkedOnWrong identifiziert.
 Dies verdeutlicht die potenzielle Gefahr einer unkontrollierten Dynamik, die entstehen kann, wenn Fahrzeuge einander die zugewiesenen Parkplätze „wegnehmen“ und die neu zugewiesenen Parkplätze nicht korrekt beim jeweiligen Fahrzeug ankommen.
 
 === Schritt 4: Pivotal Events
 
-Im vierten Schritt werden Pivotal Events identifiziert und markiert. 
-Dabei handelt es sich um Events, die einen Übergang des Prozesses in eine andere Phase auslösen. 
+Im vierten Schritt werden Pivotal Events identifiziert und markiert.
+Dabei handelt es sich um Events, die einen Übergang des Prozesses in eine andere Phase auslösen.
 Pivotal Events werden mit einem vertikalen Strich dargestellt @khononov2022[p.~219-220].
 
 === Schritt 5: Commands
 
-Im fünften Schritt werden Commands identifiziert. 
-Bei Commands handelt es sich um Anweisungen, die eine Aktion innerhalb des Systems auslösen. 
-Ein Command führt zu einem Event, sobald die entsprechende Aktion erfolgreich abgeschlossen wurde. 
+Im fünften Schritt werden Commands identifiziert.
+Bei Commands handelt es sich um Anweisungen, die eine Aktion innerhalb des Systems auslösen.
+Ein Command führt zu einem Event, sobald die entsprechende Aktion erfolgreich abgeschlossen wurde.
 Aus diesem Grund werden Commands auf hellblauen Klebezetteln vor dem zugehörigen Event platziert.
 
-Zusätzlich kann ein Actor, der einen Command ausführt, auf einem gelben Klebezettel vermerkt und an den jeweiligen Command angeheftet werden. 
+Zusätzlich kann ein Actor, der einen Command ausführt, auf einem gelben Klebezettel vermerkt und an den jeweiligen Command angeheftet werden.
 Wird eine Folge von Commands von demselben Actor ausgeführt, kann der Actor auch über die gesamte Abfolge hinweg dargestellt werden @khononov2022[p.~220-221].
 
-Für Parkflow werden zwei Actor unterschieden. 
-Der Parkplatzbetreiber und der Kunde. 
-Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars zuständig und führt die entsprechenden Commands aus. 
+Für Parkflow werden zwei Actor unterschieden.
+Der Parkplatzbetreiber und der Kunde.
+Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars zuständig und führt die entsprechenden Commands aus.
 Der Kunde ist für die Registrierung seiner Fahrzeuge sowie das Mieten von Parkplätzen verantwortlich und führt die entsprechenden Commands aus.
 
 #figure(
@@ -858,22 +859,22 @@ Der Kunde ist für die Registrierung seiner Fahrzeuge sowie das Mieten von Parkp
 
 === Schritt 6: Policies
 
-Im sechsten Schritt werden Policies identifiziert. 
-Policies sind Regeln oder Bedingungen, die festlegen, wie das System auf bestimmte Events reagieren soll. 
-Dabei handelt es sich in der Regel um Commands, die nicht von einem Actor ausgelöst werden, sondern automatisch als Reaktion auf ein Event ausgeführt werden. 
+Im sechsten Schritt werden Policies identifiziert.
+Policies sind Regeln oder Bedingungen, die festlegen, wie das System auf bestimmte Events reagieren soll.
+Dabei handelt es sich in der Regel um Commands, die nicht von einem Actor ausgelöst werden, sondern automatisch als Reaktion auf ein Event ausgeführt werden.
 Policies werden auf lilafarbenen Klebezetteln dargestellt und zwischen dem auslösenden Event und dem resultierenden Command platziert @khononov2022[p.~221].
 
-Für Parkflow existieren beispielsweise folgende Policies. 
+Für Parkflow existieren beispielsweise folgende Policies.
 Wird ein Fahrzeug an einem Eingang erkannt, löst das System automatisch den Command `ProvideParkingSpot` aus, um dem Fahrzeug einen Parkplatz zuzuweisen. Ebenso wird durch eine Policy automatisch eine Rechnung erstellt, sobald das Fahrzeug den Parkplatz verlässt.
 
 === Schritt 7: Read Models
 
-Im siebten Schritt werden Read Models identifiziert. 
-Read Models werden von einem Actor verwendet, um Entscheidungen über das Ausführen von Commands zu treffen. 
+Im siebten Schritt werden Read Models identifiziert.
+Read Models werden von einem Actor verwendet, um Entscheidungen über das Ausführen von Commands zu treffen.
 Dabei handelt es sich nicht um technische Darstellungen von Datenbanken, sondern um fachliche Konzepte, die dem Actor helfen, den aktuellen Zustand der Domäne zu verstehen.
-Viele Read Models lassen sich direkt aus realen Konzepten ableiten, wie beispielsweise der aktuelle Parkplatzbestand oder die Historie der Fahrzeuge. 
-Dies erleichtert die Abbildung des Systems in einer Weise, die für die Domainakteure verständlich und nachvollziehbar ist. 
-Read Models werden auf grünen Klebezetteln dargestellt. 
+Viele Read Models lassen sich direkt aus realen Konzepten ableiten, wie beispielsweise der aktuelle Parkplatzbestand oder die Historie der Fahrzeuge.
+Dies erleichtert die Abbildung des Systems in einer Weise, die für die Domainakteure verständlich und nachvollziehbar ist.
+Read Models werden auf grünen Klebezetteln dargestellt.
 Da der Actor die Informationen benötigt, bevor er die Commands ausführt, werden die Read Models vor den Commands platziert @khononov2022[p.~222].
 
 Bei Parkflow ergeben sich folgende Read Models:
@@ -886,25 +887,25 @@ Bei Parkflow ergeben sich folgende Read Models:
 
 === Schritt 8: Externe Systeme
 
-Im achten Schritt werden externe Systeme identifiziert. 
-Externe Systeme sind Systeme außerhalb der eigenen Domäne, mit denen das System interagiert. 
-Dies können beispielsweise Zahlungssysteme, Benachrichtigungssysteme oder andere Drittanbietersysteme sein. 
+Im achten Schritt werden externe Systeme identifiziert.
+Externe Systeme sind Systeme außerhalb der eigenen Domäne, mit denen das System interagiert.
+Dies können beispielsweise Zahlungssysteme, Benachrichtigungssysteme oder andere Drittanbietersysteme sein.
 Externe Systeme werden auf pinkfarbenen Klebezetteln dargestellt und an den Stellen im Prozess platziert, an denen die Interaktion mit dem externen System erfolgt @khononov2022[p.~223].
 
 Für Parkflow wird ein externes Zahlungssystem genutzt, um die Parkgebühren automatisch vom hinterlegten Zahlungsmittel des Kunden abzubuchen, sobald das Fahrzeug den Parkplatz verlässt.
 
 === Schritt 9: Aggregates
 
-Im neunten Schritt werden Aggregates identifiziert. 
-Aggregates werden auf großen gelben Klebezetteln dargestellt. 
-Um jeden Aggregate-Klebezettel werden auf der linken Seite die zugehörigen Commands und auf der rechten Seite die zugehörigen Events platziert @khononov2022[p.~223]. 
+Im neunten Schritt werden Aggregates identifiziert.
+Aggregates werden auf großen gelben Klebezetteln dargestellt.
+Um jeden Aggregate-Klebezettel werden auf der linken Seite die zugehörigen Commands und auf der rechten Seite die zugehörigen Events platziert @khononov2022[p.~223].
 Auf diese Weise wird ersichtlich, welche Commands und Events zu welchem Aggregate gehören.
 
 Für Parkflow ergeben sich nach diesem Schritt die Aggregates `ParkingSpot`, `Gate`, `Customer`, `ParkingOperator` und `Invoice`.
 
 === Schritt 10: Bounded Contexts
 
-Im zehnten und letzten Schritt werden Bounded Contexts identifiziert. 
+Im zehnten und letzten Schritt werden Bounded Contexts identifiziert.
 Bounded Contexts sind klar abgegrenzte Bereiche innerhalb der Domain, die jeweils eine eigene Sprache und ein eigenes Modell besitzen @khononov2022[p.~224].
 Sie werden durch einen Rahmen dargestellt, der die zugehörigen Aggregates, Commands, Events, Read Models und externen Systeme umfasst.
 
@@ -942,18 +943,24 @@ In Abbildung @subdomains ist die Einteilung der Subdomains von Parkflow dargeste
   ],
 ) <subdomains>
 
-=== Ubiquitous Language 
+=== Ubiquitous Language
 
 Für die Ubiquitous Language habe ich in der Dokumentation von Parkflow einen Glossar #footnote[/doc/glossary] erstellt.
 Dieser Glossar enthält die wichtigsten Begriffe und Konzepte, die in den verschiedenen Bounded Contexts von Parkflow verwendet werden.
 
 == Architektur
 
-In dem vorherigen Kapitel habe ich die Domain von Parkflow erkundet und modelliert.
-Auf dieser Grundlage werde ich in diesem Kapitel die Architektur von Parkflow entwerfen und dokumentieren.
-Die Architektur Dokumentation habe ich dabei nach dem C4-Modell erstellt #footnote[https://github.com/FSpruhs/park-flow/tree/master/doc/architecture/c4].
-Bei der Dokumentation habe ich auch teile dokumentiert die nicht in dieser Arbeit implementiert werden.
-Ich möchte insgesamt ein Bild vermitteln, wie eine vollständige Architektur für Parkflow aussehen könnte.
+Im vorherigen Kapitel wurde die Domain von Parkflow erkundet und modelliert. 
+Auf dieser Grundlage wird in diesem Kapitel die Architektur von Parkflow entworfen und dokumentiert.
+
+Die Architekturdokumentation wurde nach dem C4-Modell erstellt#footnote[https://github.com/FSpruhs/park-flow/tree/master/doc/architecture/c4].
+Dieses Modell ermöglicht eine schrittweise Beschreibung der Architektur auf unterschiedlichen Abstraktionsebenen und unterstützt damit ein strukturiertes Verständnis des Gesamtsystems.
+
+Im Rahmen der Dokumentation werden auch Architekturteile dargestellt, die nicht im Zuge dieser Arbeit implementiert wurden. 
+Ziel ist es, ein ganzheitliches Bild zu vermitteln, wie eine vollständige Architektur für Parkflow aussehen könnte, und die implementierten Teile in diesen größeren architektonischen Kontext einzuordnen.
+
+Darüber hinaus werden in diesem Kapitel Werkzeuge vorgestellt, die dabei unterstützen, die entworfene Architektur in der Implementierung einzuhalten und abzusichern. 
+Dazu zählen insbesondere Spring Modulith und ArchUnit, mit deren Hilfe architektonische Strukturen, Abhängigkeiten und Modulgrenzen explizit definiert und überprüft werden können.
 
 === System Context
 
@@ -967,6 +974,31 @@ Das könnte z.B. ein Ticketsystem sein bei einem Parkplatz an einem Fussballstad
 Weiterhin gibt es ein externes Zahlungssystem, das für die Abwicklung der Zahlungen zuständig ist und ein externes Authentifizierungssystem, das für die Authentifizierung und Autorisierung der Nutzer verantwortlich ist.
 Darüber hinaus verfügt der Parkplatz über verschiedene Sensoren, die die Aktionen der Fahrzeuge erkennen und entsprechende Events auslösen.
 
+Im Zentrum der Abbildung @system-context ist das System Parkflow dargestellt. 
+Das System stellt die zentrale Anwendung zur Verwaltung und zum Betrieb eines Parkplatzes dar und bildet die Schnittstelle zwischen den beteiligten Akteuren, technischen Systemen und physischen Komponenten.
+
+Es gibt zwei primäre Akteure, die direkt mit Parkflow interagieren.
+
+Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars verantwortlich. 
+Dazu gehören unter anderem die Anlage, Konfiguration und Verwaltung von Parkplätzen sowie die Verwaltung von Ein- und Ausgängen. 
+
+Der Kunde nutzt das System, um sich zu registrieren, Fahrzeuge zu hinterlegen und Parkplätze zu mieten. 
+Während des laufenden Parkplatzbetriebs interagiert der Kunde nicht direkt mit dem System, sondern wird über automatisierte Prozesse geführt, beispielsweise bei der Ein- und Ausfahrt oder bei der Abrechnung der Parkgebühren.
+
+Neben den direkten Akteuren sind potenzielle externe Systeme vorgesehen, die mit Parkflow interagieren können. 
+Diese Schnittstellen ermöglichen es, Parkflow in bestehende Systemlandschaften zu integrieren. 
+Ein mögliches Beispiel hierfür ist ein Ticketsystem im Kontext eines Parkplatzes an einem Fußballstadion, über das zusätzliche Zugangs- oder Berechtigungsinformationen bereitgestellt werden könnten.
+
+Für die Abwicklung finanzieller Transaktionen ist ein externes Zahlungssystem angebunden. 
+Dieses System übernimmt die Verarbeitung von Zahlungen und entlastet Parkflow von sicherheits- und regulatorisch relevanten Aspekten der Zahlungsabwicklung.
+
+Zusätzlich ist ein externes Authentifizierungssystem vorgesehen, das für die Authentifizierung und Autorisierung der Nutzer verantwortlich ist. 
+Dadurch wird eine klare Trennung zwischen fachlicher Logik und sicherheitsrelevanten Funktionen erreicht.
+
+Darüber hinaus interagiert Parkflow mit verschiedenen physischen Komponenten in Form von Sensoren. 
+Diese Sensoren erfassen Aktionen der Fahrzeuge, wie das Einfahren, Parken oder Ausfahren, und lösen entsprechende Events im System aus. 
+Sie stellen damit eine wichtige Verbindung zwischen der physischen Welt und der fachlichen Logik von Parkflow dar.
+
 #figure(
   image("./doc/architecture/c4/level-1-system-context/level-1-0.svg"),
   caption: [
@@ -976,46 +1008,61 @@ Darüber hinaus verfügt der Parkplatz über verschiedene Sensoren, die die Akti
 
 === Container <container-chapter>
 
-Bei der Abbildung @container ist die Container-Architektur von Parkflow dargestellt.
-Die mit Rot markierten Container werden in dieser Arbeit nicht implementiert.
-Parkflow besteht zum einem aus dem Backend das als Modulith umgesetzt wird und die zentrale Geschäftslogik und Domäne enthält.
-Das Backend nutzt zwei Datenbanken und eine RabbitMQ:
+In Abbildung @container ist die Container-Architektur von Parkflow dargestellt. 
+Die Abbildung zeigt die zentralen technischen Bausteine des Systems sowie deren Beziehungen zueinander. 
+Die rot markierten Container werden im Rahmen dieser Arbeit nicht implementiert und dienen ausschließlich der Darstellung einer möglichen vollständigen Systemarchitektur.
+
+Parkflow besteht im Kern aus einem Backend, das als Modulith umgesetzt ist und die zentrale Geschäftslogik sowie das Domänenmodell enthält. 
+Dieses Backend stellt die fachlichen Funktionen bereit und koordiniert die Verarbeitung der eingehenden Events.
+
+Zusätzlich sind in der Architektur zwei Frontend-Container vorgesehen, die jeweils von einem der beiden Akteure genutzt werden können. 
+Ein Frontend richtet sich an den Parkplatzbetreiber und ermöglicht die Verwaltung des Parkplatzinventars sowie betrieblicher Einstellungen. 
+Das zweite Frontend ist für Kunden vorgesehen und dient unter anderem der Registrierung von Fahrzeugen und dem Mieten von Parkplätzen. 
+Diese Frontends werden in dieser Arbeit nicht implementiert, da der Fokus auf der Backend-Architektur liegt.
+
+Das Backend greift auf zwei unterschiedliche Datenbanken sowie auf eine Message Queue zu:
 
 *MongoDB:*
 
-Einmal eine MongoDB für das Speichern der aktuellen Zustände der Read Models und der Aggregates für die kein Event Sourcing Mechanismus implementiert wird.
+MongoDB wird zur Speicherung der aktuellen Zustände von Read Models sowie von Aggregates verwendet, für die kein Event-Sourcing-Mechanismus implementiert wird.
 
-MongoDB eignet sich besonders gut zur Speicherung von Aggregates, da ein Aggregate in DDD eine klare transaktionale Konsistenzgrenze bildet.
-Diese Grenze lässt sich in MongoDB sehr natürlich abbilden, indem ein gesamtes Aggregate als einzelnes Dokument unter einem eindeutigen Schlüssel (Key) gespeichert wird.
-Dadurch können Änderungen am Aggregate atomar durchgeführt werden, ohne dass verteilte Transaktionen oder komplexe Joins erforderlich sind.
+MongoDB eignet sich besonders gut zur Speicherung von Aggregates, da ein Aggregate im Sinne von DDD eine klare transaktionale Konsistenzgrenze bildet. 
+Diese Grenze lässt sich in MongoDB sehr natürlich abbilden, indem ein gesamtes Aggregate als einzelnes Dokument unter einem eindeutigen Schlüssel gespeichert wird. 
+Änderungen an einem Aggregate können dadurch atomar durchgeführt werden, ohne dass verteilte Transaktionen oder komplexe Joins erforderlich sind.
 
-Auch für Read Models bietet MongoDB deutliche Vorteile.
-Read Models dürfen gezielt auf Lesezugriffe optimiert sein und müssen nicht der Struktur des Write Models entsprechen.
-Die dokumentenorientierte Struktur von MongoDB erlaubt es, unterschiedliche Sichten auf dieselben fachlichen Daten einfach abzubilden.
-Dabei wird bewusst in Kauf genommen, dass Daten mehrfach gespeichert oder denormalisiert werden, um Abfragen einfach, performant und verständlich zu halten.
+Auch für Read Models bietet MongoDB deutliche Vorteile. 
+Read Models dürfen gezielt auf Lesezugriffe optimiert sein und müssen nicht der Struktur des Write Models entsprechen. 
+Die dokumentenorientierte Struktur von MongoDB erlaubt es, unterschiedliche fachliche Sichten auf dieselben Daten abzubilden. 
+Dabei wird bewusst in Kauf genommen, dass Daten mehrfach gespeichert oder denormalisiert werden, um Abfragen einfach, performant und fachlich verständlich zu halten.
 
-Der zentrale Vorteil dieses Ansatzes liegt in der Einfachheit.
-Der Fokus verschiebt sich weg von einer komplexen, stark normalisierten Datenhaltung hin zu einer klar strukturierten, fachlich motivierten Persistenz.
-Die zusätzliche Redundanz wird bewusst akzeptiert, da sie die Lesbarkeit, Wartbarkeit und Performance der Anwendung verbessert.
+Der zentrale Vorteil dieses Ansatzes liegt in der Einfachheit der Persistenz. 
+Der Fokus verschiebt sich weg von einer stark normalisierten Datenhaltung hin zu einer klar strukturierten, fachlich motivierten Persistenz.
 
-Im Kontext eines Modulithen gilt zudem ein wichtiges Architekturprinzip.
-Jedes Modul darf ausschließlich auf seine eigenen persistenten Daten zugreifen.
-Daten dürfen niemals über Modulgrenzen hinweg gespeichert oder direkt gelesen werden.
-Diese strikte Trennung schützt die fachlichen Grenzen, verhindert enge Kopplung zwischen Modulen und unterstützt eine spätere Evolution der Architektur, beispielsweise hin zu Microservices.
+Im Kontext eines Modulithen gilt zudem ein zentrales Architekturprinzip.
+Jedes Modul darf ausschließlich auf seine eigenen persistenten Daten zugreifen. 
+Daten werden niemals über Modulgrenzen hinweg gespeichert oder direkt gelesen. 
+Diese Trennung schützt die fachlichen Grenzen, verhindert enge Kopplung zwischen Modulen und unterstützt eine spätere Weiterentwicklung der Architektur.
 
 *Postgres:*
 
-PostgreSQL eignet sich sehr gut als Event Store, da eine tabellenartige Datenbankstruktur perfekt zu den Anforderungen passt.
-Jeder Event wird als einzelne Zeile gespeichert, wodurch die Events einfach nacheinander in die Tabelle geschrieben werden können.
-Da Events unveränderlich sind und niemals aktualisiert werden dürfen, passt die tabellarische Struktur ideal.
-Neue Einträge werden einfach angehängt, ohne bestehende Daten zu verändern.
-Dadurch lassen sich sowohl die chronologische Reihenfolge der Events als auch eine konsistente Historie leicht sicherstellen, was für Event-Sourcing-Ansätze zentral ist.
+PostgreSQL wird als Event Store eingesetzt, um die Historie aller Ereignisse im System zu speichern. 
+Für Event Sourcing ist es entscheidend, dass jedes Event unveränderlich ist und dass die chronologische Reihenfolge der Ereignisse erhalten bleibt.
+
+Die Speicherung erfolgt in einer einfachen Tabelle, in der jede Zeile genau einem Event entspricht. 
+Neue Events werden fortlaufend angehängt, sodass die Tabelle im Prinzip eine lineare Liste von Events darstellt. 
+Diese Struktur entspricht dem grundlegenden Prinzip von Event Sourcing. 
+Die gesamte Historie der Änderungen wird vollständig und unverändert gespeichert.
+
+Durch die tabellarische Struktur von PostgreSQL lassen sich Events einfach sequenziell ablegen und in der richtigen Reihenfolge wieder auslesen. 
+Jede Zeile enthält dabei alle relevanten Informationen des Events, wie Typ, Zeitstempel, zugehöriges Aggregate und die Event-Daten selbst.
 
 *RabbitMQ:*
 
-RabbitMQ wird als Event Queue genutzt, um die von den Sensoren erzeugten Events zuverlässig an das Backend weiterzuleiten.
-Die Sensoren veröffentlichen ihre Events in der Queue, und das Backend liest sie asynchron aus.
-Dadurch entsteht eine entkoppelte, skalierbare Architektur, bei der das Backend nicht direkt an die Sensoren gebunden ist und Lastspitzen problemlos abgefangen werden können.
+RabbitMQ wird als Event Queue verwendet, um die von den Sensoren erzeugten Events zuverlässig an das Backend weiterzuleiten. 
+Die Sensoren veröffentlichen ihre Events in der Queue, während das Backend diese asynchron konsumiert und verarbeitet.
+
+Durch diese Architektur entsteht eine lose Kopplung zwischen Sensoren und Backend. 
+Das Backend ist nicht direkt an die Verfügbarkeit oder Antwortzeiten der Sensoren gebunden, wodurch Lastspitzen abgefedert und eine skalierbare Verarbeitung der Events ermöglicht wird.
 
 #figure(
   image("./doc/architecture/c4/level-2-container/level-2-0.svg"),
@@ -1027,10 +1074,24 @@ Dadurch entsteht eine entkoppelte, skalierbare Architektur, bei der das Backend 
 === Component
 
 In Abbildung @component ist die Komponentenstruktur des Backend von Parkflow dargestellt.
-Für jeden der Bounded Context gibt es ein eigenes Modul.
-Die Pfeile zeigen den Fluss der Events zwischen den Modulen das über ein internes Event System realisiert wird.
-Die Module sind dabei so gestaltet, dass sie möglichst unabhängig voneinander arbeiten können.
-Zusätzlich dazu gibt es ein gemeinsames `common` Modul für gemeinsame Funktionalitäten das von den einzelnen Contexten genutzt werden darf.
+Die Abbildung zeigt die einzelnen Module, die den verschiedenen Bounded Contexts entsprechen, sowie deren Interaktionen untereinander.
+
+Für jeden Bounded Context existiert ein eigenes Modul. 
+Diese Module kapseln die fachliche Logik des jeweiligen Kontexts und bilden die Grundlage für eine modulare und wartbare Architektur. 
+Die Pfeile zwischen den Modulen stellen den Fluss von Events dar, der über ein internes Event-System realisiert wird. 
+Auf diese Weise können Module unabhängig voneinander arbeiten und dennoch auf relevante Ereignisse anderer Module reagieren, ohne direkt gekoppelt zu sein.
+
+Die Module sind so gestaltet, dass sie möglichst autark operieren können. 
+Dadurch wird eine lose Kopplung zwischen den Bounded Contexts erreicht, was die Wartbarkeit, Erweiterbarkeit und potenzielle Skalierbarkeit des Systems unterstützt. 
+Jedes Modul verwaltet zudem seine eigenen persistenten Daten, sodass Änderungen an einem Modul keine direkten Auswirkungen auf andere Module haben.
+
+Zusätzlich existiert ein gemeinsames common-Modul, das gemeinsame Funktionalitäten und Utilities bereitstellt, die von mehreren Modulen genutzt werden können. 
+Dazu gehören beispielsweise allgemeine Datenstrukturen, Utility-Klassen, gemeinsame Schnittstellen oder Basisklassen für Events. 
+Das common-Modul dient somit als Wiederverwendungsschicht, ohne die fachliche Unabhängigkeit der einzelnen Module zu verletzen.
+ 
+Durch die modulare Struktur und die Event-basierte Kommunikation bleibt das System intern konsistent. 
+Jedes Modul verarbeitet seine eigenen Änderungen und teilt die resultierenden Events dem Rest des Systems mit. 
+Andere Module können diese Events asynchron konsumieren, wodurch die Kommunikation entkoppelt erfolgt und Module unabhängig voneinander arbeiten können.
 
 #figure(
   image("./doc/architecture/c4/level-3-components/level-3-0.svg"),
@@ -1057,6 +1118,30 @@ Das `core` Paket besteht aus drei Hauptpaketen:
 Darüber hinaus gibt es noch das `common` Paket, das gemeinsame Funktionalitäten enthält, die von mehreren Modulen genutzt werden können.
 In Parkflow enthält das Modul die die Implementierung für das Event-Sourcing System und das interne Event-System.
 
+In Abbildung @code ist die interne Struktur des Moduls `ParkingInventory` dargestellt. 
+Jedes Modul ist auf oberster Ebene in die Pakete api und core gegliedert.
+
+Das api-Paket enthält alle Elemente, die von anderen Modulen genutzt werden dürfen. Dazu gehören insbesondere:
+
+- die von diesem Modul veröffentlichten Events,
+- gemeinsam genutzte Value Objects,
+- Schnittstellen für die Interaktion mit dem Modul.
+
+Das core-Paket enthält die interne Implementierung des Moduls und darf von anderen Modulen nicht direkt verwendet werden. 
+Dieses Paket ist in Form einer hexagonalen Architektur umgesetzt, um eine klare Trennung zwischen fachlicher Logik und technischer Infrastruktur zu gewährleisten.
+
+Die Hauptpakete im core-Paket sind:
+
+- *infrastructure*: Die Infrastruktur implementiert die technischen Adapter. Hier werden Datenbanken angebunden, REST- und RabbitMQ-Schnittstellen realisiert und weitere technische Details umgesetzt.
+- *application*: Die Application-Schicht koordiniert die Verarbeitung von Anfragen, die aus den Adaptern an das Modul gestellt werden. Sie dient als Orchestrator, der die entsprechenden Domain-Objekte aufruft, die fachliche Logik ausführt und die notwendigen Schritte eines Use Cases zusammenführt. Dabei implementiert sie die Ports, die von den Adaptern genutzt werden, ohne selbst komplexe fachliche Logik zu enthalten. Die Application-Schicht stellt somit sicher, dass die Domain korrekt genutzt wird und die fachlichen Abläufe konsistent ablaufen, während die technischen Details in den Adaptern verbleiben.
+- *domain*: Die Domain-Schicht enthält die fachliche Logik des Moduls. Hier werden Aggregates, Entities, Value Objects und Domain Services implementiert. Diese Schicht bildet den Kern der Anwendung. Abhängigkeiten zeigen nach außen auf diese Schicht, während sie selbst so wenige Abhängigkeiten wie möglich besitzt, um maximale Kohäsion zu erreichen.
+
+Zusätzlich existiert das common-Paket, das gemeinsame Funktionalitäten bereitstellt, die von mehreren Modulen genutzt werden. 
+In Parkflow enthält dieses Paket unter anderem die Implementierung des Event-Sourcing-Systems sowie des internen Event-Systems, über das Module asynchron miteinander kommunizieren können.
+
+Auf diese Weise unterstützt die modulare Paketstruktur eine klare Trennung von Schnittstellen, Fachlogik und Infrastruktur, erleichtert die Wartbarkeit und ermöglicht eine konsistente Implementierung der Event-basierten Architektur.
+
+
 #figure(
   image("./doc/architecture/c4/level-4-code/level-4-0.svg"),
   caption: [
@@ -1076,6 +1161,18 @@ Nur dieses interface darf von anderen Modulen genutzt werden @springModulith.
 
 Im folgenden Codebeispiel ist das `api` Paket des Moduls `parking-inventory` als interface deklariert.
 
+Spring Modulith #footnote[org.springframework.modulith:spring-modulith-starter-test] ist ein offizielles Spring-Projekt, das speziell für die Entwicklung modularer Monolithen entwickelt wurde. 
+Es bietet Werkzeuge und Best Practices, um die Strukturierung, Kommunikation und Verwaltung von Modulen innerhalb eines Monolithen sicherzustellen.
+
+Spring Modulith etabliert Regeln und Konventionen, die garantieren, dass Module klar abgegrenzt sind und nur über definierte Schnittstellen miteinander kommunizieren. 
+Standardmäßig dürfen Module nur auf Code zugreifen, der in der eigentlichen Paketstruktur des eigenen Moduls liegt. 
+Auf diese Weise werden unkontrollierte Abhängigkeiten zwischen Modulen verhindert.
+
+Darüber hinaus können einzelne Pakete innerhalb eines Moduls explizit als Interface deklariert werden. 
+Nur dieses Interface darf von anderen Modulen verwendet werden, wodurch eine klar definierte Kommunikationsschicht entsteht @springModulith.
+
+Im folgenden Codebeispiel ist das api-Paket des Moduls parking-inventory als Interface deklariert:
+
 ```kotlin
 package com.spruhs.parkflow.parkinginventory.api
 
@@ -1087,16 +1184,10 @@ import org.springframework.modulith.PackageInfo
 class ModuleMetaData
 ```
 
-Mit einem Test lässt sich dann überprüfen, ob die Regeln dien von Spring Modulith definiert werden, eingehalten werden.
-Dieser Test kann automatisiert in den Build-Prozess eingebunden werden, um sicherzustellen, dass die modulare Struktur während der Entwicklung erhalten bleibt.
+Spring Modulith bietet zusätzlich die Möglichkeit, die Einhaltung der Modulgrenzen automatisiert zu testen. 
+Ein entsprechender Test#footnote[com.spruhs.parkflow.architecture.ModulithTests.kt] kann in den Build-Prozess eingebunden werden, um sicherzustellen, dass die modulare Struktur während der Entwicklung konsistent bleibt:
 
 ```kotlin
-package com.spruhs.parkflow.architecture
-
-import com.spruhs.parkflow.ParkFlowApplication
-import org.junit.jupiter.api.Test
-import org.springframework.modulith.core.ApplicationModules
-
 class ModulithTests {
     @Test
     fun `verifies modular structure`() {
@@ -1108,21 +1199,26 @@ class ModulithTests {
 
 === Archunit
 
-ArchUnit ist ein weiteres Werkzeug, das zur Überprüfung und Durchsetzung von Architekturregeln in Kotlin-Projekten verwendet werden kann.
-Mit ArchUnit lassen sich die Regeln die durch die hexagonale Architektur definiert werden, automatisiert geprüft.
+ArchUnit ist ein Werkzeug zur automatisierten Überprüfung von Architekturregeln in Java- und Kotlin-Projekten. 
+Es ermöglicht, vordefinierte Architekturprinzipien und Schichtgrenzen programmatisch zu überprüfen. 
+Dadurch lassen sich Verstöße gegen die gewünschte Struktur frühzeitig erkennen, bevor sie zu Wartungsproblemen oder unerwarteten Abhängigkeiten führen.
+
+In Parkflow wird ArchUnit insbesondere verwendet, um die hexagonale Architektur durchzusetzen. 
+Die Architekturregeln definieren klare Grenzen zwischen den Schichten domain, application und infrastructure. 
+Mit ArchUnit lassen sich diese Regeln automatisiert testen, sodass beispielsweise sichergestellt wird, dass:
+
+- Die Domain-Schicht keine Abhängigkeiten auf Application oder Adapter hat,
+- Die Application-Schicht keine Abhängigkeiten auf Adapter hat,
+- Events und andere fachliche Klassen in den korrekten Paketen liegen,
+- Namenskonventionen eingehalten werden, um Konsistenz und Verständlichkeit des Codes zu fördern.
+
+Die Vorteile von ArchUnit liegen darin, dass die Einhaltung der Architektur kontinuierlich geprüft werden kann. 
+Die Tests#footnote[com.spruhs.parkflow.architecture.HexagonalArchitectureTests.kt] können in den Build-Prozess integriert werden, sodass neue Änderungen nur akzeptiert werden, wenn sie die definierten Architekturregeln nicht verletzen. 
+Auf diese Weise unterstützt ArchUnit die Modularität, Kohäsion und Trennung von Verantwortlichkeiten, die für modulare DDD-Architekturen zentral sind.
+
+Durch den Einsatz von ArchUnit wird also nicht nur die Struktur des Codes dokumentiert, sondern auch aktiv durchgesetzt, was die Wartbarkeit, Lesbarkeit und langfristige Konsistenz des Systems unterstützt.
 
 ```kotlin
-package com.spruhs.parkflow.architecture
-
-import com.tngtech.archunit.core.importer.ClassFileImporter
-import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes
-import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
-import java.util.stream.Stream
-
 class HexagonalArchitectureTests {
     private val basePackage = "com.spruhs.parkflow"
     private val importedClasses = ClassFileImporter().importPackages(basePackage)
@@ -1171,72 +1267,68 @@ class HexagonalArchitectureTests {
                 Arguments.of("Projection", "..domain.."),
             )
     }
-
-    @Test
-    fun `event should reside in api package`() {
-        classes()
-            .that().haveSimpleNameEndingWith("Event")
-            .should().resideInAnyPackage("..api..", "..common..")
-            .check(importedClasses)
-    }
 }
 ```
+== Event Sourcing
 
-Mit den ersten beiden Test werden die Abhängigkeiten zwischen den Schichten der hexagonalen Architektur überprüft.
-Die nächsten Tests überprüfen, ob Klassen mit bestimmten Namenskonventionen in den richtigen Paketen liegen.
+In diesem Kapitel wird die Implementierung des Event Stores in Parkflow erläutert. 
+Der Event Store ist ein zentrales Element eines Event-Sourcing-Systems, da er alle Events speichert, die notwendig sind, um den Zustand von Aggregates zu rekonstruieren.
 
-== Event Store
+Der Event Store in Parkflow soll dabei folgende grundlegende Eigenschaften erfüllen:
 
-In diesem Kapitel werde ich die Implementierung des Event Stores in Parkflow erläutern.
-Der Event Store ist ein zentrales Element in einem Event-Sourcing-System.
-Er speichert alle Events, die benötigt werden um den Zustand der Aggregate zu rekonstruieren.
+- Er ist im Wesentlichen eine Liste von Events, in der jeder Eintrag ein einzelnes Event darstellt.
+- Neue Events werden einfach an das Ende der Liste angehängt.
+- Bereits gespeicherte Events werden niemals verändert oder gelöscht 
+@stack2022[p.~10].
 
-Der Event Store soll dabei folgende Anforderungen erfüllen:
-Ein Event Store ist eine Liste von Events.
-Jeder Eintrag in die Liste ist ein eigenes Event.
-Neue Events werden einfach an das Ende der Liste angehängt.
-Bestehende Events werden niemals verändert oder gelöscht @stack2022[p.~10].
+Das Ziel dieser Implementierung ist es, einen generischen Mechanismus zu schaffen, der die folgenden Anforderungen unterstützt:
 
-Ziel dieses Abschnittes ist es einen Genersichen Mechanismus zu erstellen, der folgenes ermöglicht:
+1. Speicherung von Events für verschiedene Aggregate-Typen.
+2. Abruf von Events für ein bestimmtes Aggregate in der korrekten Reihenfolge.
+3. Rekonstruktion des Aggregate-Zustands durch Anwendung der gespeicherten Events.
+4. Transaktionssicherheit, sodass mehrere Events atomar gespeichert werden können.
+5. Asynchrone Verarbeitung von Events, um die Skalierbarkeit und Performance des Systems zu verbessern.
+6. Veröffentlichung von Events innerhalb der Anwendung, damit andere Module oder Komponenten auf Änderungen reagieren können.
+7. Snapshot-Mechanismus, um die Wiederherstellung von Aggregates zu beschleunigen und die Anzahl der zu verarbeitenden Events zu reduzieren.
 
-- Speichern von Events für verschiedene Aggregate Typen.
-- Abrufen von Events für ein bestimmtes Aggregate in der richtigen Reihenfolge.
-- Wiederherstellen des Zustands eines Aggregates durch das Anwenden der gespeicherten Events.
-- Unterstützung von Transaktionen, um sicherzustellen, dass mehrere Events atomar gespeichert werden können.
-- Events sollen asynchron verarbeitet werden können, um die Skalierbarkeit und Performance des Systems zu verbessern.
-- Events sollen in der Anwendung veröffentlicht werden können, damit andere Teile der Anwendung auf diese reagieren können.
-- Ein Snapshot Mechanismus soll implementiert werden, um die Wiederherstellung von Aggregates zu beschleunigen.
-
-Die konkrete implementierung ist im Repository unter #link("park-flow/src/main/kotlin/com/spruhs/parkflow/common/es/EventSourcing.kt") zu finden.
+Die konkrete Implementierung befindet sich im Repository unter EventSourcing.kt#footnote[com.spruhs.parkflow.common.es.EventSourcing.kt].
 
 === Events
 
-Um das zu realisieren benötigt Parkflow verschiedene arten von Events, da Eventes in verschiedenen Teilen der Anwendung andere Anforderungen erfüllen müssen.
+Um Event Sourcing in Parkflow umzusetzen, werden verschiedene Arten von Events benötigt, da unterschiedliche Teile der Anwendung unterschiedliche Anforderungen an Events haben.
 
-Beide Event Klassen haben dabei selber keine Eigenschaften sondern sind reine Daten Container und sind in @event dargestellt.
+Die Events dienen als reine Datencontainer und besitzen selbst keine fachliche Logik. Abbildung @event zeigt die Struktur der beiden Event-Klassen.
 
-Die Klasse BaseEvent wird für die Kommunikation innerhalb des Systems genutzt.
-Es handelt sich dabei um eine abstrakte Klasse die von allen Events die innerhalb des Systems genutzt werden, erweitert wird.
-Das BaseEvent wird nur dazu genutzt, um die Daten die bei einem Event von einem Aggregate benötigt werden, zu verteilen.
-Dabei hat die Klasse nur zwei Attribute:
+*BaseEvent*
+Die Klasse BaseEvent wird für die interne Kommunikation innerhalb des Systems verwendet. 
+Sie ist abstrakt und wird von allen Events erweitert, die innerhalb des Systems erzeugt und verteilt werden.
 
-- *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem das Event gehört.
-- *metaData*: Zusätzliche (optionale) Metadaten zum Event, die als ByteArray gespeichert werden.
+BaseEvent enthält lediglich die Attribute, die für die Verarbeitung durch ein Aggregate notwendig sind:
 
-Mit den Events soll es möglich sein, den Zustand eines Aggregates her zu stellen.
-Dazu müssen die Events die zu einem Aggregate gehöhren aus der Datenbanek abgerufen werden und immer in der gleichen Rheihenfolge verarbeitet werden @stack2022[p.~102].
-Um diese Aufgabe zu erfüllen, werden weitere Attribute benötigt.
-Die BaseEvent Klasse wird von unserer Event Klasse mit weiteren Daten angereichert und damit für den Event Store nutzbar gemacht.
-Dabei werden folgende Attribute benötigt:
+- *aggregateId*: Die eindeutige Identifikationsnummer des Aggregates, zu dem das Event gehört.
+- *metaData*: Zusätzliche (optionale) Metadaten zum Event.
 
-- *id*: Eine eindeutige Identifikationsnummer für das Event.
-- *type*: Der Typ des Events, der angibt, welche Art von Ereignis es ist z.B. GateCreatedEvent.
-- *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem das Event gehört.
-- *aggregateType*: Der Typ des Aggregates, zu dem das Event gehört z.B. Gate.
-- *version*: Die Versionsnummer des Events, die angibt, in welcher Reihenfolge die Events für ein bestimmtes Aggregate auftreten. Die Versionsnummer wird inkrementiert, wenn ein neues Event für dasselbe Aggregate hinzugefügt wird.
-- *data*: Die eigentlichen Daten des Events, die als ByteArray gespeichert werden. Hier werden die Daten aus dem BaseEvent serialisiert und gespeichert.
-- *metaData*: Zusätzliche (optionale) Metadaten zum Event, die als ByteArray gespeichert werden.
-- *timestamp*: Der Zeitstempel, der angibt, wann das Event erstellt wurde.
+Die BaseEvent-Klasse stellt somit sicher, dass Daten konsistent zwischen Modulen und Komponenten verteilt werden können. 
+
+*Persistiertes Event*
+
+Für die Speicherung im Event Store wird die BaseEvent-Klasse erweitert und um weitere Attribute angereichert. 
+Diese zusätzlichen Informationen sind notwendig, um Events eindeutig zu identifizieren, zu versionieren, zu serialisieren und wiederherstellen zu können. 
+Persistierte Events bilden somit die Grundlage, um den Zustand eines Aggregates anhand der gespeicherten Events wiederherzustellen. 
+Dabei müssen die Events in der gleichen Reihenfolge verarbeitet werden, in der sie erzeugt wurden @stack2022[p.~102].
+
+Die wichtigsten Attribute eines persistierten Events sind:
+
+- *id*: Eindeutige Identifikationsnummer des Events.
+- *type*: Typ des Events, der angibt, welche Art von Ereignis es ist (z.B. GateCreatedEvent).
+- *aggregateId*: Identifikationsnummer des Aggregates, zu dem das Event gehört.
+- *aggregateType*: Typ des Aggregates (z.B. Gate).
+- *version*: Versionsnummer des Events, die angibt, in welcher Reihenfolge Events für ein bestimmtes Aggregate auftreten. Sie wird bei jedem neuen Event für dasselbe Aggregate inkrementiert.
+- *data*: Die eigentlichen Event-Daten, als ByteArray gespeichert. Hier werden die Informationen aus BaseEvent serialisiert.
+- *metaData*: Optionale Metadaten, die zusätzliche Informationen zum Event enthalten.
+- *timestamp*: Zeitstempel, der angibt, wann das Event erstellt wurde.
+
+Die Trennung zwischen BaseEvent und persistiertem Event ermöglicht es, dass Events innerhalb der Anwendung leicht verteilt werden können, während sie gleichzeitig vollständig für die dauerhafte Speicherung und spätere Wiederherstellung eines Aggregates vorbereitet sind.
 
 #figure(
   image("./doc/eventsourcing/Event-0.svg"),
@@ -1247,37 +1339,37 @@ Dabei werden folgende Attribute benötigt:
 
 === AggregateRoot
 
-Die AggregateRoot Klasse ist die Basisklasse für alle Aggregates in Parkflow die den Event Sourcing Mechanismus nutzen.
-Sie stellt die grundlegenden Funktionen bereit, die jedes Aggregate benötigt, um Events zu verwalten und den Zustand wiederherzustellen.
-Die Klasse ist in @aggregate-root dargestellt.
+Die AggregateRoot-Klasse ist die Basisklasse für alle Aggregates in Parkflow, die den Event-Sourcing-Mechanismus nutzen.
+Sie stellt die grundlegenden Funktionen bereit, die jedes Aggregate benötigt, um Events zu verwalten und den Zustand wiederherzustellen. 
+Die Klasse ist in Abbildung @aggregate-root dargestellt.
 Die AggregateRoot Klasse hat folgende Attribute:
 
-- *aggregateId*: Die eindeutige Identifikationsnummer des Aggregates.
-- *aggregateType*: Der Typ des Aggregates z.B. Gate.
-- *changes*: Eine Liste von BaseEvent Objekten, die die Änderungen (Events) repräsentieren, die während der Lebensdauer des Aggregates aufgetreten sind.
-- *version*: Die aktuelle Versionsnummer des Aggregates, die angibt, wie viele Events bereits angewendet wurden.
+- *aggregateId*: Eindeutige Identifikationsnummer des Aggregates.
+- *aggregateType*: Typ des Aggregates z.B. Gate.
+- *changes*: Liste von BaseEvent-Objekten, die die Änderungen (Events) repräsentieren, die während der Lebensdauer des Aggregates aufgetreten sind.
+- *version*: Aktuelle Versionsnummer des Aggregates, die angibt, wie viele Events bereits angewendet wurden.
 
-Ich werde einmal kurz den Ablauf der Nutzung der AggregateRoot Klasse erläutern, damit die Funktionen der Klasse verständlich werden.
-In einem Späteren Kapitel werde ich den Ablauf dann noch tiefergehend erläutern.
+*Nutzung der AggregateRoot-Klasse*
 
-Ich beschreibe hier erstmal den Ablauf für ein bereits existierendes Aggregate.
-Also ein Aggregate das schon einmal erstellt wurde und das schon ein paar Zustandsänderungen durchlaufen hat.
-Das Aggregate existiert also in Form von mehreren Events im Event Store.
-Jedes Event repräsentiert dabei eine Zustandsänderung des Aggregates und hat eine eigene Versionsnummer.
-Wenn das Aggregate jetzt von der Anwendung benötigt wird, werden zuerst alle Events für das Aggregate aus dem Event Store abgerufen.
-Die Events werden dabei in der Reihenfolge ihrer Versionsnummer sortiert.
-Danach wird eine neue Instanz des Aggregates erstellt.
-Anschließend werden die Events nacheinander auf das Aggregate angewendet dies geschieht über die Methode `raiseEvent`.
-Diese Methode nimmt ein BaseEvent als Parameter und ruft intern die Methode `whenEvent` auf.
-Die `whenEvent` Methode ist abstrakt und muss von jeder konkreten Aggregate Klasse implementiert werden.
-In der `whenEvent` Methode wird die Logik implementiert, die den Zustand des Aggregates basierend auf dem Event ändert.
-Wenn das Aggregate alle Events angewendet hat, ist sein Zustand wiederhergestellt und es kann in der Anwendung verwendet werden.
-Bei der Verwendung des Aggregates können neue Events erzeugt werden, die den Zustand des Aggregates weiter ändern.
-Diese Events werden über die Methode `apply` hinzugefügt.
-Die `apply` Methode fügt das neue Event zur Liste `changes` der Änderungen hinzu und inkrementiert die Versionsnummer des Aggregates und ruft ebenfalls die `whenEvent` Methode auf um den Zustand des Aggreages an zu passen.
-Die Events die in der Liste `changes` gespeichert sind, können später in den Event Store gespeichert werden um den Zustand des Aggregates zu persistieren.
-Nach dem Speichern der Events im Event Store, wird die Liste mit `clearChanges` geleert.
+Ich beschreibe zunächst den Ablauf für ein bereits existierendes Aggregate, das bereits im Event Store gespeichert ist und mehrere Zustandsänderungen durchlaufen hat.
 
+1. *Abrufen der Events*: Zuerst werden alle Events des Aggregates aus dem Event Store abgerufen. Die Events werden anhand ihrer Versionsnummer sortiert.
+2. *Erstellen der Aggregate-Instanz*: Anschließend wird eine neue Instanz des Aggregates erzeugt.
+3. *Anwenden der Events*: Jedes Event wird nacheinander auf das Aggregate angewendet. Dies geschieht über die Methode `raiseEvent`, die intern die abstrakte Methode `whenEvent` aufruft.
+
+    - `whenEvent` muss von jeder konkreten Aggregate-Klasse implementiert werden.
+    - In dieser Methode wird die fachliche Logik implementiert, die den Zustand des Aggregates basierend auf dem Event anpasst.
+
+4. *Wiederhergestellter Zustand*: Nach der Anwendung aller Events spiegelt das Aggregate den aktuellen Zustand wider und kann in der Anwendung verwendet werden.
+
+Erzeugen neuer Events
+
+Während der Verwendung des Aggregates können neue Events erzeugt werden, die den Zustand weiter ändern.
+
+- Neue Events werden über die Methode `apply` hinzugefügt.
+- `apply` fügt das Event zur Liste `changes` hinzu, inkrementiert die Versionsnummer des Aggregates und ruft ebenfalls `whenEvent` auf, um den Zustand anzupassen.
+- Die in `changes` gespeicherten Events können später im Event Store persistiert werden.
+- Nach erfolgreichem Speichern wird die Liste der Änderungen über `clearChanges` geleert.
 
 #figure(
   image("./doc/eventsourcing/AggregateRoot-0.svg"),
@@ -1289,21 +1381,29 @@ Nach dem Speichern der Events im Event Store, wird die Liste mit `clearChanges` 
 === Snapshot
 
 Snapshots sind eine Optimierungstechnik im Event Sourcing, die dazu dient, die Wiederherstellung des Zustands eines Aggregates zu beschleunigen.
-Anstatt jedesmal alle Events von Anfang an anzuwenden, wird der Zustand des Aggregates zu einem bestimmten Zeitpunkt als Snapshot gespeichert.
-Dabei ist der Snapshot eine Momentaufnahme des Aggregates, die den aktuellen Zustand repräsentiert.
-Snapshot sind nur für die optimierung des Ladevorgangs von Aggregates gedacht.
-Beim wiederherstellen eines Aggregates wird zuerst der letzte Snapshot geladen und danach werden nur die Events angewendet, die nach dem Snapshot aufgetreten sind.
-Sie eigenen sich nicht zum Abfragen von Aggregates mit einem bestimmten Zustand.
-Der Snpashot von Parkflow ist in @snapshot dargestellt. Es handelt sich dabei um eine Klasse die ein reiner Daten Container ist.
-Ein Snapshot hat folgende Attribute:
+Anstatt bei jedem Laden eines Aggregates alle Events von Anfang an anzuwenden, wird der Zustand des Aggregates zu einem bestimmten Zeitpunkt als Snapshot gespeichert.
 
-- *id*: Eine eindeutige Identifikationsnummer für den Snapshot.
-- *aggregateId*: Die Identifikationsnummer des Aggregates, zu dem der Snapshot gehört.
-- *aggregateType*: Der Typ des Aggregates, zu dem der Snapshot gehört z.B. Gate.
-- *data*: Die eigentlichen Daten des Snapshots, die als ByteArray gespeichert werden. Hier wird der Zustand des Aggregates zum Zeitpunkt des Snapshots serialisiert und gespeichert.
-- *metaData*: Zusätzliche (optionale) Metadaten zum Snapshot, die als ByteArray gespeichert werden.
-- *version*: Die Versionsnummer des Snapshots, die angibt, bis zu welchem Event der Snapshot den Zustand des Aggregates repräsentiert.
-- *timestamp*: Der Zeitstempel, der angibt, wann der Snapshot erstellt wurde.
+Ein Snapshot stellt eine Momentaufnahme des Aggregates dar, die den aktuellen Zustand vollständig repräsentiert.
+
+Beim Wiederherstellen eines Aggregates wird zuerst der letzte Snapshot geladen. Danach werden nur noch die Events angewendet, die nach dem Snapshot aufgetreten sind.
+Dadurch kann die Ladezeit deutlich reduziert werden, insbesondere wenn viele Events vorhanden sind.
+
+Snapshots eignen sich nur zur Optimierung des Ladevorgangs und nicht zum Abfragen von Aggregates in einem bestimmten historischen Zustand. Sie ersetzen nicht die Events, sondern dienen lediglich als Ausgangspunkt für eine schnellere Rekonstruktion.
+
+In Parkflow existiert pro Aggregate immer nur ein Snapshot.
+
+- Wird ein neuer Snapshot erstellt, überschreibt er den alten Snapshot oder wird alternativ als neuer Eintrag gespeichert, während ältere Versionen verworfen werden.
+- Dadurch wird sichergestellt, dass nur der aktuellste Zustand für die Optimierung genutzt wird.
+
+Der Snapshot in Parkflow ist in Abbildung @snapshot dargestellt. Es handelt sich um eine Datenklasse, die folgende Attribute enthält:
+
+- *id*: Eindeutige Identifikationsnummer für den Snapshot.
+- *aggregateId*: Identifikationsnummer des Aggregates, zu dem der Snapshot gehört.
+- *aggregateType*: Typ des Aggregates, zu dem der Snapshot gehört z.B. Gate.
+- *data*: Serialisierte Darstellung des Aggregates zum Zeitpunkt des Snapshots, als ByteArray gespeichert.
+- *metaData*: Optionale zusätzliche Metadaten, ebenfalls als ByteArray.
+- *version*: Versionsnummer des Snapshots, die angibt, bis zu welchem Event der Snapshot den Zustand abbildet.
+- *timestamp*: Zeitpunkt der Erstellung des Snapshots.
 
 
 #figure(
@@ -1315,23 +1415,24 @@ Ein Snapshot hat folgende Attribute:
 
 === PostgreSQL
 
-Für die persistente Speicherung der Events und Snapshots wird in Parkflow eine PostgreSQL Datenbank genutzt.
-PostgreSQL eignet sich sehr gut als Event Store, da eine tabellenartige Datenbankstruktur zu den Anforderungen passt #footnote[siehe @container-chapter].
+Für die persistente Speicherung der Events und Snapshots wird in Parkflow eine PostgreSQL-Datenbank genutzt.
 
-Um die PostgreSQL Datenbank mit der Anwendung zu verbinden, wird der Spring Starter für R2DBC #footnote[org.springframework.boot:spring-boot-starter-data-r2dbc] genutzt.
-R2DBC (Reactive Relational Database Connectivity) ist eine Spezifikation für reaktive Datenbankzugriffe.
-Dadurch können asynchrone und nicht-blockierende Datenbankoperationen durchgeführt werden, was die Skalierbarkeit und Performance der Anwendung verbessert @springR2dbc.
+Um die PostgreSQL-Datenbank mit der Anwendung zu verbinden, wird der Spring Starter für R2DBC verwendet #footnote[org.springframework.boot:spring-boot-starter-data-r2dbc].
+R2DBC (Reactive Relational Database Connectivity) erlaubt reaktive, nicht-blockierende Datenbankzugriffe, wodurch die Anwendung skalierbar bleibt und Lastspitzen besser abgefangen werden können @springR2dbc.
 
-Für die Schema Migration wird Flyway #footnote[org.flywaydb:flyway-core] genutzt.
-Damit wird beim Start der Anwendung automatisch überprüft, ob die Datenbank auf dem aktuellen Stand ist und gegebenenfalls die notwendigen Migrationen durchgeführt @flyway.
+Für die Schema-Migration kommt Flyway zum Einsatz #footnote[org.flywaydb:flyway-core].
+Beim Start der Anwendung prüft Flyway automatisch, ob die Datenbank auf dem aktuellen Stand ist, und führt ggf. notwendige Migrationen durch @flyway.
+Wenn noch kein Schema vorhanden ist, führt Flyway die Migration `V1__initial_setup.sql` #footnote[park-flow/src/main/resources/db/migration/V1\_\_initial_setup.sql] aus, die die Tabellen für Events und Snapshots erstellt.
 
-Wenn noch kein Schema vorliegt, führt Flyway die Migration `V1__initial_setup.sql` #footnote[park-flow/src/main/resources/db/migration/V1\_\_initial_setup.sql] aus um die Tabellen für den Event Store zu erstellen.
-Dabei werden die zwei Tabellen für die Events und Snapshots erstellt.
-Weiterhin wird ein Index für die Events und Snapshots Tabelle auf dem Attribut `aggregate_id` und `version` erstellt, um die Abfrage der Events für ein bestimmtes Aggregate zu beschleunigen.
-Auch wird die Tabelle Events in eine Partitionierte Tabelle umgewandelt, um die Performance bei großen Datenmengen zu verbessern.
-Die Partitionierung erfolgt dabei auf Basis des Attributs `aggregate_id`, sodass Events für verschiedene Aggregate in separaten Partitionen gespeichert werden.
-Auf dise Weise sind alle Events für ein bestimmtes Aggregate in der gleiche Partition gespeichert.
-Beim Abrufen eines bestimmten Aggregates müssen nur die Events aus der entsprechenden Partition gelesen werden, was die Abfragezeit reduziert.
+Die Events-Tabelle wird zusätzlich partitioniert, um die Performance bei großen Datenmengen zu verbessern.
+
+- Partitionierung erfolgt auf Basis des Attributs `aggregate_id`.
+- Alle Events eines Aggregates liegen somit in derselben Partition.
+- Beim Abrufen eines Aggregates müssen nur die relevanten Partitionen gelesen werden, was die Abfragezeit reduziert.
+
+Für die Events- und Snapshots-Tabelle werden außerdem Indexe auf `aggregate_id` und `version` erstellt, um schnelle Abfragen nach Aggregate und chronologischer Reihenfolge zu gewährleisten.
+
+Die Tabellenstruktur in PostgreSQL ermöglicht damit eine einfache und effiziente Umsetzung eines Event-Sourcing-Systems, das sowohl vollständig konsistent als auch leistungsfähig ist.
 
 ```sql
 CREATE TABLE IF NOT EXISTS parkflow.events
@@ -1349,14 +1450,11 @@ CREATE TABLE IF NOT EXISTS parkflow.events
 
 CREATE INDEX IF NOT EXISTS aggregate_id_aggregate_version_idx ON parkflow.events USING btree (aggregate_id, version ASC);
 
-CREATE TABLE IF NOT EXISTS events_partition_hash_1 PARTITION OF parkflow.events
-    FOR VALUES WITH (MODULUS 3, REMAINDER 0);
+CREATE TABLE IF NOT EXISTS events_partition_hash_1 PARTITION OF parkflow.events FOR VALUES WITH (MODULUS 3, REMAINDER 0);
 
-CREATE TABLE IF NOT EXISTS events_partition_hash_2 PARTITION OF parkflow.events
-    FOR VALUES WITH (MODULUS 3, REMAINDER 1);
+CREATE TABLE IF NOT EXISTS events_partition_hash_2 PARTITION OF parkflow.events FOR VALUES WITH (MODULUS 3, REMAINDER 1);
 
-CREATE TABLE IF NOT EXISTS events_partition_hash_3 PARTITION OF parkflow.events
-    FOR VALUES WITH (MODULUS 3, REMAINDER 2);
+CREATE TABLE IF NOT EXISTS events_partition_hash_3 PARTITION OF parkflow.events FOR VALUES WITH (MODULUS 3, REMAINDER 2);
 
 CREATE TABLE IF NOT EXISTS parkflow.snapshots
 (
@@ -1375,11 +1473,10 @@ CREATE INDEX IF NOT EXISTS aggregate_id_aggregate_version_idx ON parkflow.snapsh
 
 === Aggregate Store
 
-Das Herzstück des Event Sourcing Mechanismus ist der Aggregate Store.
-Er ist zentral dafür verantwortlich, Aggregates zu laden und zu speichern.
-Weiterhin kümmert er sich um die Verwaltung von Snapshots.
-Auch werden über den Aggregate Store die Events in der Anwendung veröffentlicht.
-Der Aggregate Store ist in @aggregate-store dargestellt.
+Das Herzstück des Event-Sourcing-Mechanismus in Parkflow ist der Aggregate Store.
+Er ist verantwortlich für das Laden und Speichern von Aggregates, die Verwaltung von Snapshots sowie die Veröffentlichung von Events innerhalb der Anwendung.
+Durch den Aggregate Store wird sichergestellt, dass die Event-Sourcing-Logik zentral gebündelt ist und die Integrität der Aggregate-Zustände gewahrt bleibt.
+Die Struktur des Aggregate Stores ist in @aggregate-store dargestellt.
 
 #figure(
   image("./doc/eventsourcing/AggregateStore-0.svg"),
@@ -1389,9 +1486,12 @@ Der Aggregate Store ist in @aggregate-store dargestellt.
 ) <aggregate-store>
 
 
-*AggregateStore:*
+*Schnittstelle `AggregateStore`:*
 
-Der Aggregate Store stellt seine Funktionalität über das Interface `AggregateStore` bereit.
+Das Interface `AggregateStore` definiert die Kernfunktionen:
+
+- Speichern und Laden von Events: `saveEvents`, `loadEvents`.
+- Speichern und Laden von Aggregates: `save`, `load`.
 
 ```kotlin
 interface AggregateStore {
@@ -1411,193 +1511,233 @@ interface AggregateStore {
 }
 ```
 
-Es gibt jeweils eine Methode zum Speichern und Laden von Events und Aggregates.
-Die Methoden haben alle das `suspend` Schlüsselwort.
-Das bedeutet, dass diese Funktionen blockieren können.
-Die Funktionen können nur innerhalb einer Coroutine aufgerufen werden.
-Wenn beim ausführen der Funktion eine blockierende Operation durchgeführt werden muss, wird die Coroutine pausiert und der aktuelle Thread kann für andere Aufgaben genutzt werden.
-Dadurch wird asynchrones und nicht-blockierendes Verhalten ermöglicht, was die Skalierbarkeit und Performance der Anwendung verbessert @coroutinesBasics.
+Alle Methoden sind `suspend` Funktionen, was bedeutet, dass sie asynchron innerhalb von Kotlin-Coroutines ausgeführt werden. 
+Eine suspend Funktion blockiert den aktuellen Thread nicht, wenn auf eine länger dauernde Operation gewartet wird. 
+Stattdessen pausiert die Coroutine, die die Funktion aufgerufen hat, und der Thread kann andere Aufgaben ausführen. 
+Sobald die Operation abgeschlossen ist, wird die Coroutine an der unterbrochenen Stelle wieder aufgenommen.
 
-*AggregateStoreImpl:*
+Auf einem System-Thread können mehrere Coroutines gleichzeitig ausgeführt bzw. gebündelt werden. 
+Die Koordination übernimmt dabei ein Coroutine Dispatcher, der die Coroutines auf die verfügbaren Threads verteilt. 
+Durch diese Mechanismen entsteht echte Nebenläufigkeit, ohne dass für jede Aufgabe ein eigener Thread benötigt wird.
 
-Die konkrete Implementierung des Aggregate Stores erfolgt in der Klasse `AggregateStoreImpl`.
-Diese Klasse implementiert das Interface `AggregateStore` und nutzt dabei folgende Komponenten, Pakete und Attribute:
+suspend in Kombination mit Coroutines und einem Dispatcher ermöglicht nicht-blockierende, asynchrone Verarbeitung mit Nebenläufigkeit, wodurch Skalierbarkeit und Performance der Anwendung deutlich verbessert werden @coroutinesBasics.
 
-- *DatabaseClient*: Der DatabaseClient von R2DBC wird genutzt, um asynchrone und nicht-blockierende Datenbankoperationen durchzuführen.
-- *TransactionalOperator*: Der TransactionalOperator von Spring wird genutzt, um Transaktionen zu verwalten und sicherzustellen, dass mehrere asynchrone Datenbankoperationen atomar ausgeführt werden.
-- *EventPublisher*: Der EventPublisher wird genutzt, um Events in der Anwendung zu veröffentlichen, damit andere Teile der Anwendung auf diese reagieren können.
-- *SerializerFactory*: Die SerializerFactory wird genutzt, um die Serialisierung und Deserialisierung der Events zu verwalten.
-- *snapshotInterval*: Das snapshotInterval Attribut gibt an, wie viele Events zwischen zwei Snapshots liegen sollen.
+*Implementierung `AggregateStoreImpl`:*
 
-In der Klasse werden merhere SQL-Statements, für das laden und speichern von Events und Snpashots, als Konstante definiert.
-Über den DatabaseClient werden diese SQL-Statements asynchron ausgeführt.
-Als Beispiel ist hier das Speichern und Laden von Events dargestellt.
+Die konkrete Implementierung `AggregateStoreImpl` übernimmt die Logik, um Events und Aggregates effizient zu persistieren und wiederherzustellen.
+Wichtige Bestandteile:
+
+- *DatabaseClient (R2DBC)*: Für asynchrone, nicht-blockierende Datenbankzugriffe.
+- *TransactionalOperator*: Verwaltung von Transaktionen, sodass mehrere Datenbankoperationen atomar ausgeführt werden.
+- *EventPublisher*: Veröffentlichung von Events innerhalb der Anwendung.
+- *SerializerFactory*: Serialisierung und Deserialisierung von Events.
+- *snapshotInterval*: Gibt an, nach wie vielen Events ein Snapshot erstellt werden soll.
+
+*Speicher und Laden von Events*
+
+Das Speichern und Laden von Events und Snapshot ist sehr ähnlich.
+Es wird hier nur das Speichern und Laden von Events beschrieben.
+Die Speicherung von Events erfolgt in einem reaktiven, transaktionalen Kontext, der sicherstellt, dass alle Operationen atomar durchgeführt werden.
+Vor dem Speichern wird ein Lock auf das Aggregate gesetzt, um konkurrierende Schreibzugriffe zu verhindern.
 
 ```kotlin
 
-    override suspend fun saveEvents(events: List<Event>) {
-        return events.forEach { saveEvent(it) }
+override suspend fun saveEvents(events: List<Event>) {
+    return events.forEach { saveEvent(it) }
+}
+
+private suspend fun saveEvent(event: Event) {
+    return dbClient.sql(SAVE_EVENT_QUERY)
+        .bind(EventSourcingConstants.EVENT_ID, event.id ?: "")
+        .bind(EventSourcingConstants.AGGREGATE_ID, event.aggregateId)
+        .bind(EventSourcingConstants.AGGREGATE_TYPE, event.aggregateType)
+        .bind(EventSourcingConstants.EVENT_TYPE, event.type)
+        .bind(EventSourcingConstants.VERSION, event.version)
+        .bind(EventSourcingConstants.DATA, event.data)
+        .bind(EventSourcingConstants.METADATA, event.metadata)
+        .bind(EventSourcingConstants.TIMESTAMP, event.timeStamp)
+        .await()
+}
+
+private const val SAVE_EVENT_QUERY = """
+    INSERT INTO parkflow.events
+        (event_id, aggregate_id, aggregate_type, event_type, data, metadata, version, timestamp)
+    VALUES
+        (:event_id, :aggregate_id, :aggregate_type, :event_type, :data, :metadata, :version, :timestamp)
+"""
+
+override suspend fun loadEvents(
+    aggregateId: String,
+    version: Int,
+): MutableIterable<Event> {
+    return withContext(Dispatchers.IO) {
+        dbClient.sql(LOAD_EVENTS_QUERY)
+            .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
+            .bind(EventSourcingConstants.VERSION, version)
+            .map { row, meta -> eventFromRow(row, meta) }
+            .all()
+            .toIterable()
     }
+}
 
-    private suspend fun saveEvent(event: Event) {
-        return dbClient.sql(SAVE_EVENT_QUERY)
-            .bind(EventSourcingConstants.EVENT_ID, event.id ?: "")
-            .bind(EventSourcingConstants.AGGREGATE_ID, event.aggregateId)
-            .bind(EventSourcingConstants.AGGREGATE_TYPE, event.aggregateType)
-            .bind(EventSourcingConstants.EVENT_TYPE, event.type)
-            .bind(EventSourcingConstants.VERSION, event.version)
-            .bind(EventSourcingConstants.DATA, event.data)
-            .bind(EventSourcingConstants.METADATA, event.metadata)
-            .bind(EventSourcingConstants.TIMESTAMP, event.timeStamp)
-            .await()
-    }
+private fun eventFromRow(
+    row: Row,
+    meta: RowMetadata,
+) = Event(
+        type = row.get(EventSourcingConstants.EVENT_TYPE, String::class.java) ?: "",
+        aggregateId = row.get(EventSourcingConstants.AGGREGATE_ID, String::class.java) ?: "",
+        aggregateType = row.get(EventSourcingConstants.AGGREGATE_TYPE, String::class.java) ?: "",
+        id = row.get(EventSourcingConstants.EVENT_ID, String::class.java) ?: "",
+        version = row.get(EventSourcingConstants.VERSION, Int::class.java) ?: 0,
+        data = row.get(EventSourcingConstants.DATA, ByteArray::class.java) ?: byteArrayOf(),
+        metadata = row.get(EventSourcingConstants.METADATA, ByteArray::class.java) ?: byteArrayOf(),
+        timeStamp = row.get(EventSourcingConstants.TIMESTAMP, LocalDateTime::class.java) ?: LocalDateTime.now(),
+    )
 
-    private const val SAVE_EVENT_QUERY = """
-            INSERT INTO parkflow.events
-                (event_id, aggregate_id, aggregate_type, event_type, data, metadata, version, timestamp)
-            VALUES
-                (:event_id, :aggregate_id, :aggregate_type, :event_type, :data, :metadata, :version, :timestamp)
-        """
-
-        override suspend fun loadEvents(
-            aggregateId: String,
-            version: Int,
-        ): MutableIterable<Event> {
-            return withContext(Dispatchers.IO) {
-                dbClient.sql(LOAD_EVENTS_QUERY)
-                    .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
-                    .bind(EventSourcingConstants.VERSION, version)
-                    .map { row, meta -> eventFromRow(row, meta) }
-                    .all()
-                    .toIterable()
-            }
-        }
-
-    private fun eventFromRow(
-                row: Row,
-                meta: RowMetadata,
-            ) = Event(
-                type = row.get(EventSourcingConstants.EVENT_TYPE, String::class.java) ?: "",
-                aggregateId = row.get(EventSourcingConstants.AGGREGATE_ID, String::class.java) ?: "",
-                aggregateType = row.get(EventSourcingConstants.AGGREGATE_TYPE, String::class.java) ?: "",
-                id = row.get(EventSourcingConstants.EVENT_ID, String::class.java) ?: "",
-                version = row.get(EventSourcingConstants.VERSION, Int::class.java) ?: 0,
-                data = row.get(EventSourcingConstants.DATA, ByteArray::class.java) ?: byteArrayOf(),
-                metadata = row.get(EventSourcingConstants.METADATA, ByteArray::class.java) ?: byteArrayOf(),
-                timeStamp = row.get(EventSourcingConstants.TIMESTAMP, LocalDateTime::class.java) ?: LocalDateTime.now(),
-            )
-
-    private const val LOAD_EVENTS_QUERY = """
-            SELECT event_id, aggregate_id, aggregate_type, event_type, data, metadata, version, timestamp
-            FROM parkflow.events e
-            WHERE e.aggregate_id = :aggregate_id
-              AND e.version > :version
-            ORDER BY e.version ASC
-        """
+private const val LOAD_EVENTS_QUERY = """
+    SELECT event_id, aggregate_id, aggregate_type, event_type, data, metadata, version, timestamp
+    FROM parkflow.events e
+    WHERE e.aggregate_id = :aggregate_id
+      AND e.version > :version
+    ORDER BY e.version ASC
+"""
 ```
+
 *Speichern von Aggregates:*
 
-Das Speichern von Aggregates erfolgt über die Methode `save`.
-Diese Methode bekommt ein Aggregate als Parameter.
-Die Methode speichert alle neuen Events die im Aggregate in der Liste `changes` gespeichert sind.
-Danach wird die Liste geleert.
-Im ersten Schritt holt sich die Methode über die SerializerFactory den passenden Serializer für das Aggregate.
-Danach werden die BaseEvents in Events umgewandelt.
-Im nächsten Schritt wird ein neuer reactiver Transactional Context erstellt mit der spring Methode `operator.executeAndAwait`.
-Innerhalb dieses Contexts ist das ausführen von `suspend` Funktionen möglich und alle Datenbankoperationen werden in einer Transaktion ausgeführt.
-In dem Context wird als erstes eine Lock für das Aggregate gesetzt um konkurrierende Schreibzugriffe zu verhindern.
-Wenn die gesamte Transaktion erfolgreich abgeschlossen wurde, wird der Lock automatisch wieder freigegeben.
-Danach werden die Events nacheinander gespeichert.
-Weiterhin wird geprüft, ob ein Snapshot erstellt werden muss.
-Wenn ein Snapshot erstellt werden muss, wird dieser ebenfalls gespeichert.
-Dabei wird der aktuelle Snapshot des Aggregates überschrieben, wenn einer existiert.
-Dadurch gibt es immer nur einen Snapshot pro Aggregate.
-Danach werden die Events über den EventPublisher in der Anwendung veröffentlicht.
-Zum Schluss wird die Liste der Änderungen im Aggregate geleert, damit diese nicht erneut gespeichert werden.
+Beim Speichern eines Aggregates über die Methode `save` im Aggregate Store werden die folgenden Schritte ausgeführt:
+
+1. *Auswahl des Serializers*: Zuerst wird über die SerializerFactory der passende Serializer für den Typ des Aggregates ausgewählt. Jeder Aggregate-Typ hat einen eigenen Serializer, der dafür zuständig ist, die BaseEvents in ein persistierbares Event-Objekt zu transformieren.
+
+2. *Umwandlung der BaseEvents*: Alle Änderungen, die im Aggregate seit der letzten Speicherung aufgetreten sind, liegen in der changes-Liste als BaseEvents vor. Diese BaseEvents werden mithilfe des Serializers in persistierbare Events umgewandelt.
+
+3. *Reaktiver Transaktionskontext*: Die Speicherung erfolgt innerhalb eines reaktiven Transactional Operators. Dieser Operator stellt sicher, dass alle Operationen atomar ausgeführt werden. Der gesamte Ablauf wird in einer Coroutine ausgeführt, wodurch die Datenbankzugriffe asynchron und nicht-blockierend erfolgen.
+
+4. *Concurrency Handling*: Vor dem Schreiben der Events wird ein Lock auf das Aggregate gesetzt, um konkurrierende Schreibzugriffe zu verhindern. Dies geschieht über ein SQL-Statement, das die entsprechende Aggregate-ID für Updates sperrt. Damit wird sichergestellt, dass die Versionierung der Events korrekt bleibt und keine Race Conditions auftreten.
+
+5. *Speichern der Events*: Anschließend werden die Events nacheinander in die Events-Tabelle in PostgreSQL geschrieben. Jede Einfügung ist asynchron und erfolgt über den DatabaseClient von R2DBC. Die Reihenfolge der Events wird durch die Versionsnummer sichergestellt.
+
+6. *Snapshot-Erstellung*: Nach dem Speichern prüft der Aggregate Store, ob ein Snapshot erstellt werden soll.
+    - Wenn ja, wird der aktuelle Zustand des Aggregates serialisiert und in der Snapshots-Tabelle gespeichert.
+    - Falls bereits ein Snapshot existiert, wird dieser überschrieben, sodass immer nur ein Snapshot pro Aggregate existiert.
+
+
+7. *Veröffentlichung der Events*: Alle neuen Events werden über den EventPublisher innerhalb der Anwendung veröffentlicht.
+
+8. *Leeren der changes-Liste*: Zum Schluss wird die changes-Liste im Aggregate geleert. Dadurch wird sichergestellt, dass die gleichen Events nicht erneut gespeichert oder veröffentlicht werden.
+
+Dieser Ablauf stellt sicher, dass die Events konsistent gespeichert, die Versionierung korrekt gehandhabt und gleichzeitig die Verarbeitung asynchron und entkoppelt bleibt. 
+Gleichzeitig erlaubt die Kombination aus Snapshots, Coroutine-basiertem asynchronem Speichern und Event-Publishing, dass der Aggregate Store performant und skalierbar arbeitet, selbst wenn viele Aggregates gleichzeitig gespeichert werden.
 
 ```kotlin
-    override suspend fun <T : AggregateRoot> save(aggregate: T) {
-        val serializer = serializerFactory.getSerializer(aggregate::class.java.simpleName)
-        val events = aggregate.changes.map { serializer.serialize(it, aggregate) }
+override suspend fun <T : AggregateRoot> save(aggregate: T) {
+    val serializer = serializerFactory
+                        .getSerializer(aggregate::class.java.simpleName)
+                        
+    val events = aggregate.changes.map { serializer.serialize(it, aggregate) }
+    operator.executeAndAwait {
+        if (aggregate.version > 1) handleConcurrency(aggregate.aggregateId)
 
-        operator.executeAndAwait {
-            if (aggregate.version > 1) handleConcurrency(aggregate.aggregateId)
+        saveEvents(events)
 
-            saveEvents(events)
+        if (aggregate.version % snapshotFrequency == 0) saveSnapshot(aggregate)
 
-            if (aggregate.version % snapshotFrequency == 0) saveSnapshot(aggregate)
-
-            eventPublisher.publish(aggregate.changes.filter { !it.metadata.imported })
-            aggregate.clearChanges()
-        }
+        eventPublisher.publish(
+            aggregate.changes.filter { !it.metadata.imported }
+        )
+        
+        aggregate.clearChanges()
     }
+}
 
-        private suspend fun handleConcurrency(aggregateId: String) {
-            dbClient.sql(HANDLE_CONCURRENCY_QUERY)
-                .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
-                .await()
-        }
+private suspend fun handleConcurrency(aggregateId: String) {
+    dbClient.sql(HANDLE_CONCURRENCY_QUERY)
+        .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
+        .await()
+}
 
-        private const val HANDLE_CONCURRENCY_QUERY = """
-        SELECT aggregate_id
-        FROM parkflow.events
-        WHERE aggregate_id = :aggregate_id
-        ORDER BY version
-        LIMIT 1
-        FOR UPDATE
-    """
+private const val HANDLE_CONCURRENCY_QUERY = """
+    SELECT aggregate_id
+    FROM parkflow.events
+    WHERE aggregate_id = :aggregate_id
+    ORDER BY version
+    LIMIT 1
+    FOR UPDATE
+"""
 ```
 
 *Laden von Aggregates:*
 
-Das Laden von Aggregates erfolgt über die Methode `load`.
-Diese Methode bekommt die Identifikationsnummer und den Typ des Aggregates als Parameter.
-Im ersten Schritt holt sich die Methode über die SerializerFactory den passenden Serializer für das Aggregate.
-Danach wird geprüft ob für das Aggregate ein Snapshot existiert.
-Anschließend wird aus dem Snapshot das Aggregate wiederhergestellt.
-Wenn kein Snapshot gefunden wurde, wird eine neue Instanz des Aggregates erstellt.
-Danach werden alle Events die nach dem Snapshot aufgetreten sind, aus dem Event Store geladen und nacheinander auf das Aggregate angewendet.
-Zum Schluss wird das wiederhergestellte Aggregate zurückgegeben.
+Beim Laden eines Aggregates über die Methode `load` im Aggregate Store werden folgende Schritte ausgeführt:
+
+1. *Auswahl des Serializers*: Zuerst wird über die SerializerFactory der passende Serializer für den Typ des Aggregates ausgewählt.
+
+2. *Laden des Snapshots*: Der Aggregate Store prüft, ob für das Aggregate ein Snapshot existiert.
+
+    - Wenn ein Snapshot vorhanden ist, wird dieser geladen und das Aggregate daraus teilweise wiederhergestellt, sodass nicht alle Events von Anfang an angewendet werden müssen.
+    - Wenn kein Snapshot existiert, wird eine neue leere Instanz des Aggregates erstellt.
+
+3. *Anwendung der Events nach dem Snapshot*: Alle Events, die nach der Versionsnummer des geladenen Snapshots entstanden sind, werden aus der Events-Tabelle geladen.
+
+    - Die Events werden nach der Versionsnummer aufsteigend sortiert, um die korrekte Reihenfolge sicherzustellen.
+    - Jedes Event wird nacheinander auf das Aggregate angewendet, indem die Methode `raiseEvent` aufgerufen wird.
+    - `raiseEvent` ruft intern die abstrakte Methode `whenEvent` auf, die von jeder konkreten Aggregate-Klasse implementiert wird, um den Zustand des Aggregates basierend auf dem Event anzupassen.
+
+4. *Rückgabe des Aggregates*: Nach dem Anwenden aller Events ist der Zustand des Aggregates vollständig wiederhergestellt. Das Aggregate kann nun in der Anwendung genutzt werden.
 
 ```kotlin
-    override suspend fun <T : AggregateRoot> load(
-        aggregateId: String,
-        aggregateType: Class<T>,
-    ): T {
-        val serializer = serializerFactory.getSerializer(aggregateType.simpleName)
-        val snapshot = loadSnapshot(aggregateId)
+override suspend fun <T : AggregateRoot> load(
+    aggregateId: String,
+    aggregateType: Class<T>,
+): T {
+    val serializer = serializerFactory
+                        .getSerializer(aggregateType.simpleName)
+                            
+    val snapshot = loadSnapshot(aggregateId)
+    val aggregate = getAggregateFromSnapshotClass(snapshot, aggregateId, aggregateType)
 
-        val aggregate = getAggregateFromSnapshotClass(snapshot, aggregateId, aggregateType)
+    loadEvents(aggregateId, aggregate.version)
+        .map { serializer.deserialize(it) }
+        .forEach { aggregate.raiseEvent(it) }
 
-        loadEvents(aggregateId, aggregate.version)
-            .map { serializer.deserialize(it) }
-            .forEach { aggregate.raiseEvent(it) }
-
-        if (aggregate.version == 0) throw AggregateNotFoundException(aggregateId, aggregateType.name)
-
-        return aggregate
+    if (aggregate.version == 0) {
+        throw AggregateNotFoundException(aggregateId, aggregateType.name)
     }
 
-    private suspend fun <T : AggregateRoot> getAggregateFromSnapshotClass(
-        snapshot: Snapshot?,
-        aggregateId: String,
-        aggregateType: Class<T>,
-    ): T {
-        if (snapshot == null) {
-            val defaultSnapshot =
-                EventSourcingUtils.snapshotFromAggregate(aggregate = getAggregate(aggregateId, aggregateType))
-            return EventSourcingUtils.getAggregateFromSnapshot(defaultSnapshot, aggregateType)
-        }
+    return aggregate
+}
 
-        return EventSourcingUtils.getAggregateFromSnapshot(snapshot, aggregateType)
+private suspend fun <T : AggregateRoot> getAggregateFromSnapshotClass(
+    snapshot: Snapshot?,
+    aggregateId: String,
+    aggregateType: Class<T>,
+): T {
+    if (snapshot == null) {
+        val defaultSnapshot =
+            EventSourcingUtils.snapshotFromAggregate(
+                aggregate = getAggregate(aggregateId, aggregateType)
+            )
+            
+        return EventSourcingUtils.getAggregateFromSnapshot(
+            defaultSnapshot, aggregateType
+        )
     }
+
+    return EventSourcingUtils.getAggregateFromSnapshot(
+        snapshot, aggregateType
+    )
+}
 ```
 
 === Serializer
 
-Um die Events in der Datenbank zu speichern, müssen diese serialisiert werden.
-Dazu gibt es für jeden Aggregate Typ einen eigenen Serializer.
-Die Serializer Factory verwaltet die verschiedenen Serializer und stellt den passenden Serializer für einen bestimmten Aggregate Typ bereit.
+In einem Event-Sourcing-System wie Parkflow müssen Events persistiert und später wiederhergestellt werden.
+Dazu werden die Events in ein bytebasiertes Format serialisiert, das in der Datenbank gespeichert werden kann. 
+Beim Laden der Events müssen sie anschließend wieder deserialisiert werden, um die BaseEvent-Objekte im Speicher rekonstruieren zu können.
+
+Um diese Aufgabe zu erfüllen, gibt es für jeden Aggregate-Typ einen eigenen Serializer. 
+Jeder Serializer kennt die spezifischen Event-Typen seines Aggregates und weiß, wie diese korrekt serialisiert und deserialisiert werden. 
+Die Verwaltung der Serializer übernimmt die SerializerFactory, die den passenden Serializer für einen bestimmten Aggregate-Typ bereitstellt:
 
 ```kotlin
 @Component
@@ -1612,8 +1752,8 @@ class SerializerFactory(
 }
 ```
 
-Ein Serializer implementiert das Interface `Serializer`.
-Dieses Interface definiert die Methoden zum Serialisieren und Deserialisieren von Events.
+Jeder konkrete Serializer implementiert das Interface `Serializer`. 
+Dieses Interface definiert die drei zentralen Funktionen.
 
 ```kotlin
 interface Serializer {
@@ -1628,11 +1768,8 @@ interface Serializer {
 }
 ```
 
-Jedes Aggregate hat einen eigenen Serializer der das Interface implementiert.
-Der Serializer wird in dem Api Modul des jeweiligen Bounded Contexts implementiert und somit vom Modul selber bereitgestellt.
-Als Beispiel ist hier der Serializer für das Gate Aggregate dargestellt.
-Über das enum GateEvent werden die verschiedenen Event Typen des Gate Aggregates definiert.
-Dabei bekommt jedes Event eine Version um spätere Änderungen an den Events zu ermöglichen.
+Als Beispiel für einen konkreten Serializer wird hier der GateEventSerializer dargestellt.
+Dieses Beispiel zeigt, wie der Serializer die spezifischen Events des Gate Aggregates behandelt.
 
 ```kotlin
 enum class GateEvent {
@@ -1641,7 +1778,14 @@ enum class GateEvent {
     GATE_DEACTIVATED_V1,
     GATE_REMOVED_V1,
 }
+```
+- Jedes Event des Aggregates bekommt eine Version (z.B. `_V1`), damit zukünftige Änderungen an den Events ohne Probleme umgesetzt werden können.
+- Durch die Versionsierung können alte Events weiterhin korrekt deserialisiert werden, selbst wenn die Struktur der Events angepasst wird.
 
+
+Der `GateEventSerializer`#footnote[com.spruhs.parkflow.parkinginventory.api.ParkingInventoryEvents.kt] implementiert das Interface `Serializer`.
+
+```kotlin
 @Component
 class GateEventSerializer : Serializer {
     private val typeMapping: Map<Class<out BaseEvent>, GateEvent> =
@@ -1661,25 +1805,9 @@ class GateEventSerializer : Serializer {
     override fun serialize(
         event: BaseEvent,
         aggregate: AggregateRoot,
-    ): Event {
-        val type =
-            typeMapping[event::class.java]
-                ?: throw UnknownEventTypeException(event)
+    ): Event { ... }
 
-        return Event(
-            aggregate = aggregate,
-            eventType = type.name,
-            data = EventSourcingUtils.writeValueAsBytes(event),
-            metadata = EventSourcingUtils.writeValueAsBytes(event.metadata),
-        )
-    }
-
-    override fun deserialize(event: Event): BaseEvent {
-        val clazz =
-            classMapping[event.type]
-                ?: throw UnknownEventTypeException("Unknown event type: ${event.type}")
-        return EventSourcingUtils.readValue(event.data, clazz)
-    }
+    override fun deserialize(event: Event): BaseEvent { ... }
 
     override fun aggregateTypeName(): String = "GateAggregate"
 }
@@ -1687,7 +1815,9 @@ class GateEventSerializer : Serializer {
 
 === Event Publisher
 
-Für das Veröffentlichen der Events in der Anwendung wird das Interface `EventPublisher` genutzt.
+Im Event-Sourcing-System von Parkflow müssen Änderungen an Aggregates nicht nur im Event Store persistiert werden, sondern auch innerhalb der Anwendung kommuniziert werden, damit andere Komponenten auf diese Änderungen reagieren können.
+
+Dafür wird das Interface `EventPublisher`#footnote[com.spruhs.parkflow.common.es.Events.kt] genutzt:
 
 ```kotlin
 fun interface EventPublisher {
@@ -1695,8 +1825,8 @@ fun interface EventPublisher {
 }
 ```
 
-Die konkrete Implementierung des Event Publishers erfolgt in der Klasse `EventPublisherImpl`.
-Hier wird der, von Spring zur Verfügung gestellte, ApplicationEventPublisher genutzt um die Events zu veröffentlichen.
+Die konkrete Implementierung erfolgt in der Klasse `EventPublisherImpl`. 
+Diese nutzt den von Spring bereitgestellten `ApplicationEventPublisher`, um die Events innerhalb der Anwendung zu verteilen.
 
 ```kotlin
 @Service
@@ -1704,13 +1834,11 @@ class EventPublisherImpl(
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val eventMetrics: EventMetrics,
 ) : EventPublisher {
-    private val log = getLogger(javaClass)
 
     override fun publish(events: List<BaseEvent>) {
         events.forEach {
             eventMetrics.springPublished.increment()
-
-            log.info("Publish event: ${it.javaClass.simpleName}, aggregateId: ${it.aggregateId}")
+           
             applicationEventPublisher.publishEvent(it)
         }
     }
@@ -2051,7 +2179,7 @@ interface ParkingInventoryRepositoryPort {
 }
 ```
 
-Dieser Port wird dann im Infrastructure Layer von einem Adapter implementiert #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.secondary.ParkingInventoryMongoDB.kt]. 
+Dieser Port wird dann im Infrastructure Layer von einem Adapter implementiert #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.secondary.ParkingInventoryMongoDB.kt].
 Dieser Adapter nutzt das Spring Data MongoDB Reactive Repository um die Daten in der MongoDB zu speichern und abzurufen.
 Aus Performancegründen werden die Gates und ParkingSpots in eigenen Collections gespeichert um diese auch getrennt abfragen zu können.
 
@@ -2141,7 +2269,7 @@ class ParkingOperatorAggregate(override val aggregateId: String) : AggregateRoot
     val vehicles: MutableMap<PlateNumber, Vehicle> = mutableMapOf()
 
     private var parkingSpotProvider: ParkingSpotProvider = DefaultParkingSpotProvider()
-    
+
     ...
 }
 ```
@@ -2256,7 +2384,7 @@ fun onVehicleArrival(
     return determineArriveAction(gate, arrivedVehicle)
         .also { apply(VehicleArrivedEvent(aggregateId, gateId, arrivedVehicle)) }
 }
-    
+
 sealed class GateResponse {
     sealed class Error : GateResponse() {
         object PlateNumberNotRegisteredError : Error()
@@ -2271,13 +2399,13 @@ sealed class GateResponse {
 
         object LetVehicleOut : Action()
     }
-```    
+```
 
 Die weiteren Methoden verarbeiten das Durchfahren eines Gates, das Parken auf einem Parkplatz und das Verlassen eines Parkplatzes.
 Auch diese Methoden erzeugen entsprechende Events bei einer Zustandsveränderung des Aggregates.
 In der `whenEvent` Methode werden die Events verarbeitet und der Zustand des Aggregates angepasst.
 
-```kotlin 
+```kotlin
 fun onVehicleDroveThrough(
     gateId: GateId,
     plateNumber: PlateNumber,
@@ -2292,11 +2420,11 @@ fun onVehicleDroveThrough(
                     vehicles[plateNumber]?.hasDisabilityCard ?: false,
                 ),
             )
-    
+
         is Gate.Exit -> apply(VehicleLeavedParkingLotEvent(aggregateId, gateId, plateNumber))
     }
 }
-        
+
 fun onVehicleParkedOn(
     parkingSpotId: ParkingSpotId,
     plateNumber: PlateNumber,
@@ -2305,14 +2433,14 @@ fun onVehicleParkedOn(
     if (parkingSpot.parkingVehicle != null) {
         log.error("CRASH $plateNumber on $parkingSpotId is already vehicle parked!")
     }
-        
+
     if (parkingSpot.reservedForVehicle == plateNumber) {
         parkCorrect(parkingSpotId, plateNumber)
     } else {
         parkIncorrect(plateNumber, parkingSpot)
     }
 }
-            
+
 fun onVehicleParkedOff(
     parkingSpotId: ParkingSpotId,
     plateNumber: PlateNumber,
@@ -2351,15 +2479,15 @@ class ParkingOperatorService(
     eventExecutionStrategy: EventExecutionStrategy,
 ) {
     ...
-    
+
     private lateinit var actor: ParkingOperatorActor
-    
+
     init {
         eventExecutionStrategy.execute {
             actor = loadParkingSpotOperator()
         }
-    }  
-    
+    }
+
     private suspend fun loadParkingSpotOperator() =
         try {
             val aggregate = store.load(PARKING_SPOT_OPERATOR_AGGREGATE_ID, ParkingOperatorAggregate::class.java)
@@ -2367,7 +2495,7 @@ class ParkingOperatorService(
         } catch (_: AggregateNotFoundException) {
             log.info("Parking spot operator aggregate was not found. Creating a new parking spot operator.")
             ParkingOperatorActor(ParkingOperatorAggregate(PARKING_SPOT_OPERATOR_AGGREGATE_ID), store)
-        }    
+        }
     ...
 }
 
@@ -2472,14 +2600,14 @@ class VehicleEventListenerAdapter(
             commandPort.vehicleArrived(GateId(event.gateId), PlateNumber(event.plateNumber), event.hasDisabilityCard)
         }
     }
-    
+
     ...
-    
+
 }
 ```
 
 === Zusammenfassung
- 
+
 Mit Spring und Kotlin war es dabei möglich von auf allen Ebenen asynchrone und nicht-blockierende Komponenten zu erstellen.
 Die dabei auftretenden Herausforderungen wie konkurrierende Schreibzugriffe und eventuelle Konsistenz der Projektionen konnten mit einfachen Mitteln, von Spring und Kotlin, gelöst werden.
 
