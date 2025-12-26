@@ -950,16 +950,16 @@ Dieser Glossar enthält die wichtigsten Begriffe und Konzepte, die in den versch
 
 == Architektur
 
-Im vorherigen Kapitel wurde die Domain von Parkflow erkundet und modelliert. 
+Im vorherigen Kapitel wurde die Domain von Parkflow erkundet und modelliert.
 Auf dieser Grundlage wird in diesem Kapitel die Architektur von Parkflow entworfen und dokumentiert.
 
 Die Architekturdokumentation wurde nach dem C4-Modell erstellt#footnote[https://github.com/FSpruhs/park-flow/tree/master/doc/architecture/c4].
 Dieses Modell ermöglicht eine schrittweise Beschreibung der Architektur auf unterschiedlichen Abstraktionsebenen und unterstützt damit ein strukturiertes Verständnis des Gesamtsystems.
 
-Im Rahmen der Dokumentation werden auch Architekturteile dargestellt, die nicht im Zuge dieser Arbeit implementiert wurden. 
+Im Rahmen der Dokumentation werden auch Architekturteile dargestellt, die nicht im Zuge dieser Arbeit implementiert wurden.
 Ziel ist es, ein ganzheitliches Bild zu vermitteln, wie eine vollständige Architektur für Parkflow aussehen könnte, und die implementierten Teile in diesen größeren architektonischen Kontext einzuordnen.
 
-Darüber hinaus werden in diesem Kapitel Werkzeuge vorgestellt, die dabei unterstützen, die entworfene Architektur in der Implementierung einzuhalten und abzusichern. 
+Darüber hinaus werden in diesem Kapitel Werkzeuge vorgestellt, die dabei unterstützen, die entworfene Architektur in der Implementierung einzuhalten und abzusichern.
 Dazu zählen insbesondere Spring Modulith und ArchUnit, mit deren Hilfe architektonische Strukturen, Abhängigkeiten und Modulgrenzen explizit definiert und überprüft werden können.
 
 === System Context
@@ -974,29 +974,29 @@ Das könnte z.B. ein Ticketsystem sein bei einem Parkplatz an einem Fussballstad
 Weiterhin gibt es ein externes Zahlungssystem, das für die Abwicklung der Zahlungen zuständig ist und ein externes Authentifizierungssystem, das für die Authentifizierung und Autorisierung der Nutzer verantwortlich ist.
 Darüber hinaus verfügt der Parkplatz über verschiedene Sensoren, die die Aktionen der Fahrzeuge erkennen und entsprechende Events auslösen.
 
-Im Zentrum der Abbildung @system-context ist das System Parkflow dargestellt. 
+Im Zentrum der Abbildung @system-context ist das System Parkflow dargestellt.
 Das System stellt die zentrale Anwendung zur Verwaltung und zum Betrieb eines Parkplatzes dar und bildet die Schnittstelle zwischen den beteiligten Akteuren, technischen Systemen und physischen Komponenten.
 
 Es gibt zwei primäre Akteure, die direkt mit Parkflow interagieren.
 
-Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars verantwortlich. 
-Dazu gehören unter anderem die Anlage, Konfiguration und Verwaltung von Parkplätzen sowie die Verwaltung von Ein- und Ausgängen. 
+Der Parkplatzbetreiber ist für die Verwaltung des Parkplatzinventars verantwortlich.
+Dazu gehören unter anderem die Anlage, Konfiguration und Verwaltung von Parkplätzen sowie die Verwaltung von Ein- und Ausgängen.
 
-Der Kunde nutzt das System, um sich zu registrieren, Fahrzeuge zu hinterlegen und Parkplätze zu mieten. 
+Der Kunde nutzt das System, um sich zu registrieren, Fahrzeuge zu hinterlegen und Parkplätze zu mieten.
 Während des laufenden Parkplatzbetriebs interagiert der Kunde nicht direkt mit dem System, sondern wird über automatisierte Prozesse geführt, beispielsweise bei der Ein- und Ausfahrt oder bei der Abrechnung der Parkgebühren.
 
-Neben den direkten Akteuren sind potenzielle externe Systeme vorgesehen, die mit Parkflow interagieren können. 
-Diese Schnittstellen ermöglichen es, Parkflow in bestehende Systemlandschaften zu integrieren. 
+Neben den direkten Akteuren sind potenzielle externe Systeme vorgesehen, die mit Parkflow interagieren können.
+Diese Schnittstellen ermöglichen es, Parkflow in bestehende Systemlandschaften zu integrieren.
 Ein mögliches Beispiel hierfür ist ein Ticketsystem im Kontext eines Parkplatzes an einem Fußballstadion, über das zusätzliche Zugangs- oder Berechtigungsinformationen bereitgestellt werden könnten.
 
-Für die Abwicklung finanzieller Transaktionen ist ein externes Zahlungssystem angebunden. 
+Für die Abwicklung finanzieller Transaktionen ist ein externes Zahlungssystem angebunden.
 Dieses System übernimmt die Verarbeitung von Zahlungen und entlastet Parkflow von sicherheits- und regulatorisch relevanten Aspekten der Zahlungsabwicklung.
 
-Zusätzlich ist ein externes Authentifizierungssystem vorgesehen, das für die Authentifizierung und Autorisierung der Nutzer verantwortlich ist. 
+Zusätzlich ist ein externes Authentifizierungssystem vorgesehen, das für die Authentifizierung und Autorisierung der Nutzer verantwortlich ist.
 Dadurch wird eine klare Trennung zwischen fachlicher Logik und sicherheitsrelevanten Funktionen erreicht.
 
-Darüber hinaus interagiert Parkflow mit verschiedenen physischen Komponenten in Form von Sensoren. 
-Diese Sensoren erfassen Aktionen der Fahrzeuge, wie das Einfahren, Parken oder Ausfahren, und lösen entsprechende Events im System aus. 
+Darüber hinaus interagiert Parkflow mit verschiedenen physischen Komponenten in Form von Sensoren.
+Diese Sensoren erfassen Aktionen der Fahrzeuge, wie das Einfahren, Parken oder Ausfahren, und lösen entsprechende Events im System aus.
 Sie stellen damit eine wichtige Verbindung zwischen der physischen Welt und der fachlichen Logik von Parkflow dar.
 
 #figure(
@@ -1008,16 +1008,16 @@ Sie stellen damit eine wichtige Verbindung zwischen der physischen Welt und der 
 
 === Container <container-chapter>
 
-In Abbildung @container ist die Container-Architektur von Parkflow dargestellt. 
-Die Abbildung zeigt die zentralen technischen Bausteine des Systems sowie deren Beziehungen zueinander. 
+In Abbildung @container ist die Container-Architektur von Parkflow dargestellt.
+Die Abbildung zeigt die zentralen technischen Bausteine des Systems sowie deren Beziehungen zueinander.
 Die rot markierten Container werden im Rahmen dieser Arbeit nicht implementiert und dienen ausschließlich der Darstellung einer möglichen vollständigen Systemarchitektur.
 
-Parkflow besteht im Kern aus einem Backend, das als Modulith umgesetzt ist und die zentrale Geschäftslogik sowie das Domänenmodell enthält. 
+Parkflow besteht im Kern aus einem Backend, das als Modulith umgesetzt ist und die zentrale Geschäftslogik sowie das Domänenmodell enthält.
 Dieses Backend stellt die fachlichen Funktionen bereit und koordiniert die Verarbeitung der eingehenden Events.
 
-Zusätzlich sind in der Architektur zwei Frontend-Container vorgesehen, die jeweils von einem der beiden Akteure genutzt werden können. 
-Ein Frontend richtet sich an den Parkplatzbetreiber und ermöglicht die Verwaltung des Parkplatzinventars sowie betrieblicher Einstellungen. 
-Das zweite Frontend ist für Kunden vorgesehen und dient unter anderem der Registrierung von Fahrzeugen und dem Mieten von Parkplätzen. 
+Zusätzlich sind in der Architektur zwei Frontend-Container vorgesehen, die jeweils von einem der beiden Akteure genutzt werden können.
+Ein Frontend richtet sich an den Parkplatzbetreiber und ermöglicht die Verwaltung des Parkplatzinventars sowie betrieblicher Einstellungen.
+Das zweite Frontend ist für Kunden vorgesehen und dient unter anderem der Registrierung von Fahrzeugen und dem Mieten von Parkplätzen.
 Diese Frontends werden in dieser Arbeit nicht implementiert, da der Fokus auf der Backend-Architektur liegt.
 
 Das Backend greift auf zwei unterschiedliche Datenbanken sowie auf eine Message Queue zu:
@@ -1026,42 +1026,42 @@ Das Backend greift auf zwei unterschiedliche Datenbanken sowie auf eine Message 
 
 MongoDB wird zur Speicherung der aktuellen Zustände von Read Models sowie von Aggregates verwendet, für die kein Event-Sourcing-Mechanismus implementiert wird.
 
-MongoDB eignet sich besonders gut zur Speicherung von Aggregates, da ein Aggregate im Sinne von DDD eine klare transaktionale Konsistenzgrenze bildet. 
-Diese Grenze lässt sich in MongoDB sehr natürlich abbilden, indem ein gesamtes Aggregate als einzelnes Dokument unter einem eindeutigen Schlüssel gespeichert wird. 
+MongoDB eignet sich besonders gut zur Speicherung von Aggregates, da ein Aggregate im Sinne von DDD eine klare transaktionale Konsistenzgrenze bildet.
+Diese Grenze lässt sich in MongoDB sehr natürlich abbilden, indem ein gesamtes Aggregate als einzelnes Dokument unter einem eindeutigen Schlüssel gespeichert wird.
 Änderungen an einem Aggregate können dadurch atomar durchgeführt werden, ohne dass verteilte Transaktionen oder komplexe Joins erforderlich sind.
 
-Auch für Read Models bietet MongoDB deutliche Vorteile. 
-Read Models dürfen gezielt auf Lesezugriffe optimiert sein und müssen nicht der Struktur des Write Models entsprechen. 
-Die dokumentenorientierte Struktur von MongoDB erlaubt es, unterschiedliche fachliche Sichten auf dieselben Daten abzubilden. 
+Auch für Read Models bietet MongoDB deutliche Vorteile.
+Read Models dürfen gezielt auf Lesezugriffe optimiert sein und müssen nicht der Struktur des Write Models entsprechen.
+Die dokumentenorientierte Struktur von MongoDB erlaubt es, unterschiedliche fachliche Sichten auf dieselben Daten abzubilden.
 Dabei wird bewusst in Kauf genommen, dass Daten mehrfach gespeichert oder denormalisiert werden, um Abfragen einfach, performant und fachlich verständlich zu halten.
 
-Der zentrale Vorteil dieses Ansatzes liegt in der Einfachheit der Persistenz. 
+Der zentrale Vorteil dieses Ansatzes liegt in der Einfachheit der Persistenz.
 Der Fokus verschiebt sich weg von einer stark normalisierten Datenhaltung hin zu einer klar strukturierten, fachlich motivierten Persistenz.
 
 Im Kontext eines Modulithen gilt zudem ein zentrales Architekturprinzip.
-Jedes Modul darf ausschließlich auf seine eigenen persistenten Daten zugreifen. 
-Daten werden niemals über Modulgrenzen hinweg gespeichert oder direkt gelesen. 
+Jedes Modul darf ausschließlich auf seine eigenen persistenten Daten zugreifen.
+Daten werden niemals über Modulgrenzen hinweg gespeichert oder direkt gelesen.
 Diese Trennung schützt die fachlichen Grenzen, verhindert enge Kopplung zwischen Modulen und unterstützt eine spätere Weiterentwicklung der Architektur.
 
 *Postgres:*
 
-PostgreSQL wird als Event Store eingesetzt, um die Historie aller Ereignisse im System zu speichern. 
+PostgreSQL wird als Event Store eingesetzt, um die Historie aller Ereignisse im System zu speichern.
 Für Event Sourcing ist es entscheidend, dass jedes Event unveränderlich ist und dass die chronologische Reihenfolge der Ereignisse erhalten bleibt.
 
-Die Speicherung erfolgt in einer einfachen Tabelle, in der jede Zeile genau einem Event entspricht. 
-Neue Events werden fortlaufend angehängt, sodass die Tabelle im Prinzip eine lineare Liste von Events darstellt. 
-Diese Struktur entspricht dem grundlegenden Prinzip von Event Sourcing. 
+Die Speicherung erfolgt in einer einfachen Tabelle, in der jede Zeile genau einem Event entspricht.
+Neue Events werden fortlaufend angehängt, sodass die Tabelle im Prinzip eine lineare Liste von Events darstellt.
+Diese Struktur entspricht dem grundlegenden Prinzip von Event Sourcing.
 Die gesamte Historie der Änderungen wird vollständig und unverändert gespeichert.
 
-Durch die tabellarische Struktur von PostgreSQL lassen sich Events einfach sequenziell ablegen und in der richtigen Reihenfolge wieder auslesen. 
+Durch die tabellarische Struktur von PostgreSQL lassen sich Events einfach sequenziell ablegen und in der richtigen Reihenfolge wieder auslesen.
 Jede Zeile enthält dabei alle relevanten Informationen des Events, wie Typ, Zeitstempel, zugehöriges Aggregate und die Event-Daten selbst.
 
 *RabbitMQ:*
 
-RabbitMQ wird als Event Queue verwendet, um die von den Sensoren erzeugten Events zuverlässig an das Backend weiterzuleiten. 
+RabbitMQ wird als Event Queue verwendet, um die von den Sensoren erzeugten Events zuverlässig an das Backend weiterzuleiten.
 Die Sensoren veröffentlichen ihre Events in der Queue, während das Backend diese asynchron konsumiert und verarbeitet.
 
-Durch diese Architektur entsteht eine lose Kopplung zwischen Sensoren und Backend. 
+Durch diese Architektur entsteht eine lose Kopplung zwischen Sensoren und Backend.
 Das Backend ist nicht direkt an die Verfügbarkeit oder Antwortzeiten der Sensoren gebunden, wodurch Lastspitzen abgefedert und eine skalierbare Verarbeitung der Events ermöglicht wird.
 
 #figure(
@@ -1076,21 +1076,21 @@ Das Backend ist nicht direkt an die Verfügbarkeit oder Antwortzeiten der Sensor
 In Abbildung @component ist die Komponentenstruktur des Backend von Parkflow dargestellt.
 Die Abbildung zeigt die einzelnen Module, die den verschiedenen Bounded Contexts entsprechen, sowie deren Interaktionen untereinander.
 
-Für jeden Bounded Context existiert ein eigenes Modul. 
-Diese Module kapseln die fachliche Logik des jeweiligen Kontexts und bilden die Grundlage für eine modulare und wartbare Architektur. 
-Die Pfeile zwischen den Modulen stellen den Fluss von Events dar, der über ein internes Event-System realisiert wird. 
+Für jeden Bounded Context existiert ein eigenes Modul.
+Diese Module kapseln die fachliche Logik des jeweiligen Kontexts und bilden die Grundlage für eine modulare und wartbare Architektur.
+Die Pfeile zwischen den Modulen stellen den Fluss von Events dar, der über ein internes Event-System realisiert wird.
 Auf diese Weise können Module unabhängig voneinander arbeiten und dennoch auf relevante Ereignisse anderer Module reagieren, ohne direkt gekoppelt zu sein.
 
-Die Module sind so gestaltet, dass sie möglichst autark operieren können. 
-Dadurch wird eine lose Kopplung zwischen den Bounded Contexts erreicht, was die Wartbarkeit, Erweiterbarkeit und potenzielle Skalierbarkeit des Systems unterstützt. 
+Die Module sind so gestaltet, dass sie möglichst autark operieren können.
+Dadurch wird eine lose Kopplung zwischen den Bounded Contexts erreicht, was die Wartbarkeit, Erweiterbarkeit und potenzielle Skalierbarkeit des Systems unterstützt.
 Jedes Modul verwaltet zudem seine eigenen persistenten Daten, sodass Änderungen an einem Modul keine direkten Auswirkungen auf andere Module haben.
 
-Zusätzlich existiert ein gemeinsames common-Modul, das gemeinsame Funktionalitäten und Utilities bereitstellt, die von mehreren Modulen genutzt werden können. 
-Dazu gehören beispielsweise allgemeine Datenstrukturen, Utility-Klassen, gemeinsame Schnittstellen oder Basisklassen für Events. 
+Zusätzlich existiert ein gemeinsames common-Modul, das gemeinsame Funktionalitäten und Utilities bereitstellt, die von mehreren Modulen genutzt werden können.
+Dazu gehören beispielsweise allgemeine Datenstrukturen, Utility-Klassen, gemeinsame Schnittstellen oder Basisklassen für Events.
 Das common-Modul dient somit als Wiederverwendungsschicht, ohne die fachliche Unabhängigkeit der einzelnen Module zu verletzen.
- 
-Durch die modulare Struktur und die Event-basierte Kommunikation bleibt das System intern konsistent. 
-Jedes Modul verarbeitet seine eigenen Änderungen und teilt die resultierenden Events dem Rest des Systems mit. 
+
+Durch die modulare Struktur und die Event-basierte Kommunikation bleibt das System intern konsistent.
+Jedes Modul verarbeitet seine eigenen Änderungen und teilt die resultierenden Events dem Rest des Systems mit.
 Andere Module können diese Events asynchron konsumieren, wodurch die Kommunikation entkoppelt erfolgt und Module unabhängig voneinander arbeiten können.
 
 #figure(
@@ -1118,7 +1118,7 @@ Das `core` Paket besteht aus drei Hauptpaketen:
 Darüber hinaus gibt es noch das `common` Paket, das gemeinsame Funktionalitäten enthält, die von mehreren Modulen genutzt werden können.
 In Parkflow enthält das Modul die die Implementierung für das Event-Sourcing System und das interne Event-System.
 
-In Abbildung @code ist die interne Struktur des Moduls `ParkingInventory` dargestellt. 
+In Abbildung @code ist die interne Struktur des Moduls `ParkingInventory` dargestellt.
 Jedes Modul ist auf oberster Ebene in die Pakete api und core gegliedert.
 
 Das api-Paket enthält alle Elemente, die von anderen Modulen genutzt werden dürfen. Dazu gehören insbesondere:
@@ -1127,7 +1127,7 @@ Das api-Paket enthält alle Elemente, die von anderen Modulen genutzt werden dü
 - gemeinsam genutzte Value Objects,
 - Schnittstellen für die Interaktion mit dem Modul.
 
-Das core-Paket enthält die interne Implementierung des Moduls und darf von anderen Modulen nicht direkt verwendet werden. 
+Das core-Paket enthält die interne Implementierung des Moduls und darf von anderen Modulen nicht direkt verwendet werden.
 Dieses Paket ist in Form einer hexagonalen Architektur umgesetzt, um eine klare Trennung zwischen fachlicher Logik und technischer Infrastruktur zu gewährleisten.
 
 Die Hauptpakete im core-Paket sind:
@@ -1136,7 +1136,7 @@ Die Hauptpakete im core-Paket sind:
 - *application*: Die Application-Schicht koordiniert die Verarbeitung von Anfragen, die aus den Adaptern an das Modul gestellt werden. Sie dient als Orchestrator, der die entsprechenden Domain-Objekte aufruft, die fachliche Logik ausführt und die notwendigen Schritte eines Use Cases zusammenführt. Dabei implementiert sie die Ports, die von den Adaptern genutzt werden, ohne selbst komplexe fachliche Logik zu enthalten. Die Application-Schicht stellt somit sicher, dass die Domain korrekt genutzt wird und die fachlichen Abläufe konsistent ablaufen, während die technischen Details in den Adaptern verbleiben.
 - *domain*: Die Domain-Schicht enthält die fachliche Logik des Moduls. Hier werden Aggregates, Entities, Value Objects und Domain Services implementiert. Diese Schicht bildet den Kern der Anwendung. Abhängigkeiten zeigen nach außen auf diese Schicht, während sie selbst so wenige Abhängigkeiten wie möglich besitzt, um maximale Kohäsion zu erreichen.
 
-Zusätzlich existiert das common-Paket, das gemeinsame Funktionalitäten bereitstellt, die von mehreren Modulen genutzt werden. 
+Zusätzlich existiert das common-Paket, das gemeinsame Funktionalitäten bereitstellt, die von mehreren Modulen genutzt werden.
 In Parkflow enthält dieses Paket unter anderem die Implementierung des Event-Sourcing-Systems sowie des internen Event-Systems, über das Module asynchron miteinander kommunizieren können.
 
 Auf diese Weise unterstützt die modulare Paketstruktur eine klare Trennung von Schnittstellen, Fachlogik und Infrastruktur, erleichtert die Wartbarkeit und ermöglicht eine konsistente Implementierung der Event-basierten Architektur.
@@ -1161,14 +1161,14 @@ Nur dieses interface darf von anderen Modulen genutzt werden @springModulith.
 
 Im folgenden Codebeispiel ist das `api` Paket des Moduls `parking-inventory` als interface deklariert.
 
-Spring Modulith #footnote[org.springframework.modulith:spring-modulith-starter-test] ist ein offizielles Spring-Projekt, das speziell für die Entwicklung modularer Monolithen entwickelt wurde. 
+Spring Modulith #footnote[org.springframework.modulith:spring-modulith-starter-test] ist ein offizielles Spring-Projekt, das speziell für die Entwicklung modularer Monolithen entwickelt wurde.
 Es bietet Werkzeuge und Best Practices, um die Strukturierung, Kommunikation und Verwaltung von Modulen innerhalb eines Monolithen sicherzustellen.
 
-Spring Modulith etabliert Regeln und Konventionen, die garantieren, dass Module klar abgegrenzt sind und nur über definierte Schnittstellen miteinander kommunizieren. 
-Standardmäßig dürfen Module nur auf Code zugreifen, der in der eigentlichen Paketstruktur des eigenen Moduls liegt. 
+Spring Modulith etabliert Regeln und Konventionen, die garantieren, dass Module klar abgegrenzt sind und nur über definierte Schnittstellen miteinander kommunizieren.
+Standardmäßig dürfen Module nur auf Code zugreifen, der in der eigentlichen Paketstruktur des eigenen Moduls liegt.
 Auf diese Weise werden unkontrollierte Abhängigkeiten zwischen Modulen verhindert.
 
-Darüber hinaus können einzelne Pakete innerhalb eines Moduls explizit als Interface deklariert werden. 
+Darüber hinaus können einzelne Pakete innerhalb eines Moduls explizit als Interface deklariert werden.
 Nur dieses Interface darf von anderen Modulen verwendet werden, wodurch eine klar definierte Kommunikationsschicht entsteht @springModulith.
 
 Im folgenden Codebeispiel ist das api-Paket des Moduls parking-inventory als Interface deklariert:
@@ -1184,7 +1184,7 @@ import org.springframework.modulith.PackageInfo
 class ModuleMetaData
 ```
 
-Spring Modulith bietet zusätzlich die Möglichkeit, die Einhaltung der Modulgrenzen automatisiert zu testen. 
+Spring Modulith bietet zusätzlich die Möglichkeit, die Einhaltung der Modulgrenzen automatisiert zu testen.
 Ein entsprechender Test#footnote[com.spruhs.parkflow.architecture.ModulithTests.kt] kann in den Build-Prozess eingebunden werden, um sicherzustellen, dass die modulare Struktur während der Entwicklung konsistent bleibt:
 
 ```kotlin
@@ -1199,12 +1199,12 @@ class ModulithTests {
 
 === Archunit
 
-ArchUnit ist ein Werkzeug zur automatisierten Überprüfung von Architekturregeln in Java- und Kotlin-Projekten. 
-Es ermöglicht, vordefinierte Architekturprinzipien und Schichtgrenzen programmatisch zu überprüfen. 
+ArchUnit ist ein Werkzeug zur automatisierten Überprüfung von Architekturregeln in Java- und Kotlin-Projekten.
+Es ermöglicht, vordefinierte Architekturprinzipien und Schichtgrenzen programmatisch zu überprüfen.
 Dadurch lassen sich Verstöße gegen die gewünschte Struktur frühzeitig erkennen, bevor sie zu Wartungsproblemen oder unerwarteten Abhängigkeiten führen.
 
-In Parkflow wird ArchUnit insbesondere verwendet, um die hexagonale Architektur durchzusetzen. 
-Die Architekturregeln definieren klare Grenzen zwischen den Schichten domain, application und infrastructure. 
+In Parkflow wird ArchUnit insbesondere verwendet, um die hexagonale Architektur durchzusetzen.
+Die Architekturregeln definieren klare Grenzen zwischen den Schichten domain, application und infrastructure.
 Mit ArchUnit lassen sich diese Regeln automatisiert testen, sodass beispielsweise sichergestellt wird, dass:
 
 - Die Domain-Schicht keine Abhängigkeiten auf Application oder Adapter hat,
@@ -1212,8 +1212,8 @@ Mit ArchUnit lassen sich diese Regeln automatisiert testen, sodass beispielsweis
 - Events und andere fachliche Klassen in den korrekten Paketen liegen,
 - Namenskonventionen eingehalten werden, um Konsistenz und Verständlichkeit des Codes zu fördern.
 
-Die Vorteile von ArchUnit liegen darin, dass die Einhaltung der Architektur kontinuierlich geprüft werden kann. 
-Die Tests#footnote[com.spruhs.parkflow.architecture.HexagonalArchitectureTests.kt] können in den Build-Prozess integriert werden, sodass neue Änderungen nur akzeptiert werden, wenn sie die definierten Architekturregeln nicht verletzen. 
+Die Vorteile von ArchUnit liegen darin, dass die Einhaltung der Architektur kontinuierlich geprüft werden kann.
+Die Tests#footnote[com.spruhs.parkflow.architecture.HexagonalArchitectureTests.kt] können in den Build-Prozess integriert werden, sodass neue Änderungen nur akzeptiert werden, wenn sie die definierten Architekturregeln nicht verletzen.
 Auf diese Weise unterstützt ArchUnit die Modularität, Kohäsion und Trennung von Verantwortlichkeiten, die für modulare DDD-Architekturen zentral sind.
 
 Durch den Einsatz von ArchUnit wird also nicht nur die Struktur des Codes dokumentiert, sondern auch aktiv durchgesetzt, was die Wartbarkeit, Lesbarkeit und langfristige Konsistenz des Systems unterstützt.
@@ -1271,14 +1271,14 @@ class HexagonalArchitectureTests {
 ```
 == Event Sourcing
 
-In diesem Kapitel wird die Implementierung des Event Stores in Parkflow erläutert. 
+In diesem Kapitel wird die Implementierung des Event Stores in Parkflow erläutert.
 Der Event Store ist ein zentrales Element eines Event-Sourcing-Systems, da er alle Events speichert, die notwendig sind, um den Zustand von Aggregates zu rekonstruieren.
 
 Der Event Store in Parkflow soll dabei folgende grundlegende Eigenschaften erfüllen:
 
 - Er ist im Wesentlichen eine Liste von Events, in der jeder Eintrag ein einzelnes Event darstellt.
 - Neue Events werden einfach an das Ende der Liste angehängt.
-- Bereits gespeicherte Events werden niemals verändert oder gelöscht 
+- Bereits gespeicherte Events werden niemals verändert oder gelöscht
 @stack2022[p.~10].
 
 Das Ziel dieser Implementierung ist es, einen generischen Mechanismus zu schaffen, der die folgenden Anforderungen unterstützt:
@@ -1300,7 +1300,7 @@ Um Event Sourcing in Parkflow umzusetzen, werden verschiedene Arten von Events b
 Die Events dienen als reine Datencontainer und besitzen selbst keine fachliche Logik. Abbildung @event zeigt die Struktur der beiden Event-Klassen.
 
 *BaseEvent*
-Die Klasse BaseEvent wird für die interne Kommunikation innerhalb des Systems verwendet. 
+Die Klasse BaseEvent wird für die interne Kommunikation innerhalb des Systems verwendet.
 Sie ist abstrakt und wird von allen Events erweitert, die innerhalb des Systems erzeugt und verteilt werden.
 
 BaseEvent enthält lediglich die Attribute, die für die Verarbeitung durch ein Aggregate notwendig sind:
@@ -1308,13 +1308,13 @@ BaseEvent enthält lediglich die Attribute, die für die Verarbeitung durch ein 
 - *aggregateId*: Die eindeutige Identifikationsnummer des Aggregates, zu dem das Event gehört.
 - *metaData*: Zusätzliche (optionale) Metadaten zum Event.
 
-Die BaseEvent-Klasse stellt somit sicher, dass Daten konsistent zwischen Modulen und Komponenten verteilt werden können. 
+Die BaseEvent-Klasse stellt somit sicher, dass Daten konsistent zwischen Modulen und Komponenten verteilt werden können.
 
 *Persistiertes Event*
 
-Für die Speicherung im Event Store wird die BaseEvent-Klasse erweitert und um weitere Attribute angereichert. 
-Diese zusätzlichen Informationen sind notwendig, um Events eindeutig zu identifizieren, zu versionieren, zu serialisieren und wiederherstellen zu können. 
-Persistierte Events bilden somit die Grundlage, um den Zustand eines Aggregates anhand der gespeicherten Events wiederherzustellen. 
+Für die Speicherung im Event Store wird die BaseEvent-Klasse erweitert und um weitere Attribute angereichert.
+Diese zusätzlichen Informationen sind notwendig, um Events eindeutig zu identifizieren, zu versionieren, zu serialisieren und wiederherstellen zu können.
+Persistierte Events bilden somit die Grundlage, um den Zustand eines Aggregates anhand der gespeicherten Events wiederherzustellen.
 Dabei müssen die Events in der gleichen Reihenfolge verarbeitet werden, in der sie erzeugt wurden @stack2022[p.~102].
 
 Die wichtigsten Attribute eines persistierten Events sind:
@@ -1340,7 +1340,7 @@ Die Trennung zwischen BaseEvent und persistiertem Event ermöglicht es, dass Eve
 === AggregateRoot
 
 Die AggregateRoot-Klasse ist die Basisklasse für alle Aggregates in Parkflow, die den Event-Sourcing-Mechanismus nutzen.
-Sie stellt die grundlegenden Funktionen bereit, die jedes Aggregate benötigt, um Events zu verwalten und den Zustand wiederherzustellen. 
+Sie stellt die grundlegenden Funktionen bereit, die jedes Aggregate benötigt, um Events zu verwalten und den Zustand wiederherzustellen.
 Die Klasse ist in Abbildung @aggregate-root dargestellt.
 Die AggregateRoot Klasse hat folgende Attribute:
 
@@ -1511,13 +1511,13 @@ interface AggregateStore {
 }
 ```
 
-Alle Methoden sind `suspend` Funktionen, was bedeutet, dass sie asynchron innerhalb von Kotlin-Coroutines ausgeführt werden. 
-Eine suspend Funktion blockiert den aktuellen Thread nicht, wenn auf eine länger dauernde Operation gewartet wird. 
-Stattdessen pausiert die Coroutine, die die Funktion aufgerufen hat, und der Thread kann andere Aufgaben ausführen. 
+Alle Methoden sind `suspend` Funktionen, was bedeutet, dass sie asynchron innerhalb von Kotlin-Coroutines ausgeführt werden.
+Eine suspend Funktion blockiert den aktuellen Thread nicht, wenn auf eine länger dauernde Operation gewartet wird.
+Stattdessen pausiert die Coroutine, die die Funktion aufgerufen hat, und der Thread kann andere Aufgaben ausführen.
 Sobald die Operation abgeschlossen ist, wird die Coroutine an der unterbrochenen Stelle wieder aufgenommen.
 
-Auf einem System-Thread können mehrere Coroutines gleichzeitig ausgeführt bzw. gebündelt werden. 
-Die Koordination übernimmt dabei ein Coroutine Dispatcher, der die Coroutines auf die verfügbaren Threads verteilt. 
+Auf einem System-Thread können mehrere Coroutines gleichzeitig ausgeführt bzw. gebündelt werden.
+Die Koordination übernimmt dabei ein Coroutine Dispatcher, der die Coroutines auf die verfügbaren Threads verteilt.
 Durch diese Mechanismen entsteht echte Nebenläufigkeit, ohne dass für jede Aufgabe ein eigener Thread benötigt wird.
 
 suspend in Kombination mit Coroutines und einem Dispatcher ermöglicht nicht-blockierende, asynchrone Verarbeitung mit Nebenläufigkeit, wodurch Skalierbarkeit und Performance der Anwendung deutlich verbessert werden @coroutinesBasics.
@@ -1626,14 +1626,14 @@ Beim Speichern eines Aggregates über die Methode `save` im Aggregate Store werd
 
 8. *Leeren der changes-Liste*: Zum Schluss wird die changes-Liste im Aggregate geleert. Dadurch wird sichergestellt, dass die gleichen Events nicht erneut gespeichert oder veröffentlicht werden.
 
-Dieser Ablauf stellt sicher, dass die Events konsistent gespeichert, die Versionierung korrekt gehandhabt und gleichzeitig die Verarbeitung asynchron und entkoppelt bleibt. 
+Dieser Ablauf stellt sicher, dass die Events konsistent gespeichert, die Versionierung korrekt gehandhabt und gleichzeitig die Verarbeitung asynchron und entkoppelt bleibt.
 Gleichzeitig erlaubt die Kombination aus Snapshots, Coroutine-basiertem asynchronem Speichern und Event-Publishing, dass der Aggregate Store performant und skalierbar arbeitet, selbst wenn viele Aggregates gleichzeitig gespeichert werden.
 
 ```kotlin
 override suspend fun <T : AggregateRoot> save(aggregate: T) {
     val serializer = serializerFactory
                         .getSerializer(aggregate::class.java.simpleName)
-                        
+
     val events = aggregate.changes.map { serializer.serialize(it, aggregate) }
     operator.executeAndAwait {
         if (aggregate.version > 1) handleConcurrency(aggregate.aggregateId)
@@ -1645,7 +1645,7 @@ override suspend fun <T : AggregateRoot> save(aggregate: T) {
         eventPublisher.publish(
             aggregate.changes.filter { !it.metadata.imported }
         )
-        
+
         aggregate.clearChanges()
     }
 }
@@ -1692,7 +1692,7 @@ override suspend fun <T : AggregateRoot> load(
 ): T {
     val serializer = serializerFactory
                         .getSerializer(aggregateType.simpleName)
-                            
+
     val snapshot = loadSnapshot(aggregateId)
     val aggregate = getAggregateFromSnapshotClass(snapshot, aggregateId, aggregateType)
 
@@ -1717,7 +1717,7 @@ private suspend fun <T : AggregateRoot> getAggregateFromSnapshotClass(
             EventSourcingUtils.snapshotFromAggregate(
                 aggregate = getAggregate(aggregateId, aggregateType)
             )
-            
+
         return EventSourcingUtils.getAggregateFromSnapshot(
             defaultSnapshot, aggregateType
         )
@@ -1732,11 +1732,11 @@ private suspend fun <T : AggregateRoot> getAggregateFromSnapshotClass(
 === Serializer
 
 In einem Event-Sourcing-System wie Parkflow müssen Events persistiert und später wiederhergestellt werden.
-Dazu werden die Events in ein bytebasiertes Format serialisiert, das in der Datenbank gespeichert werden kann. 
+Dazu werden die Events in ein bytebasiertes Format serialisiert, das in der Datenbank gespeichert werden kann.
 Beim Laden der Events müssen sie anschließend wieder deserialisiert werden, um die BaseEvent-Objekte im Speicher rekonstruieren zu können.
 
-Um diese Aufgabe zu erfüllen, gibt es für jeden Aggregate-Typ einen eigenen Serializer. 
-Jeder Serializer kennt die spezifischen Event-Typen seines Aggregates und weiß, wie diese korrekt serialisiert und deserialisiert werden. 
+Um diese Aufgabe zu erfüllen, gibt es für jeden Aggregate-Typ einen eigenen Serializer.
+Jeder Serializer kennt die spezifischen Event-Typen seines Aggregates und weiß, wie diese korrekt serialisiert und deserialisiert werden.
 Die Verwaltung der Serializer übernimmt die SerializerFactory, die den passenden Serializer für einen bestimmten Aggregate-Typ bereitstellt:
 
 ```kotlin
@@ -1752,7 +1752,7 @@ class SerializerFactory(
 }
 ```
 
-Jeder konkrete Serializer implementiert das Interface `Serializer`. 
+Jeder konkrete Serializer implementiert das Interface `Serializer`.
 Dieses Interface definiert die drei zentralen Funktionen.
 
 ```kotlin
@@ -1825,7 +1825,7 @@ fun interface EventPublisher {
 }
 ```
 
-Die konkrete Implementierung erfolgt in der Klasse `EventPublisherImpl`. 
+Die konkrete Implementierung erfolgt in der Klasse `EventPublisherImpl`.
 Diese nutzt den von Spring bereitgestellten `ApplicationEventPublisher`, um die Events innerhalb der Anwendung zu verteilen.
 
 ```kotlin
@@ -1838,7 +1838,7 @@ class EventPublisherImpl(
     override fun publish(events: List<BaseEvent>) {
         events.forEach {
             eventMetrics.springPublished.increment()
-           
+
             applicationEventPublisher.publishEvent(it)
         }
     }
@@ -1847,32 +1847,39 @@ class EventPublisherImpl(
 
 == Beispiel: Gate Aggregate
 
-In diesem Kapitel werde ich die Implementierung des Gate Aggregates und die dazugehörigen Events, Ports, Adapter und Projektionen erläutern.
-Dabei steht das Gate Aggregate stellvertretend für die Aggregates die in ParkingInventory und CustomerAccess benutzt werden.
-Die Struktur und die auftretenden Herasuforderungen ähneln sich bei allen Aggregates.
-Ziel ist ist es das Aggregate, dass bei der Modellierung in @bounded-contexts modelliert wurde, in Code umzusetzen und benutzbar zu machen.
-Die Architektur wurde bereits in @code dargestellt.
+In diesem Kapitel wird die Implementierung des Gate-Aggregats sowie der zugehörigen Events, Ports, Adapter und Projektionen erläutert.
+Das Gate-Aggregat dient dabei exemplarisch zur Darstellung der Aggregate, die in den Modulen ParkingInventory und CustomerAccess verwendet werden.
+
+Die strukturelle Ausgestaltung sowie die bei der Implementierung auftretenden Herausforderungen sind bei allen betrachteten Aggregaten vergleichbar.
+Ziel dieses Kapitels ist es, ein Aggregat, das im Rahmen der Modellierung mittels Event Storming innerhalb der jeweiligen Bounded Contexts identifiziert wurde, in Code zu überführen und für die weitere Nutzung innerhalb der Anwendung bereitzustellen.
+
+Die übergeordnete Architektur des Moduls wurde bereits in Abschnitt @code anhand eines C4-Diagramms dargestellt. Das Gate-Aggregat wird im Folgenden als konkretes Beispiel innerhalb dieser Architektur betrachtet.
 
 === Aggregate
 
-Bei der Implementierung fangen ich bei dem Kern der Anwendung an und erstelle zunächst das Aggregate selber im Domain Layer #footnote[com.spruhs.parkflow.parkinginventory.core.domain.Gate.kt].
-Das Gate Aggregate erbt von der AggregateRoot Klasse und überschreibt das Attribut `aggregateId` und `whenEvent`.
-Für den `aggregateType` wird eine Konstante genutzt.
-Dann werden weitere Attrbibute definiert die den Zustand des Gates repräsentieren.
+Die Implementierung beginnt im Kern der Anwendung mit der Definition des Aggregates im Domain Layer#footnote[com.spruhs.parkflow.parkinginventory.core.domain.Gate.kt].
+Das Gate-Aggregat stellt dabei die zentrale fachliche Einheit dar und kapselt sowohl den Zustand als auch das Verhalten des Gates.
 
-- *gateType*: Value Object das den Typ des Gates repräsentiert (Entrance, Exit) und im Api Modul definiert ist.
-- *name*: Value Object das den Namen des Gates repräsentiert. Die validierung des Namens erfolgt im Value Object selber.
-- *activationState*: Value Object das den Aktivierungszustand des Gates repräsentiert (Activated, Deactivated).
-- *removed*: Ein Boolean Attribut das angibt ob das Gate entfernt wurde. Beim entfernen von Gates bleibt das Gate im System erhalten um die Historie zu bewahren. Dies wird auch als Soft Delete bezeichnet.
+Das Gate-Aggregat erbt von der abstrakten Klasse `AggregateRoot` und überschreibt das Attribut `aggregateId` sowie die Methode `whenEvent`.
+Der `aggregateType` wird über eine Konstante definiert, um eine eindeutige Typisierung des Aggregates zu ermöglichen.
+Anschließend werden die Attribute definiert, die den aktuellen Zustand des Gates repräsentieren:
 
-Als nächste werden die Commands als Methode definiert die das Gate Aggregate verarbeiten kann.
-Dabei wird das `CreateGateCommand` als statische Methode definiert, da das Gate Aggregate noch nicht existiert.
-An dieser Stelle wird die Hauptlogik der Commands implementiert #footnote[Das Gate Aggregate selber besitzt wenig Logik. Die anderen Aggregates haben deutlich mehr, werden aber aus gründen der Übersicht hier nicht Dargestellt, können aber im Repository angeschaut werden.].
-Bei den Command Methoden vom Gate Aggregate wird z.B. geprüft ob das Gate bereits entfernt wurde.
-Wenn das Ausführen einer Command Methode zu einem Zustandsveränderung des Gates führt, wird ein entsprechendes Event erzeugt und über die `apply` Methode hinzugefügt.
-Die Apply Methode sorgt dafür, dass das Event in der Liste der Änderungen gespeichert wird und die `whenEvent` Methode aufgerufen wird um den Zustand des Gates anzupassen.
-Die `whenEvent` Methode ist so überschrieben, dass die verschiedenen Event Typen verarbeitet werden und den Zustand des Gates anpassen.
-Beim speichern des Gates im Event Store werden dann die in der Liste gespeicherten Events persistiert und veröffentlicht.
+- *gateType*: Value Object, das den Typ des Gates beschreibt (Entrance, Exit) und im API-Modul definiert ist.
+- *name*: Value Object, das den Namen des Gates repräsentiert. Die Validierung des Namens erfolgt innerhalb des Value Objects selbst.
+- *activationState*: Value Object, das den Aktivierungszustand des Gates beschreibt (Activated, Deactivated).
+- *removed*: Boolesches Attribut, das angibt, ob das Gate als entfernt markiert wurde. Beim Entfernen eines Gates bleibt dieses im System erhalten, um die Historie der Zustandsänderungen nachvollziehen zu können. Dieses Vorgehen wird als Soft Delete bezeichnet.
+
+Im nächsten Schritt werden die Commands als Methoden definiert, die vom Gate-Aggregat verarbeitet werden können.
+Das CreateGateCommand wird dabei als statische Methode implementiert, da zum Zeitpunkt der Erstellung noch keine Instanz des Aggregates existiert.
+
+An dieser Stelle wird die wesentliche Logik der Command-Verarbeitung implementiert#footnote[Das Gate-Aggregat enthält vergleichsweise wenig fachliche Logik. Andere Aggregate der Anwendung besitzen eine umfangreichere Logik, werden jedoch aus Gründen der Übersichtlichkeit an dieser Stelle nicht näher dargestellt.].
+Innerhalb der Command-Methoden wird unter anderem geprüft, ob das Gate bereits als entfernt markiert wurde, um die Ausführung weiterer Zustandsänderungen zu verhindern.
+
+Führt die Ausführung eines Commands zu einer Zustandsänderung des Gates, wird ein entsprechendes Domain Event erzeugt und über die Methode `apply` dem Aggregat hinzugefügt.
+Die `apply`-Methode speichert das Event zunächst in der Liste der noch nicht persistierten Änderungen und ruft anschließend die Methode `whenEvent` auf, um den internen Zustand des Aggregates zu aktualisieren.
+
+Die Methode `whenEvent` ist so implementiert, dass die unterschiedlichen Event-Typen verarbeitet und die zugehörigen Zustandsänderungen am Aggregat vorgenommen werden.
+Beim Speichern des Aggregates im Event Store werden schließlich die gesammelten Events persistiert und veröffentlicht.
 
 ```kotlin
 class GateAggregate(override val aggregateId: String) : AggregateRoot(aggregateId, TYPE) {
@@ -1935,11 +1942,13 @@ class GateAggregate(override val aggregateId: String) : AggregateRoot(aggregateI
 
 === Projection
 
-Ebenfalls im Domain Layer befinden sich die Projektionen.
-Dabei sind die Gate Events teil der ParkingInventory Projektion #footnote[com.spruhs.parkflow.parkinginventory.core.domain.ParkingInventory.kt].
-Projektionen sind dafür da, um den aktuellen Zustand von Read-Models zu verwalten.
-Die ParkingInventory Projektion verwaltet den aktuellen Zustand aller Gates und Parkplätze im System.
-Dabei enthalten Projektionen so wenig Logik wie möglich und sind hauptsächlich dafür da, um den aktuellen Zustand zu speichern und abzurufen.
+Ebenfalls im Domain Layer sind die Projektionen verortet.
+Die Gate-Events sind Bestandteil der ParkingInventory-Projektion#footnote[com.spruhs.parkflow.parkinginventory.core.domain.ParkingInventory.kt].
+
+Projektionen dienen dazu, den aktuellen Zustand von Read Models auf Basis der eingehenden Events abzubilden.
+Die ParkingInventory-Projektion verwaltet den aktuellen Zustand aller Gates und Parkplätze innerhalb des Systems.
+
+Dabei enthalten Projektionen möglichst wenig fachliche Logik und sind primär dafür zuständig, den aktuellen Zustand der Read Models zu speichern und für Abfragen bereitzustellen.
 
 ```kotlin
 data class ParkingInventoryProjection(
@@ -1955,49 +1964,42 @@ data class GateProjection(
 )
 
 data class ParkingSpotProjection(
-    val parkingSpotId: String,
-    val name: String,
-    val types: List<String>,
-    val state: ActivationState = ActivationState.ACTIVE,
-    val price: String?,
+    ...
 )
 ```
 
 === UseCases
 
-Damit die Commands des Gate Aggregates von außen aufgerufen werden können, werden UseCases Ports im Application Layer erstellt #footnote[package com.spruhs.parkflow.parkinginventory.core.application.GateUseCases].
-Diese Ports können dann über die Adapter implementiert werden.
-Für jeden Command des Gate Aggregates wird eine Methode im UseCase Port definiert.
-Der ablauf in den UseCases ist immer sehr ähnlich.
-Zuerst wird der Aggregate Store genutzt um das entsprechende Aggregate zu laden.
-Danach wird die entsprechende Command Methode auf dem Aggregate aufgerufen.
-Zum Schluss wird das Aggregate wieder im Aggregate Store gespeichert und die Events werden veröffentlicht.
-Die UseCases übernehme aber auch noch zusätzliche Aufgaben wie z.B. das Laden von weiteren Ressourcen oder das Validieren von Zuständen die nicht innerhalb des Aggregate überprüft werden können.
-Insgesamt kann man sagen, dass die UseCases die Orchestrierung der verschiedenen Komponenten übernehmen um die Commands zu verarbeiten.
+Um die Commands des Gate-Aggregats von außen aufrufen zu können, werden im Application Layer sogenannte Use-Case-Ports definiert#footnote[package com.spruhs.parkflow.parkinginventory.core.application.GateUseCases].
+Diese Ports werden anschließend durch entsprechende Adapter implementiert.
 
-Bei den Gate UseCases gibt es zwei Herausforderungen die gelöst werden müssen.
+Für jeden Command des Gate-Aggregats wird eine Methode im jeweiligen Use-Case-Port definiert.
+Der Ablauf innerhalb der Use Cases ist dabei weitgehend einheitlich.
+Zunächst wird das entsprechende Aggregat über den Aggregate Store geladen.
+Anschließend wird die jeweilige Command-Methode auf dem Aggregat ausgeführt.
+Zum Abschluss wird das Aggregat erneut im Aggregate Store gespeichert, wobei die erzeugten Events persistiert und veröffentlicht werden.
 
-1. Beim ausführen von Commands kann es zu konkurrierenden Schreibzugriffen auf das gleiche Gate kommen.
-   Dies kann passieren, wenn mehrere Commands gleichzeitig auf das gleiche Gate ausgeführt werden.
-   Dies kann zu Inkonsistenzen im Zustand des Gates führen.
-2. Beim erstellen von neuen Gates muss geprüft werden, ob der Name des Gates bereits existiert.
-   Da GateAggregates nicht dafür zuständig sind, den globalen Zustand zu kennen, muss diese Prüfung außerhalb des Aggregates erfolgen.
-   Genau dafür sind die Projektionen da.
-   Hier ergibt sich jedoch das Problem, dass durch die eventuelle Konsistenz der Projektionen.
-   Wenn ein Command bereits erstellt hat, aber die Projektion noch nicht aktualisiert wurde, könnte es passieren, dass der Name des Gates doppelt vergeben wird.
+Neben dieser grundlegenden Orchestrierung übernehmen die Use Cases zusätzliche Aufgaben, wie beispielsweise das Laden weiterer benötigter Ressourcen oder die Validierung von Zuständen, die nicht innerhalb des Aggregates selbst überprüft werden können.
+Insgesamt übernehmen die Use Cases somit die Koordination der beteiligten Komponenten zur Verarbeitung der Commands.
 
-Die erste Herausforderung lässt sich durch einen Mutex aus dem kotlinx.coroutines Paket lösen.
-Mit einem Mutex kann ein kritischer Abschnitt geschützt werden, sodass immer nur ein Command gleichzeitig auf das gleiche Gate zugreifen kann.
-Mit der Mutex Klasse implementiere ich einen generischen Lock Mechanismus mit dem das Laden und Speichern von Aggregates geschützt werden kann #footnote[com.spruhs.parkflow.common.helper.KeyedMutex.kt].
+Im Kontext der Gate Use Cases ergeben sich zwei zentrale Herausforderungen, die adressiert werden müssen:
 
-Die Klasse KeyedMutex enthält eine ConcurrentHashMap die für jeden Schlüssel (in diesem Fall die AggregateId) einen eigenen Mutex speichert.
-Mit der Methode `withKeyLock` kann ein kritischer Abschnitt geschützt werden.
-Die Methode bekommt einen Schlüssel und einen Block als Parameter.
-Zuerst wird der Mutex für den Schlüssel aus der Map geholt oder neu erstellt.
-Dann wird ein neuer geschützter Abschnitt mit dem Mutex erstellt in dem der Block ausgeführt wird.
-Anschließend wird der Mutex aus der Map entfernt.
-Auf diese Weise wird sichergestellt, dass immer nur ein Command gleichzeitig auf das gleiche Aggregate zugreifen kann.
-Dadurch kann die gleiche Funktion mehrere verschiedene Aggregates nebenläufig verarbeiten ohne sich gegenseitig zu blockieren und gleichzeitig konkurrierende Schreibzugriffe auf das gleiche Aggregate verhindern.
+1. Beim Ausführen von Commands kann es zu konkurrierenden Schreibzugriffen auf dasselbe Gate kommen, wenn mehrere Commands gleichzeitig auf ein Aggregat angewendet werden. Dies kann potenziell zu Inkonsistenzen im Zustand des Gates führen.
+2. Beim Erstellen neuer Gates muss sichergestellt werden, dass der Name eines Gates eindeutig ist. Da Gate-Aggregate keinen globalen Systemzustand kennen, kann diese Prüfung nicht innerhalb des Aggregates erfolgen. Stattdessen wird hierfür auf Projektionen zurückgegriffen. Aufgrund der eventual consistency der Projektionen ergibt sich jedoch die Herausforderung, dass ein Name mehrfach vergeben werden könnte, wenn ein Command bereits ausgeführt wurde, die Projektion jedoch noch nicht aktualisiert ist.
+
+Die erste Herausforderung wird durch den Einsatz eines Mutex aus dem Paket kotlinx.coroutines adressiert.
+Ein Mutex ermöglicht es, kritische Abschnitte so zu schützen, dass jeweils nur ein Command gleichzeitig auf ein bestimmtes Gate zugreifen kann.
+Auf dieser Grundlage wird ein generischer Lock-Mechanismus implementiert, der das Laden und Speichern von Aggregaten kapselt#footnote[com.spruhs.parkflow.common.helper.KeyedMutex.kt].
+
+Die Klasse KeyedMutex verwaltet eine ConcurrentHashMap, in der für jeden Schlüssel, in diesem Fall die aggregateId, ein eigener Mutex gespeichert wird.
+Über die Methode withKeyLock kann ein kritischer Abschnitt definiert werden.
+Die Methode erhält einen Schlüssel sowie einen auszuführenden Block als Parameter.
+Zunächst wird der zugehörige Mutex aus der Map gelesen oder neu erzeugt.
+Anschließend wird der Block innerhalb eines durch den Mutex geschützten Abschnitts ausgeführt.
+Nach Abschluss der Ausführung wird der Mutex aus der Map entfernt.
+
+Auf diese Weise wird sichergestellt, dass jeweils nur ein Command gleichzeitig auf dasselbe Aggregat zugreifen kann.
+Gleichzeitig erlaubt dieser Ansatz die nebenläufige Verarbeitung von Commands für unterschiedliche Aggregate, ohne diese gegenseitig zu blockieren.
 
 ```kotlin
 import kotlinx.coroutines.sync.Mutex
@@ -2024,19 +2026,20 @@ class KeyedMutex<K> {
 }
 ```
 
-Mit dem KeyedMutex kann die erste Herausforderung in den Gate UseCases gelöst werden.
-Für die zweite Herausforderung wird der ParkingInventoryService genutzt #footnote[der Service wird noch für andere Aufgaben genutzt, aber hier wird nur die Gate Name Reservierung erläutert. com.spruhs.parkflow.parkinginventory.core.application.ParkingInventoryService.kt].
-Der ParkingInventoryService stellt Methoden bereit um auf die ParkingInventory Projektion zuzugreifen.
-Der Service bietet die Methode `reserveGateName` an um einen Gate Namen zu reservieren.
-Der Service hat eine eigene Map mit reservierten Gate Namen und einem TimeStamp.
-Wenn ein Gate Name reserviert werden soll, wird zuerst geprüft ob der Name bereits in der Map existiert.
-Weiterhin wird geprüft ob der Name in der Projektion existiert.
-Wenn der Name bisher nicht existiert, wird der Name in der Map mit dem aktuellen TimeStamp gespeichert.
-Wenn dann ein Gate erstellt wurde, wird der Service über das `GateCreatedEvent` informiert um den Namen aus der Map zu entfernen.
-Ebenfalls hat der Service eine Scheduled Methode aus dem Spring Framework, die intervallmäßig die reservierten Namen überprüft und alle Einträge entfernt, die älter als eine bestimmte Zeit sind.
-Da der Service vor dem erstellen eines Gates den Namen reserviert, kann sichergestellt werden, dass der Name nicht doppelt vergeben wird wenn mehrere Commands gleichzeitig ausgeführt werden und die Projektion eventuell noch nicht aktuell ist.
-Bei dem Service handelt es sich um einen Spring Service der in der Anwendung nur einmal existiert (Singleton).
-Somit erfolgt die Verwaltung der reservierten Namen zentral und konsistent.
+Die zweite Herausforderung wird mithilfe des `ParkingInventoryService` adressiert#footnote[Der Service wird auch für weitere Aufgaben verwendet. Im Folgenden wird jedoch ausschließlich die Reservierung von Gate-Namen betrachtet. com.spruhs.parkflow.parkinginventory.core.application.ParkingInventoryService.kt].
+Der Service stellt Methoden zur Abfrage und Aktualisierung der ParkingInventory-Projektion bereit.
+
+Zur Sicherstellung der Eindeutigkeit von Gate-Namen bietet der Service die Methode `reserveGateName` an.
+Hierzu verwaltet der Service eine interne Map, in der reservierte Gate-Namen zusammen mit einem Zeitstempel gespeichert werden.
+Bei einer Reservierung wird zunächst geprüft, ob der Name bereits in der Map enthalten ist oder in der Projektion existiert.
+Ist dies nicht der Fall, wird der Name zusammen mit dem aktuellen Zeitstempel in der Map abgelegt.
+
+Sobald ein Gate erfolgreich erstellt wurde, wird der Service über das `GateCreatedEvent` informiert und der reservierte Name aus der Map entfernt.
+Zusätzlich enthält der Service eine mit `@Scheduled` annotierte Methode des Spring Frameworks, die in regelmäßigen Intervallen abgelaufene Reservierungen entfernt.
+Hierdurch wird verhindert, dass nicht abgeschlossene Reservierungen dauerhaft im System verbleiben.
+
+Da die Reservierung des Gate-Namens vor der eigentlichen Erstellung erfolgt, kann sichergestellt werden, dass Gate-Namen auch bei parallel ausgeführten Commands und verzögerter Aktualisierung der Projektion nicht mehrfach vergeben werden.
+Der `ParkingInventoryService` ist als Spring Service implementiert und existiert innerhalb der Anwendung als Singleton, wodurch die Verwaltung der reservierten Namen zentral erfolgt.
 
 ```kotlin
 @Service
@@ -2049,9 +2052,13 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
     @Scheduled(fixedRate = 60 * 1000)
         private fun cleanupExpiredReservations() {
             val now = Instant.now()
-            reservedGateNames.entries.removeIf { (_, reservedAt) -> isReservationTimeOver(reservedAt, now) }
+            reservedGateNames.entries.removeIf {
+                (_, reservedAt) -> isReservationTimeOver(reservedAt, now)
+            }
 
-            reservedParkingSpotNames.entries.removeIf { (_, reservedAt) -> isReservationTimeOver(reservedAt, now) }
+            reservedParkingSpotNames.entries.removeIf {
+                (_, reservedAt) -> isReservationTimeOver(reservedAt, now) 
+            }
         }
 
     private fun isReservationTimeOver(
@@ -2076,15 +2083,16 @@ class ParkingInventoryService(private val repository: ParkingInventoryRepository
 }
 ```
 
-=== Rest Adapter
+=== REST-Adapter
 
-Die Rest Adapter für das Gate Aggregate befinden sich im Infrastructure Layer des ParkingInventory Moduls #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.primary.GateRest.kt].
-Für die Adapter wird der Spring Starter für WebFlux genutzt um reaktive Rest Endpunkte zu erstellen #footnote[org.springframework.boot:spring-boot-starter-webflux].
-Mit den Spring Annotationen werden die verschiedenen Endpunkte definiert.
-Durch WebFlux sind die Endpunkte asynchron und nicht-blockierend @springWebFlux.
+Die REST-Adapter des Gate-Aggregats befinden sich im Infrastructure Layer des ParkingInventory-Moduls#footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.primary.GateRest.kt].
 
-Für das ausführen der Commands werden Endpunkte erstellt.
-Die definierten Endpunkte implementieren die Gate UseCases (Ports) und führen diese aus.
+Zur Implementierung der Adapter wird der Spring Boot Starter für WebFlux verwendet#footnote[org.springframework.boot:spring-boot-starter-webflux], wodurch reaktive, asynchrone und nicht-blockierende REST-Endpunkte bereitgestellt werden.
+Die Endpunkte nutzen Kotlin Coroutines und sind daher als `suspend`-Funktionen implementiert.
+
+Die REST-Adapter fungieren als Primary Adapter und stellen HTTP-Endpunkte zur Ausführung von Commands bereit. 
+Jeder Endpunkt delegiert eingehende Anfragen an die entsprechendenvGate-UseCases, die über den `GateCommandPort` angebunden sind.
+Der Adapter selbst enthält keine Business-Logik, sondern ist ausschließlich für Request-Mapping und Weiterleitung zuständig.
 
 ```kotlin
 @RestController
@@ -2114,12 +2122,16 @@ class GateRestAdapter(private val commandPort: GateCommandPort) {
 
 === Event Listener Adapter
 
-Die verschiedenen Event Listener Adapter befinden sich ebenfalls im Infrastructure Layer.
-Die Listener sind nicht speziell für das Gatge Aggregate gedacht, können aber Events des Gate Aggregates verarbeiten.
-Im ParkingInventory Modul gibt es einen Listener für die Aktualisierung der ParkingInventory #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.primary.ParkingInventoryListenerAdapter.kt].
-Über die Spring Annotation `@EventListener` werden die verschiedenen Event Typen definiert die der Listener verarbeiten kann.
-Der Listener gibt dann das Event an einen Port weiter der diesen verarbeitet.
-Dabei wird eine neue Coroutine gestartet um das Event asynchron zu verarbeiten.
+Die Event Listener Adapter befinden sich im Infrastructure Layer des Moduls.  
+Sie sind nicht ausschließlich für das Gate-Aggregat konzipiert, können jedoch Events des Gate-Aggregats verarbeiten.
+
+Im ParkingInventory-Modul gibt es einen Listener für die Aktualisierung der ParkingInventory#footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.primary.ParkingInventoryListenerAdapter.kt].
+
+Die Methoden werden mit der Spring-Annotation `@EventListener` für die verschiedenen Event-Typen registriert, die der Listener verarbeiten kann.  
+Jedes Event wird anschließend an einen Port weitergeleitet (`ParkingInventoryCommandPort`), der die eigentliche Verarbeitung übernimmt.
+Zur asynchronen Verarbeitung wird für jedes Event eine neue Kotlin Coroutine gestartet.
+
+Der Adapter selbst enthält keine Business-Logik, sondern übernimmt ausschließlich die Orchestrierung und Delegation der Events.
 
 ```kotlin
 @Component("parkingInventoryInventoryListenerAdapter")
@@ -2150,12 +2162,11 @@ class ParkingInventoryListenerAdapter(
 
 === MongoDB Adapter
 
-Die Projektionen werden in einer MongoDB Datenbank gespeichert.
-Dafür wird der Spring Starter MongoDB Reactive genutzt #footnote[org.springframework.boot:spring-boot-starter-data-mongodb-reactive].
-Das ist eine reaktive und nicht-blockierende Implementierung des MongoDB Treibers @springMongo.
+Die Projektionen werden in einer MongoDB-Datenbank gespeichert.  
+Hierfür wird der Spring Boot Starter für MongoDB Reactive#footnote[org.springframework.boot:spring-boot-starter-data-mongodb-reactive] verwendet, der eine reaktive und nicht-blockierende Implementierung des MongoDB-Treibers bereitstellt.
 
-Für die ParkingInventory Projektion wird ein Interface im Infrastructure Layer erstellt #footnote[com.spruhs.parkflow.parkinginventory.core.application.ParkingInventoryService.kt].
-Dieses Interface ist der Port für die ParkingInventory Projektion und definiert die verschiedenen Methoden zum Abfragen und Speichern.
+Für die ParkingInventory-Projektion wird ein Interface im Infrastructure Layer erstellt#footnote[com.spruhs.parkflow.parkinginventory.core.application.ParkingInventoryService.kt].
+Dieses Interface fungiert als Port für die Projektion und definiert die Methoden zum Abfragen, Speichern und Entfernen von Gates und ParkingSpots.
 
 ```kotlin
 interface ParkingInventoryRepositoryPort {
@@ -2179,10 +2190,9 @@ interface ParkingInventoryRepositoryPort {
 }
 ```
 
-Dieser Port wird dann im Infrastructure Layer von einem Adapter implementiert #footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.secondary.ParkingInventoryMongoDB.kt].
-Dieser Adapter nutzt das Spring Data MongoDB Reactive Repository um die Daten in der MongoDB zu speichern und abzurufen.
-Aus Performancegründen werden die Gates und ParkingSpots in eigenen Collections gespeichert um diese auch getrennt abfragen zu können.
-
+Dieser Port wird im Infrastructure Layer von einem Adapter implementiert#footnote[com.spruhs.parkflow.parkinginventory.core.infrastructure.secondary.ParkingInventoryMongoDB.kt].
+Der Adapter verwendet das Spring Data MongoDB Reactive Repository, um die Projektionen asynchron zu speichern und abzurufen.
+Aus Performancegründen werden Gates und ParkingSpots in separaten Collections gespeichert, wodurch gezielte Abfragen effizienter möglich sind.
 
 ```kotlin
 @Service
@@ -2192,8 +2202,15 @@ class ParkingInventoryRepositoryAdapter(
 ) : ParkingInventoryRepositoryPort {
     override suspend fun getInventory() =
         ParkingInventoryProjection(
-            gates = gateRepository.findAll().map { it.toProjection() }.collectList().awaitSingle(),
-            parkingSpots = parkingSpotRepository.findAll().map { it.toProjection() }.collectList().awaitSingle(),
+            gates = gateRepository.findAll()
+                                  .map { it.toProjection() }
+                                  .collectList()
+                                  .awaitSingle(),
+                                  
+            parkingSpots = parkingSpotRepository.findAll()
+                                                .map { it.toProjection() }
+                                                .collectList()
+                                                .awaitSingle(),
         )
 
     override suspend fun getGate(gateId: String) =
@@ -2211,10 +2228,12 @@ class ParkingInventoryRepositoryAdapter(
     }
 
     override suspend fun save(parkingSpotProjection: ParkingSpotProjection) {
-        parkingSpotRepository.save(parkingSpotProjection.toDocument()).awaitSingle()
+        parkingSpotRepository.save(parkingSpotProjection.toDocument())
+                             .awaitSingle()
     }
 
-    override suspend fun existsGateName(name: GateName) = gateRepository.existsByName(name.value).awaitSingle()
+    override suspend fun existsGateName(name: GateName) = 
+        gateRepository.existsByName(name.value).awaitSingle()
 
     override suspend fun existsParkingSpotName(name: ParkingSpotName) =
         parkingSpotRepository.existsByName(name.value).awaitSingle()
