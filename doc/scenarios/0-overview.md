@@ -16,11 +16,19 @@ scenario against the running Park Flow application and validate the result.
 
 # Available Scenarios
 
-| #                                  | Scenario ID              | Description                                                    | Duration |
-|------------------------------------|--------------------------|----------------------------------------------------------------|----------|
-| [1](1-simple-parking-inventory.md) | simple-parking-inventory | Covers all use cases for creating a parking inventory          | 1 min    |
-| [2](2-simple-customer-access.md)   | simple-customer-access   | Covers all use cases for a customer end renting a parking spot | 1 min    |
-| [3](3-simple-parking-operation.md) | simple-parking-operation | Covers use cases for a parking operation                       | 1 min    |
-| [4](4-realistic-small.md)          | realistic-small          | Simulates a small parking lot with realistic timings           |          |
-| [5](5-realistic-medium.md)         | realistic-medium         | Simulates a medium-sized parking lot with realistic timings    |          |
-| [6](6-realistic-large.md)          | realistic-large          | Simulates a large parking lot with realistic timings           |          |
+| #                                  | Scenario ID              | Description                                                    | Duration  |
+|------------------------------------|--------------------------|----------------------------------------------------------------|-----------|
+| [1](1-simple-parking-inventory.md) | simple-parking-inventory | Covers all use cases for creating a parking inventory          | ca. 1m    |
+| [2](2-simple-customer-access.md)   | simple-customer-access   | Covers all use cases for a customer end renting a parking spot | ca. 1m    |
+| [3](3-simple-parking-operation.md) | simple-parking-operation | Covers use cases for a parking operation                       | ca. 1m    |
+| [4](4-realistic-small.md)          | realistic-small          | Simulates a small parking lot with realistic timings           | ca. 1h5m  |
+| [5](5-realistic-medium.md)         | realistic-medium         | Simulates a medium-sized parking lot with realistic timings    | ca. 3h50m |
+| [6](6-realistic-large.md)          | realistic-large          | Simulates a large parking lot with realistic timings           | ca. 10h   |
+
+# Realistic Scenario Overview
+
+| Name   | Parking Spots | Gates | Cars   | Entrance Gate Arrival Time | Park On Time | Park Off Time | Parking Time | Total Time |
+|--------|---------------|-------|--------|----------------------------|--------------|---------------|--------------|------------|
+| small  | 100           | 1     | 150    | 8s - 12s                   | 1m - 2m      | 1m - 2m       | 10m - 20m    | ca. 1h5m   |
+| medium | 1.000         | 2     | 1.200  | 8s - 12s                   | 1m - 3m      | 1m - 3m       | 20m - 30m    | ca. 3h50m  |
+| large  | 10.000        | 5     | 12.000 | 8s - 12s                   | 1m - 4m      | 1m - 4m       | 20m - 30m    | ca. 10h    |

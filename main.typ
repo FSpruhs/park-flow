@@ -2684,9 +2684,66 @@ Falls aktuelle Projektionen benötigt werden, stehen geeignete Mechanismen zur V
 Dadurch ist eventual consistency in diesem Szenario akzeptabel und ermöglicht eine hohe Performance sowie Skalierbarkeit der Anwendung.
 
 Insgesamt zeigt die Implementierung, dass sich mit Spring und Kotlin eine robuste, reaktive, skalierbare und konsistente Architektur umsetzen lässt, die sowohl die Anforderungen der Core Domain als auch die Integrität der Event-Sourcing-Infrastruktur zuverlässig abbildet.
-Die Kombination aus nicht-blockierender Verarbeitung, Snapshot-Optimierung, Actor-basiertem Service und Event-Publishing ermöglicht eine performante Handhabung von Parkvorgängen – selbst unter hoher Last.
+Die Kombination aus nicht-blockierender Verarbeitung, Snapshot-Optimierung, Actor-basiertem Service und Event-Publishing ermöglicht eine performante Handhabung von Parkvorgängen, selbst unter hoher Last.
 
 = Evaluierung
+
+Um die in dieser Arbeit vorgestellte Architektur und Implementierung zu evaluieren, wurden verschiedene Testszenarien entwickelt.
+Bei den Tests wurde die Konsistenz der Aggregate, die korrektheit der Event-Verarbeitung sowie die Performance der Anwendung unter Last untersucht.
+Dazu wurden zwei verschieden Arten von Szenarien durchgeführt#footnote[Für jedes Szenario existiert ein eigener Steckbrief in der Sokumentation unter ./doc/scenarios].
+Einmal Szenarien zur funktionalen Validierung der Geschäftslogik und zum anderen Szenarien die einen realistischen Betrieb simulieren.
+
+== Technische Umsetzung
+
+Für die Technische Umsetzung wurde eine eigene Anwendung entwickelt#footnote[parkflow-simulator, benutzung ist in der README.md beschrieben].
+Die Anwendung ist in Kotlin geschrieben und nutzt Spring Boot für die Infrastruktur.
+Für die Simulationen benutzt die Anwendung einmal die REST-API um die verschiedenen Operationen durchzuführen.
+Zusätzlich werden Sensor-Events über RabbitMQ veröffentlicht, um die Event-Verarbeitung im ParkingOperation-Bounded-Context zu testen.
+
+Für das Monitoring von parkflow während der Testszenarien wurde Prometheus und Grafana eingesetzt.
+Mit dem Spring starter Actuator#footnote[org.springframework.boot:spring-boot-starter-actuator] wurden Metriken in parkflow bereitgestellt und mit Micrometer#footnote[io.micrometer:micrometer-registry-prometheus] an Prometheus exportiert.
+Dabei wurden neben den Standard Metriken auch eigene Metriken für die verarbeiteten Events erstellt.
+Die von Prometheus gesammelten Metriken wurden in Grafana visualisiert, um die Performance und das Verhalten der Anwendung während der Testszenarien zu überwachen.
+
+Bei Grafana gibt es drei Dashboards die für die Evaluierung verwendet wurden.
+Das erste Dashboard zeigt die allgemeinen Systemmetriken wie CPU-Auslastung, Speicherverbrauch und Garbage-Collection.
+Das zweite Dashboard visualisiert die Metriken über die Fahrzeuge die das Parkhaus betreten, und verlsasen haben und sich zurzeit im Parkhaus befinden.
+Das dritte Dashboard zeigt die Metriken über die veröffentlichen und verarbeiteten Events in parkflow.
+
+== Funktionale Testszenarien
+
+Es gibt insgesamt drei funktionale Testszenarien.
+Diese wurden entwickelt um die korrekte Funktionalität der Geschäftslogik in den verschiedenen Bounded Contexts zu validieren.
+Für jedes der Bounded Contexte ParkingInventory, CustomerAccess und ParkingOperation wurde ein Szenario entwickelt.
+Bei den Szenarien für ParkingInventory und CustomerAccess werden über die REST-API verschiedene Operationen durchgeführt um die korrekte Funktionalität der Geschäftslogik durch zu führen.
+Dabei werden auch Randfälle gestest die zu Fehlern führen sollten.
+Es wird dabei geprüft, ob das System die erwarteten Fehler zurückgibt.
+Weiterhin wird am ende des Szenarios geprfüft, ob der Endzustand der Projektionen dem erwarteten Zustand entspricht.
+Das Szenario für ParkingOperation simuliert verschiedene Parkvorgänge.
+Dabei werden für ein Fahrzeug die Ankunft am Eingangstor, das Durchfahren des Tors, das Parken auf einem Parkplatz und das Verlassen des Parkplatzes simuliert indem die entsprechenden Sensor-Events veröffentlicht werden.
+Am Ende des Szenarios wird geprüft, ob die VehicleHistory der einzelnen Fahrzeuge dem erwarteten Verlauf entspricht.
+
+== Realistische Testszenarien
+
+Es gibt insgesamt drei realistische Testszenarien.
+Diese wurden entwickelt um den realistischen Betrieb von parkflow zu simulieren.
+Dazu wurden Parkhäuser mit verschiedenen Größen modelliert.
+Nach der Modellierung werden verschiedene Fahrzeuge simuliert die das Parkhaus betreten, parken und wieder verlassen.
+Die Modellierten Parkhäuse verfügen über einen oder merhere Eingangs- und Ausgangstore sowie verschiedene Parkplätze mit unterschiedlichen Typen.
+Dann werden an den Eingängen verschiedene Fahrzeuge simuliert die das Parkhaus betreten wollen.
+Dabei werden für das Vorfahren an dem Tor, das Durchfahren des Tors, das Parken auf einem Parkplatz, das Verweilen auf dem Parkplatu und dem Verlassen des Parkplatzes realistische Zeiten verwendet.
+Es werden hierbei keine Sonderfälle getestet, da der Fokus darauf liegt die Performance und Korrektheit bei einer vielzahl von Vorgängen die gleichzeitig stattfinden zu testen.
+Eine Übersicht über ein realistische Testszenarios ist in @realistic-scenario-overview dargestellt.
+
+#figure(
+  image("./pictures/realistic-scenario-overview.png"),
+  caption: [
+    Übersicht über ein realistische Testszenarios.
+  ],
+) <realistic-scenario-overview>
+
+Der Parkplatz bei der Allianzarena in München hat 9.800 Parkplätze und gilt als eines der größten Parkhäuser Europas@allianzArena.
+Bei der Moddelierung des Large-Scenario wurde mit insgesamt 10.000 Parkplätzen gearbeitet um eine realistische Größe zu simulieren.
 
 #bibliography("literatur.bib")
 
