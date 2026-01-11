@@ -4,7 +4,7 @@
 
 | Parking Spots | Gates | Vehicles | Customers | Events | Duration |
 |---------------|-------|----------|-----------|--------|----------|
-| 5             | 2     | 0        | 0         | 39     | 1 min    |
+| 5             | 3     | 0        | 0         | 39     | 1 min    |
 
 ## Tested Use Cases
 

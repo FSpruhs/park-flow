@@ -15,7 +15,7 @@ spring.datasource:
   password: password123
   driver-class-name: org.postgresql.Driver
 
-simulation.scenario: realistic-small
+simulation.scenario: simple-parking-operation
 
 server:
   port: 8081
@@ -30,3 +30,13 @@ spring.rabbitmq:
     simple:
       concurrency: 3
       max-concurrency: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+
