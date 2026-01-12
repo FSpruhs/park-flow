@@ -54,7 +54,7 @@ class Invoice(
                                 leaveTime = leaveTime,
                                 isParkingSpotRented = isParkingSpotRented,
                             ).also {
-                                invoice.totalAmount += it.price
+                                invoice.totalAmount += it.calculateInfoItem().amount
                                 invoice.items.add(it.calculateInfoItem())
                             }
                             chargedPerHour = true
@@ -144,6 +144,7 @@ private fun FeePosition.calculateInfoItem(): InvoiceItem {
         FeePosition.UnauthorizedParkingOnDisabledSpot -> InvoiceItem(this.price, this)
         FeePosition.UnauthorizedParkingOnElectricSpot -> InvoiceItem(this.price, this)
         FeePosition.UnauthorizedParkingOnRentedSpot -> InvoiceItem(this.price, this)
+        FeePosition.ParkingOnRentedSpot -> InvoiceItem(BigDecimal.ZERO, this)
     }
 }
 
@@ -158,6 +159,8 @@ sealed class FeePosition(open val price: BigDecimal) {
 
     data class ParkingPerHour(val duration: Duration) : FeePosition(BigDecimal("10"))
 
+    object ParkingOnRentedSpot : FeePosition(BigDecimal.ZERO)
+
     fun name() =
         when (this) {
             is ParkingPerHour -> "Parking per hour"
@@ -165,6 +168,7 @@ sealed class FeePosition(open val price: BigDecimal) {
             UnauthorizedParkingOnDisabledSpot -> "Unauthorized parking on disabled spot"
             UnauthorizedParkingOnElectricSpot -> "Unauthorized parking on electric spot"
             UnauthorizedParkingOnRentedSpot -> "Unauthorized parking on rented spot"
+            ParkingOnRentedSpot -> "Parking on rented spot"
         }
 }
 
