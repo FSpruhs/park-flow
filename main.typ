@@ -2699,6 +2699,8 @@ Für die Technische Umsetzung wurde eine eigene Anwendung entwickelt#footnote[pa
 Die Anwendung ist in Kotlin geschrieben und nutzt Spring Boot für die Infrastruktur.
 Für die Simulationen benutzt die Anwendung einmal die REST-API um die verschiedenen Operationen durchzuführen.
 Zusätzlich werden Sensor-Events über RabbitMQ veröffentlicht, um die Event-Verarbeitung im ParkingOperation-Bounded-Context zu testen.
+Gleichzeitig reagieren die Simulierten Fahrzeuge auf die Signale von parkflow, wie z.B. das Öffnen von Toren oder die Anzeige von zugewiesenen Parkplätzen.
+Fahrzeuge fahren erst durch ein Tor, wenn es geöffnet wurde.
 
 Für das Monitoring von parkflow während der Testszenarien wurde Prometheus und Grafana eingesetzt.
 Mit dem Spring starter Actuator#footnote[org.springframework.boot:spring-boot-starter-actuator] wurden Metriken in parkflow bereitgestellt und mit Micrometer#footnote[io.micrometer:micrometer-registry-prometheus] an Prometheus exportiert.

@@ -30,3 +30,7 @@ The following use cases are tested:
 | 16 | RentParkingSpot     | ParkingSpot not RENTABLE                       | Error 400 |
 | 17 | RentParkingSpot     | deactivated ParkingSpot                        | Error 400 |
 | 18 | RentParkingSpot     | removed ParkingSpot                            | Error 400 |
+
+## Successful Run
+
+![Successful Run](solution-logs.png)

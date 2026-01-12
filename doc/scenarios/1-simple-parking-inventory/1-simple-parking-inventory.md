@@ -40,3 +40,7 @@ The following use cases are tested:
 | 26 | ActivateParkingSpot   |                          | Success   |
 | 27 | RemoveParkingSpot     |                          | Success   |
 | 28 | DeactivateParkingSpot | removed ParkingSpot      | Error 400 |
+
+## Successful Run
+
+![Successful Run](solution-logs.png)

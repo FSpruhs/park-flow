@@ -21,3 +21,7 @@ The following vehicles were simulated to test the system:
 | K-B4    |            |          |                    | reprovieded ParkingSpot     |
 | K-B5    |            |          |                    | parked on wrong ParkingSpot |
 | K-B6    |            |          | X                  |                             |
+
+## Successful Run
+
+![Successful Run](solution-logs.png)
