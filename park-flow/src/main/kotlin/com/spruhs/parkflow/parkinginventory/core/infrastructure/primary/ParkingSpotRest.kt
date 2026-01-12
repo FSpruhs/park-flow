@@ -82,14 +82,14 @@ class ParkingSpotExceptionHandler {
 
     @ExceptionHandler
     fun handleDisabledParkingSpotsNotRentableException(
-        ex: DisabledParkingSpotsNotRentableException
+        ex: DisabledParkingSpotsNotRentableException,
     ): ResponseEntity<String> =
         ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
             .also { log.error(ex.message, it) }
 
     @ExceptionHandler
     fun handleRentableParkingSpotWithoutPriceException(
-        ex: RentableParkingSpotWithoutPriceException
+        ex: RentableParkingSpotWithoutPriceException,
     ): ResponseEntity<String> =
         ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
             .also { log.error(ex.message, it) }

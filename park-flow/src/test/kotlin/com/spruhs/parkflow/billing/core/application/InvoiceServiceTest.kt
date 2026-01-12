@@ -68,28 +68,30 @@ class InvoiceServiceTest {
     @Test
     fun `invoice should invoice correct when parked on rented`(): Unit =
         runBlocking {
-            val history = VehicleHistoryReflection(
-                plateNumber = PlateNumber("K-A1"),
-                customerId = "123",
-                history = listOf(
-                    HistoryItem(Instant.now(), HistoryType.CREATED),
-                    HistoryItem(Instant.now().plusMillis(100), HistoryType.ENTER),
-                    HistoryItem(
-                        Instant.now().plusMillis(200),
-                        HistoryType.PARKED_ON_CORRECT,
-                        parkingSpotId = "456",
-                    ),
-                    HistoryItem(Instant.now().plusMillis(500_000), HistoryType.PARKED_OFF),
+            val history =
+                VehicleHistoryReflection(
+                    plateNumber = PlateNumber("K-A1"),
+                    customerId = "123",
+                    history =
+                        listOf(
+                            HistoryItem(Instant.now(), HistoryType.CREATED),
+                            HistoryItem(Instant.now().plusMillis(100), HistoryType.ENTER),
+                            HistoryItem(
+                                Instant.now().plusMillis(200),
+                                HistoryType.PARKED_ON_CORRECT,
+                                parkingSpotId = "456",
+                            ),
+                            HistoryItem(Instant.now().plusMillis(500_000), HistoryType.PARKED_OFF),
+                        ),
                 )
-            )
 
             coEvery { paymentPort.charge(any()) } returns Unit
             coEvery { invoiceRepositoryPort.save(any()) } returns Unit
             coEvery { customerApi.isParkingSpotRented(ParkingSpotId("456"), PlateNumber("K-A1")) } returns true
-            //coEvery { parkingInventoryApi.getParkingSpotTypes(ParkingSpotId("456")) } returns emptyList()
+            // coEvery { parkingInventoryApi.getParkingSpotTypes(ParkingSpotId("456")) } returns emptyList()
 
             val result = service.invoice(history, Instant.now().plusMillis(600_000))
 
             assertThat(result.totalAmount).isEqualTo(BigDecimal.ZERO)
-    }
+        }
 }
