@@ -12,6 +12,7 @@ import com.spruhs.parkflow.parkinginventory.api.ParkingSpotId
 import com.spruhs.parkflow.parkingoperation.api.ParkingSpotReprovidedEvent
 import com.spruhs.parkflow.parkingoperation.core.domain.GateResponse
 import com.spruhs.parkflow.parkingoperation.core.domain.ParkingOperatorAggregate
+import com.spruhs.parkflow.parkingoperation.core.domain.Vehicle
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,8 @@ class ParkingOperatorService(
             actor = loadParkingSpotOperator()
         }
     }
+
+    suspend fun getLiveMap() = actor.getLiveMap()
 
     suspend fun handleCarArrived(
         gateId: GateId,
@@ -121,6 +124,10 @@ class ParkingOperatorActor(
                 cmd()
             }
         }
+    }
+
+    fun getLiveMap(): MutableMap<PlateNumber, Vehicle> {
+        return aggregate.vehicles
     }
 
     suspend fun <T> execute(command: suspend ParkingOperatorAggregate.() -> T): T {

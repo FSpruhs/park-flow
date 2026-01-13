@@ -15,9 +15,9 @@ Each wave has 50 vehicles and between each wave is a pause of 10 minutes.
 
 ## Successful Run
 
-| Used Heap         | Max CPU | Runnable Thread Count | DB Events | DB Snapshots | Events Consumed | Events Published | Rabbitmq Received |
-|-------------------|---------|-----------------------|-----------|--------------|-----------------|------------------|-------------------|
-| 507 MiB / 16. GiB | 13%     | 58                    | 1000 kb   | 200 kb       | 3557            | 1302             | 900               |
+| Used Heap          | Max CPU | Runnable Thread Count | DB Events | DB Snapshots | Events Consumed Total | Events Consumed Rate | Events Published Total | Events Published Rate | Rabbitmq Received Total | Rabbitmq Received |
+|--------------------|---------|-----------------------|-----------|--------------|----------------|-|-----------------|-|-------------------|-------------------|
+| 507 MiB / 16,6 GiB | 13%     | 58                    | 1.000 kb  | 200 kb       | 3.557           | | 1.302          |  | 900               | 0,6/sek           |
 
 ![Successful Run](solution-logs.png)
 
