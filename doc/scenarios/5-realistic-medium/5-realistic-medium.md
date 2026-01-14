@@ -1,7 +1,7 @@
-# Realistic Small
+# Realistic Medium Scenario
 
 A realistic scenario for a medium parking lot. The scenario has two entrances. There are six waves of vehicles entering the parking lot through the entrance.
-Each wave has 200 vehicles split on both entrances, and between each wave is a pause of 20 minutes.
+Each wave has 200 vehicles split on both entrances.
 
 ## Overview
 

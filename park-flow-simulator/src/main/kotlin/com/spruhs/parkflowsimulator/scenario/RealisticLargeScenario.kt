@@ -87,7 +87,7 @@ class RealisticLargeScenario(
             }
         }
 
-        repeat(3) { i ->
+        repeat(4) { i ->
             startProcessing(
                 name = gateQueue1Names[i],
                 intervalProvider = { (secondsToMillis(8)..secondsToMillis(12)).random() },

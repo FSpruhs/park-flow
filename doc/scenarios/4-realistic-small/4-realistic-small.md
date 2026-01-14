@@ -1,7 +1,7 @@
-# Realistic Small
+# Realistic Small Scenario
 
 A realistic scenario for a small parking lot. The scenario has one entrance. There are three waves of vehicles entering the parking lot through the entrance.
-Each wave has 50 vehicles and between each wave is a pause of 10 minutes. 
+Each wave has 50 vehicles. 
 
 ## Overview
 
