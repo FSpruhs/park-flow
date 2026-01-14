@@ -19,10 +19,10 @@ data class VehicleHistoryValidator(
     val expectedPrice: String? = null
 ) : Validator<VehicleHistoryReflection> {
     override fun validate(actual: VehicleHistoryReflection) {
-        require(actual.history.size == expectedHistorySize) { "Expected $expectedHistorySize history items but found ${actual.history.size}" }
+        require(actual.history.size == expectedHistorySize) { "Expected $expectedHistorySize history items but found ${actual.history.size} for $id" }
         expectedHistoryTypes.forEach { (type, count) ->
             val actualCount = actual.history.count { it.type == type }
-            require(actualCount == count) { "Expected $count entries of type $type but found $actualCount" }
+            require(actualCount == count) { "Expected $count entries of type $type but found $actualCount for $id" }
         }
         expectedParkingSpotId?.let {
             require(actual.history.any { it.parkingSpotId == expectedParkingSpotId }) { "Expected history entry for $id for parking spot $expectedParkingSpotId" }
@@ -30,7 +30,6 @@ data class VehicleHistoryValidator(
         expectedPrice?.let {
             require(actual.history.any { it.amount == expectedPrice }) { "Expected history entry for $id with price $expectedPrice" }
         }
-
     }
 }
 

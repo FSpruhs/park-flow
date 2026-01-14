@@ -121,13 +121,15 @@ class RealisticLargeScenario(
             if (i != 2) {
                 delay(minutesToMillis(115))
             }
-
-            log.info("------ Scenario ended ------")
-            log.info("------ Start validating scenario ------")
-
-            validateGenericHistory(12_000)
-
-            log.info("------ Scenario validation correct ------")
         }
+
+        joinAllJobs()
+
+        log.info("------ Scenario ended ------")
+        log.info("------ Start validating scenario ------")
+
+        validateGenericHistory(12_000)
+
+        log.info("------ Scenario validation correct ------")
     }
 }
