@@ -15,9 +15,49 @@ Each wave has 50 vehicles and between each wave is a pause of 10 minutes.
 
 ## Successful Run
 
-| Used Heap          | Max CPU | Runnable Thread Count | DB Events | DB Snapshots | Events Consumed Total | Events Consumed Rate | Events Published Total | Events Published Rate | Rabbitmq Received Total | Rabbitmq Received |
-|--------------------|---------|-----------------------|-----------|--------------|----------------|-|-----------------|-|-------------------|-------------------|
-| 507 MiB / 16,6 GiB | 13%     | 58                    | 1.000 kb  | 200 kb       | 3.557           | | 1.302          |  | 900               | 0,6/sek           |
+| Category         | Value           | small            |
+|------------------|-----------------|------------------|
+| JVM Memory       |                 |                  |
+|                  | max. used       | 505 MiB          |
+|                  | median used     | 361 MiB          |
+|                  | mean used       | 367 MiB          |
+|                  | max. commited   | 591 MiB          |
+|                  | median commited | 590 MiB          |
+|                  | mean commited   | 558 MiB          |
+|                  | max. maximal    | 16,6 GiB         |
+|                  | median maximal  | 16,6 GiB         |
+|                  | mean maximal    | 16,6 GiB         |
+| CPU Usage        |                 |                  |
+|                  | max. system     | 3,5%             |
+|                  | median system   | 0,8%             |
+|                  | mean system     | 1,0%             |
+|                  | max. process    | 1,6%             |
+|                  | median process  | 0,0%             |
+|                  | mean process    | 0,1%             |
+| Threads          |                 |                  |
+|                  | max. live       | 117              |
+|                  | max. peak       | 117              |
+|                  | max. deamon     | 74               |
+|                  | max. runable    | 58               |
+| Database Storage |                 |                  |
+|                  | Events          | 1.000 kB         |
+|                  | Snapshots       | 200 kB           |
+| Events Published |                 |                  |
+|                  | Total           | 1.302            |
+|                  | Max             | 0,8 events/sec   |
+|                  | Median          | 0,333 events/sec |
+|                  | Mean            | 0,349 events/sec |
+| Events Consumed  |                 |                  |
+|                  | Total           | 3.557            |
+|                  | Max             | 1,89 events/sec  |
+|                  | Median          | 0,8 events/sec   |
+|                  | Mean            | 0,851 events/sec |
+| Events RabbitMQ  |                 |                  |
+|                  | Total           | 900              |
+|                  | Max             | 0,689 events/sec |
+|                  | Median          | 0,289 events/sec |
+|                  | Mean            | 0,301 events/sec |
+
 
 ![Successful Run](solution-logs.png)
 
@@ -26,13 +66,13 @@ Each wave has 50 vehicles and between each wave is a pause of 10 minutes.
 ### Pictures
 
 #### JVM – Memory
-![JVM - Memory](jvm-memory.png)
+![JVM - Memory](jvm-misc.png)
 
 #### JVM - Memory Pools
 ![JVM - Memory Pools](jvm-memory-pools.png)
 
 #### JVM - Misc
-![JVM - Misc](jvm-misc.png)
+![JVM - Misc](jvm-memory.png)
 
 #### Garbage Collection
 ![Garbage Collection](garbage-collection.png)

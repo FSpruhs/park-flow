@@ -15,9 +15,48 @@ Each wave has 200 vehicles split on both entrances, and between each wave is a p
 
 ## Successful Run
 
-| Used Heap          | Max CPU | Runnable Thread Count | DB Events | DB Snapshots | Events Consumed Total  | Events Consumed Rate | Events Published Total | Events Published Rate | Rabbitmq Received Total | Rabbitmq Received |
-|--------------------|---------|-----------------------|-----------|--------------|------------------------|----------------------|------------------------|-----------------------|-------------------------|-------------------|
-| 473 MiB / 16,6 GiB | 17.1%   | 58                    | 6.704 kb  | 272 kb       | 29.213                 | 1/sek                | 10.604                 | 1/sek                 | 7.200                   | 1,5/sek           |
+| Category         | Value           | medium           |
+|------------------|-----------------|------------------|
+| JVM Memory       |                 |                  |
+|                  | max. used       | 464 MiB          |
+|                  | median used     | 343 MiB          |
+|                  | mean used       | 344 MiB          |
+|                  | max. commited   | 535 MiB          |
+|                  | median commited | 535 MiB          |
+|                  | mean commited   | 535 MiB          |
+|                  | max. maximal    | 16,6 GiB         |
+|                  | median maximal  | 16,6 GiB         |
+|                  | mean maximal    | 16,6 GiB         |
+| CPU Usage        |                 |                  |
+|                  | max. system     | 2,1%             |
+|                  | median system   | 0,6%             |
+|                  | mean system     | 0,7%             |
+|                  | max. process    | 11,1%            |
+|                  | median process  | 0,1%             |
+|                  | mean process    | 0,2%             |
+| Threads          |                 |                  |
+|                  | max. live       | 120              |
+|                  | max. peak       | 120              |
+|                  | max. deamon     | 77               |
+|                  | max. runable    | 58               |
+| Database Storage |                 |                  |
+|                  | Events          | 6.704 kB         |
+|                  | Snapshots       | 272 kB           |
+| Events Published |                 |                  |
+|                  | Total           | 10.604           |
+|                  | Max             | 1,78 events/sec  |
+|                  | Median          | 1,0 events/sec   |
+|                  | Mean            | 0,929 events/sec |
+| Events Consumed  |                 |                  |
+|                  | Total           | 29.213           |
+|                  | Max             | 4,33 events/sec  |
+|                  | Median          | 2,38 events/sec  |
+|                  | Mean            | 2,26 events/sec  |
+| Events RabbitMQ  |                 |                  |
+|                  | Total           | 7.200            |
+|                  | Max             | 1,56 events/sec  |
+|                  | Median          | 0,822 events/sec |
+|                  | Mean            | 0,797 events/sec |
 
 ![Successful Run](solution-logs.png)
 
