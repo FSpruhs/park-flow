@@ -2725,7 +2725,20 @@ Das Szenario für ParkingOperation simuliert verschiedene Parkvorgänge.
 Dabei werden für ein Fahrzeug die Ankunft am Eingangstor, das Durchfahren des Tors, das Parken auf einem Parkplatz und das Verlassen des Parkplatzes simuliert indem die entsprechenden Sensor-Events veröffentlicht werden.
 Am Ende des Szenarios wird geprüft, ob die VehicleHistory der einzelnen Fahrzeuge dem erwarteten Verlauf entspricht.
 
+In dem Repository sind die Szenarien unter ./doc/scenarios dokumentiert.
+Die Szenarien wurden alle erfolgreich bestanden.
+Die Grundsätliche Funktionalität der Geschäftslogik in den verschiedenen Bounded Contexts konnte somit validiert werden.
+
 == Realistische Testszenarien
+
+=== Zielsetzung
+
+Bei den realistischen Testszenarien ist sollen folgende Fragen beantwortet werden:
+1. Wie verhält sich der Event-Sourcing-Ansatz hinsichtlich Ressourcenverbrauch unter steigender Last.
+2. Wie skaliert die Anwendung bei einer hohen Anzahl gleichzeitiger Parkvorgänge.
+3. Wie konsistent bleiben die Aggregate und Projektionen bei einer hohen Anzahl gleichzeitiger Vorgänge.
+
+=== Beschreibung der Szenarien
 
 Es gibt insgesamt drei realistische Testszenarien.
 Diese wurden entwickelt um den realistischen Betrieb von parkflow zu simulieren.
@@ -2733,7 +2746,9 @@ Dazu wurden Parkhäuser mit verschiedenen Größen modelliert.
 Nach der Modellierung werden verschiedene Fahrzeuge simuliert die das Parkhaus betreten, parken und wieder verlassen.
 Die Modellierten Parkhäuse verfügen über einen oder merhere Eingangs- und Ausgangstore sowie verschiedene Parkplätze mit unterschiedlichen Typen.
 Dann werden an den Eingängen verschiedene Fahrzeuge simuliert die das Parkhaus betreten wollen.
-Dabei werden für das Vorfahren an dem Tor, das Durchfahren des Tors, das Parken auf einem Parkplatz, das Verweilen auf dem Parkplatu und dem Verlassen des Parkplatzes realistische Zeiten verwendet.
+Dabei werden für das Vorfahren an dem Tor, das Durchfahren des Tors, das Parken auf einem Parkplatz, das Verweilen auf dem Parkplatz und dem Verlassen des Parkplatzes realistische Zeiten verwendet.
+Die simulierten Fahrzeuge reagieren dabei auf die Signale von Parkflow.
+Wenn das Fahrzeug an einem Tor vorfährt, wartet es auf das Signal zum Durchfahren des Tors und parkt dann auf dem zugewiesenen Parkplatz.
 Es werden hierbei keine Sonderfälle getestet, da der Fokus darauf liegt die Performance und Korrektheit bei einer vielzahl von Vorgängen die gleichzeitig stattfinden zu testen.
 Eine Übersicht über ein realistische Testszenarios ist in @realistic-scenario-overview dargestellt.
 
@@ -2746,6 +2761,42 @@ Eine Übersicht über ein realistische Testszenarios ist in @realistic-scenario-
 
 Der Parkplatz bei der Allianzarena in München hat 9.800 Parkplätze und gilt als eines der größten Parkhäuser Europas@allianzArena.
 Bei der Moddelierung des Large-Scenario wurde mit insgesamt 10.000 Parkplätzen gearbeitet um eine realistische Größe zu simulieren.
+
+Bei der wachsenden Anzahl von Fahrzeugen im Parkhaus steigt auch die Anzahl der gleichzeitig verarbeiteten Events in parkflow an.
+
+=== Auswertung
+
+Alle 3 realistischen Testszenarien wurden erfolgreich bestanden.
+Die grundsätzliche Funktionalität von parkflow konnte auch bei einer hohen Anzahl von gleichzeitigen Parkvorgängen validiert werden.
+In @realistic-scenario-metrics sind die wichtigsten Metriken der drei Szenarien zusammengefasst#footnote[Ausführliche übersicht unter ./doc/scenarios/0-overview.md].
+
+Alle Szenarien wurden auf dem gleichen System durchgeführt.
+Das System 64GB RAM, einen Intel Core Ultra 7 Prozessor und hat ein TUXEDO OS mit Ubuntu als Betriebssystem.
+
+=== Ressourcenverbrauch
+
+Der Speicherverbrauch von parkflow bleibt auch bei einer hohen Anzahl von gleichzeitigen Parkvorgängen stabil.
+Obwohl die Anzahl der verarbeiteten Events steigt, bleibt der Speicherverbrauch konstant.
+
+Der CPU-Verbrauch ist bei allen Szenarien relativ niedrig.
+Bis auf wenige kleine Spitzen ist der CPU verbrauch sehr niedrig.
+Auch bei einer hohen Anzahl von verarbeiteten Events bleibt der CPU-Verbrauch im ähnlichen Bereich.
+
+Auch die Anzahl der Threads bleibt bei steigt bei moderat an.
+Ein Thread-Leak konnte nicht festgestellt werden.
+
+Der in der Datenbank benötigte Speicherplatz steigt mit der Anzahl der verarbeiteten Events linear an.
+Dies ist zu erwarten, da bei jedem Event ein neuer Eintrag in der Event-Store-Datenbanktabelle erstellt wird.
+Insgesamt bleibt der Speicherplatzverbrauch beherrschbar, auch bei einer hohen Anzahl von verarbeiteten Events.
+Dies zeigt, dass die Event-Sourcing-Architektur auch in Bezug auf den Speicherplatzverbrauch effizient ist.
+
+Der Durchsatz der Events steigt um das 10 Fache bei 100 fachen steigerung der Last.
+Dies zeigt, dass die Anwendung gut skaliert und in der Lage ist, eine hohe Anzahl von Events zu verarbeiten.
+Damit ist das Eventsystem kein Bottleneck für die Anwendung.
+
+Die Evaluierung zeigt, dass der implementierte Event-Sourcing-Ansatz auch unter stark wachsender Last stabile Laufzeiteigenschaften aufweist.
+Insbesondere der konstante Speicherverbrauch, die niedrige CPU-Auslastung sowie der linear skalierende Event-Durchsatz sprechen für die Eignung des Ansatzes in realistischen Anwendungsszenarien.
+Die hohe nutztung von asynchronen und nicht-blockierenden Komponenten trägt maßgeblich zu dieser Performance bei.
 
 #bibliography("literatur.bib")
 
