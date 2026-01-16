@@ -2689,68 +2689,91 @@ Die Kombination aus nicht-blockierender Verarbeitung, Snapshot-Optimierung, Acto
 = Evaluierung
 
 Um die in dieser Arbeit vorgestellte Architektur und Implementierung zu evaluieren, wurden verschiedene Testszenarien entwickelt.
-Bei den Tests wurde die Konsistenz der Aggregate, die korrektheit der Event-Verarbeitung sowie die Performance der Anwendung unter Last untersucht.
-Dazu wurden zwei verschieden Arten von Szenarien durchgeführt#footnote[Für jedes Szenario existiert ein eigener Steckbrief in der Sokumentation unter ./doc/scenarios].
-Einmal Szenarien zur funktionalen Validierung der Geschäftslogik und zum anderen Szenarien die einen realistischen Betrieb simulieren.
+Ziel der Evaluierung war es, die Konsistenz der Aggregate, die Korrektheit der Event-Verarbeitung sowie die Performance der Anwendung unter Last zu untersuchen.
+
+Dazu wurden zwei unterschiedliche Arten von Szenarien durchgeführt#footnote[Für jedes Szenario existiert ein eigener Steckbrief in der Dokumentation unter ./doc/scenarios]:
+
+1. *Funktionale Testszenarien*, die der Validierung der Geschäftslogik in den einzelnen Bounded Contexts dienen.
+2. *Realistische Testszenarien*, die den Betrieb von Parkflow unter praxisnahen Bedingungen simulieren.
 
 == Technische Umsetzung
 
-Für die Technische Umsetzung wurde eine eigene Anwendung entwickelt#footnote[parkflow-simulator, benutzung ist in der README.md beschrieben].
-Die Anwendung ist in Kotlin geschrieben und nutzt Spring Boot für die Infrastruktur.
-Für die Simulationen benutzt die Anwendung einmal die REST-API um die verschiedenen Operationen durchzuführen.
+Für die technische Umsetzung wurde eine eigene Anwendung entwickelt#footnote[parkflow-simulator, Nutzung in der README.md beschrieben].
+Die Anwendung ist in Kotlin implementiert und nutzt Spring Boot als Infrastruktur-Framework.
+
+Für die Simulationen greift die Anwendung auf die REST-API zu, um die verschiedenen Operationen im System auszuführen.
 Zusätzlich werden Sensor-Events über RabbitMQ veröffentlicht, um die Event-Verarbeitung im ParkingOperation-Bounded-Context zu testen.
-Gleichzeitig reagieren die Simulierten Fahrzeuge auf die Signale von parkflow, wie z.B. das Öffnen von Toren oder die Anzeige von zugewiesenen Parkplätzen.
-Fahrzeuge fahren erst durch ein Tor, wenn es geöffnet wurde.
+Die simulierten Fahrzeuge reagieren dabei auf die Signale von Parkflow, wie z. B. das Öffnen von Toren oder die Anzeige zugewiesener Parkplätze.
+Ein Fahrzeug passiert ein Tor erst, nachdem das entsprechende Signal zum Öffnen empfangen wurde, wodurch die Synchronisation zwischen Simulator und Anwendung realistisch nachgebildet wird.
 
-Für das Monitoring von parkflow während der Testszenarien wurde Prometheus und Grafana eingesetzt.
-Mit dem Spring starter Actuator#footnote[org.springframework.boot:spring-boot-starter-actuator] wurden Metriken in parkflow bereitgestellt und mit Micrometer#footnote[io.micrometer:micrometer-registry-prometheus] an Prometheus exportiert.
-Dabei wurden neben den Standard Metriken auch eigene Metriken für die verarbeiteten Events erstellt.
-Die von Prometheus gesammelten Metriken wurden in Grafana visualisiert, um die Performance und das Verhalten der Anwendung während der Testszenarien zu überwachen.
+Für das Monitoring während der Testszenarien wurden Prometheus und Grafana eingesetzt.
+Mithilfe des Spring Boot Actuators#footnote[org.springframework.boot:spring-boot-starter-actuator] stellt Parkflow verschiedene Metriken bereit, die über Micrometer#footnote[io.micrometer:micrometer-registry-prometheus] an Prometheus exportiert werden.
+Neben den Standardmetriken, wie Speicherverbrauch, CPU-Last und Garbage Collection, wurden auch eigene Metriken für die verarbeiteten Events erstellt, um die Event-Sourcing-Logik gezielt überwachen zu können.
+Die gesammelten Metriken wurden in Grafana visualisiert, um das Verhalten und die Performance der Anwendung während der Testszenarien nachvollziehbar darzustellen.
 
-Bei Grafana gibt es drei Dashboards die für die Evaluierung verwendet wurden.
-Das erste Dashboard zeigt die allgemeinen Systemmetriken wie CPU-Auslastung, Speicherverbrauch und Garbage-Collection.
-Das zweite Dashboard visualisiert die Metriken über die Fahrzeuge die das Parkhaus betreten, und verlsasen haben und sich zurzeit im Parkhaus befinden.
-Das dritte Dashboard zeigt die Metriken über die veröffentlichen und verarbeiteten Events in parkflow.
+Für die Evaluierung wurden drei Dashboards in Grafana verwendet:
+
+1. *Systemmetriken*: zeigt CPU-Auslastung, Speicherverbrauch und Garbage-Collection.
+2. *Fahrzeugmetriken*: visualisiert die Anzahl der Fahrzeuge, die das Parkhaus betreten, verlassen oder sich aktuell darin befinden.
+3. *Event-Metriken*: zeigt die Anzahl der veröffentlichten und verarbeiteten Events in Parkflow.
+
+Durch diese Architektur lässt sich das Zusammenspiel zwischen Simulator, Anwendung und Event-Verarbeitung detailliert analysieren.
+Die Kombination aus asynchroner Kommunikation, nebenläufiger Verarbeitung und zielgerichtetem Monitoring ermöglicht eine realistische Nachbildung des Parkhausbetriebs und bildet die Grundlage für die spätere Evaluierung von Performance, Konsistenz und Skalierbarkeit.
 
 == Funktionale Testszenarien
 
-Es gibt insgesamt drei funktionale Testszenarien.
-Diese wurden entwickelt um die korrekte Funktionalität der Geschäftslogik in den verschiedenen Bounded Contexts zu validieren.
-Für jedes der Bounded Contexte ParkingInventory, CustomerAccess und ParkingOperation wurde ein Szenario entwickelt.
-Bei den Szenarien für ParkingInventory und CustomerAccess werden über die REST-API verschiedene Operationen durchgeführt um die korrekte Funktionalität der Geschäftslogik durch zu führen.
-Dabei werden auch Randfälle gestest die zu Fehlern führen sollten.
-Es wird dabei geprüft, ob das System die erwarteten Fehler zurückgibt.
-Weiterhin wird am ende des Szenarios geprfüft, ob der Endzustand der Projektionen dem erwarteten Zustand entspricht.
-Das Szenario für ParkingOperation simuliert verschiedene Parkvorgänge.
-Dabei werden für ein Fahrzeug die Ankunft am Eingangstor, das Durchfahren des Tors, das Parken auf einem Parkplatz und das Verlassen des Parkplatzes simuliert indem die entsprechenden Sensor-Events veröffentlicht werden.
-Am Ende des Szenarios wird geprüft, ob die VehicleHistory der einzelnen Fahrzeuge dem erwarteten Verlauf entspricht.
+Zur Validierung der grundlegenden Funktionalität der Geschäftslogik in Verbindung mit Event Sourcing und der modularen DDD-Architektur wurden drei funktionale Testszenarien entwickelt, eines für jeden Bounded Context: ParkingInventory, CustomerAccess und ParkingOperation.
 
-In dem Repository sind die Szenarien unter ./doc/scenarios dokumentiert.
-Die Szenarien wurden alle erfolgreich bestanden.
-Die Grundsätliche Funktionalität der Geschäftslogik in den verschiedenen Bounded Contexts konnte somit validiert werden.
+Ziel dieser Tests ist es, sicherzustellen, dass:
+
+- Aggregate korrekt aus den gespeicherten Events geladen und wiederhergestellt werden,
+- die Geschäftslogik wie vorgesehen ausgeführt wird,
+- Race Conditions zuverlässig behandelt werden,
+- und am Ende die Read Models den erwarteten Zustand widerspiegeln.
+
+Für die Bounded Contexts ParkingInventory und CustomerAccess werden über die REST-API Operationen simuliert, die typische Geschäftsabläufe abbilden.
+Dabei werden auch Edge Cases und fehlerhafte Anfragen getestet, um zu prüfen, ob das System Fehler korrekt abfängt und gemäß den definierten Regeln kommuniziert.
+Am Ende jedes Szenarios wird überprüft, ob die Projektionen (Read Models) den erwarteten Zustand erreicht haben.
+
+Im Bounded Context ParkingOperation werden Parkvorgänge simuliert: Für jedes Fahrzeug werden die Ankunft am Eingangstor, das Durchfahren des Tors, das Parken auf einem Parkplatz und das Verlassen des Parkplatzes abgebildet, indem die entsprechenden Sensor-Events veröffentlicht werden.
+Nach Abschluss der Simulation wird kontrolliert, ob die VehicleHistory jedes Fahrzeugs den erwarteten Verlauf enthält.
+
+Alle Szenarien sind im Repository unter ./doc/scenarios dokumentiert.
+Die Testszenarien wurden vollständig erfolgreich abgeschlossen, wodurch die grundsätzliche Funktionsfähigkeit der Geschäftslogik in allen Bounded Contexts validiert werden konnte.
+
+Die funktionalen Tests bilden somit die Basis dafür, dass die Anwendung korrekt auf Event-Sourcing und DDD-Prinzipien aufbaut und die Kernlogik fehlerfrei arbeitet, bevor komplexere Last- oder Realitäts-Szenarien betrachtet werden.
 
 == Realistische Testszenarien
 
 === Zielsetzung
 
-Bei den realistischen Testszenarien ist sollen folgende Fragen beantwortet werden:
-1. Wie verhält sich der Event-Sourcing-Ansatz hinsichtlich Ressourcenverbrauch unter steigender Last.
-2. Wie skaliert die Anwendung bei einer hohen Anzahl gleichzeitiger Parkvorgänge.
-3. Wie konsistent bleiben die Aggregate und Projektionen bei einer hohen Anzahl gleichzeitiger Vorgänge.
+Ziel der Evaluierung ist es, die in dieser Arbeit entwickelte Architektur hinsichtlich ihrer Eignung für den realistischen Einsatz eines Event-Sourcing-Ansatzes in einer modularen, domänengetriebenen Anwendung zu untersuchen.
+Im Fokus steht dabei nicht nur die korrekte funktionale Umsetzung der Geschäftslogik, sondern insbesondere das Laufzeitverhalten der Anwendung unter steigender Last sowie die Auswirkungen der gewählten Architekturentscheidungen.
+
+Die Evaluierung adressiert dabei folgende zentrale Fragestellungen:
+
+- *Konsistenz und Korrektheit*: Wie konsistent bleiben Aggregate und Projektionen bei einer hohen Anzahl gleichzeitiger Vorgänge? Insbesondere wird untersucht, ob die ereignisbasierte Verarbeitung auch unter Last zu einem konsistenten Endzustand der Aggregate sowie der abgeleiteten Read Models führt.
+- *Skalierbarkeit der Architektur*: Wie verhält sich das System bei einer steigenden Anzahl von Fahrzeugen, Parkvorgängen und gleichzeitig verarbeiteten Events? Dabei wird analysiert, ob sich der Ressourcenverbrauch sowie der Event-Durchsatz proportional zur steigenden Last entwickeln oder ob nichtlineare Effekte und Engpässe auftreten.
+- *Ressourcenverbrauch des Event-Sourcing-Ansatzes*: Wie wirkt sich der Einsatz von Event Sourcing auf den Speicherverbrauch, die CPU-Auslastung und die Thread-Nutzung aus? Besonderes Augenmerk liegt darauf, ob der wachsende Event Store und die kontinuierliche Event-Verarbeitung zu einem zunehmenden Ressourcenverbrauch führen oder ob dieser durch geeignete Architekturmaßnahmen stabil gehalten werden kann.
+- *Entkopplung und asynchrone Kommunikation*: Welchen Einfluss hat die asynchrone, eventbasierte Kommunikation zwischen den Bounded Contexts auf die Stabilität und Performance des Systems?vHierbei wird untersucht, ob die Entkopplung der Module zu einer verbesserten Skalierbarkeit und Lastverteilung beiträgt oder ob zusätzliche Overheads entstehen.
+
+Die genannten Fragestellungen bilden die Grundlage für die im Folgenden dargestellten Testszenarien und deren Auswertung.
+Die Evaluierung zielt darauf ab, die Auswirkungen der gewählten Architekturentscheidungen empirisch zu belegen und deren Eignung für skalierbare, ereignisgetriebene Anwendungen zu bewerten.
+
 
 === Beschreibung der Szenarien
 
-Es gibt insgesamt drei realistische Testszenarien.
-Diese wurden entwickelt um den realistischen Betrieb von parkflow zu simulieren.
-Dazu wurden Parkhäuser mit verschiedenen Größen modelliert.
-Nach der Modellierung werden verschiedene Fahrzeuge simuliert die das Parkhaus betreten, parken und wieder verlassen.
-Die Modellierten Parkhäuse verfügen über einen oder merhere Eingangs- und Ausgangstore sowie verschiedene Parkplätze mit unterschiedlichen Typen.
-Dann werden an den Eingängen verschiedene Fahrzeuge simuliert die das Parkhaus betreten wollen.
-Dabei werden für das Vorfahren an dem Tor, das Durchfahren des Tors, das Parken auf einem Parkplatz, das Verweilen auf dem Parkplatz und dem Verlassen des Parkplatzes realistische Zeiten verwendet.
+Für die Evaluierung wurden insgesamt drei realistische Testszenarien entwickelt, um den Betrieb von Parkflow unter praxisnahen Bedingungen zu simulieren.
+Hierfür wurden Parkhäuser unterschiedlicher Größe modelliert, in denen verschiedene Fahrzeuge das Parkhaus betreten, parken und wieder verlassen.
+
+Die modellierten Parkhäuser verfügen über ein oder mehrere Eingangs- und Ausgangstore sowie über Parkplätze verschiedener Typen.
+An den Eingängen werden Fahrzeuge simuliert, die das Parkhaus betreten möchten.
+Für alle Schritte eines Parkvorgangs, das Anfahren eines Tores, das Durchfahren, das Parken, das Verweilen auf dem Parkplatz und das Verlassen, werden realistische Zeitintervalle verwendet.
 Die simulierten Fahrzeuge reagieren dabei auf die Signale von Parkflow.
-Wenn das Fahrzeug an einem Tor vorfährt, wartet es auf das Signal zum Durchfahren des Tors und parkt dann auf dem zugewiesenen Parkplatz.
-Es werden hierbei keine Sonderfälle getestet, da der Fokus darauf liegt die Performance und Korrektheit bei einer vielzahl von Vorgängen die gleichzeitig stattfinden zu testen.
-Eine Übersicht über ein realistische Testszenarios ist in @realistic-scenario-overview dargestellt.
+Sie warten an einem Tor auf das Öffnungssignal und parken anschließend auf dem zugewiesenen Parkplatz.
+
+Im Rahmen dieser Testszenarien werden keine Sonderfälle untersucht, da der Fokus auf der Performance und der Korrektheit bei einer Vielzahl gleichzeitig ablaufender Vorgänge liegt.
+Eine Übersicht über ein realistisches Testszenario ist in Abbildung @realistic-scenario-overview dargestellt.
 
 #figure(
   image("./pictures/realistic-scenario-overview.png"),
@@ -2759,44 +2782,198 @@ Eine Übersicht über ein realistische Testszenarios ist in @realistic-scenario-
   ],
 ) <realistic-scenario-overview>
 
-Der Parkplatz bei der Allianzarena in München hat 9.800 Parkplätze und gilt als eines der größten Parkhäuser Europas@allianzArena.
-Bei der Moddelierung des Large-Scenario wurde mit insgesamt 10.000 Parkplätzen gearbeitet um eine realistische Größe zu simulieren.
+Der Parkplatz der Allianzarena in München hat 9.800 Parkplätze und gilt als eines der größten Parkhäuser Europas@allianzArena.
+Für die Modellierung des Large-Scenarios wurde mit insgesamt 10.000 Parkplätzen gearbeitet, um eine realistische Größenordnung zu simulieren.
 
-Bei der wachsenden Anzahl von Fahrzeugen im Parkhaus steigt auch die Anzahl der gleichzeitig verarbeiteten Events in parkflow an.
+Mit der wachsenden Anzahl von Fahrzeugen im Parkhaus steigt auch die Anzahl der gleichzeitig verarbeiteten Events in Parkflow an.
 
-=== Auswertung
+=== Auswertung der Szenarien
 
-Alle 3 realistischen Testszenarien wurden erfolgreich bestanden.
-Die grundsätzliche Funktionalität von parkflow konnte auch bei einer hohen Anzahl von gleichzeitigen Parkvorgängen validiert werden.
-In @realistic-scenario-metrics sind die wichtigsten Metriken der drei Szenarien zusammengefasst#footnote[Ausführliche übersicht unter ./doc/scenarios/0-overview.md].
+In Abbildung realistic-scenario-metrics sind die wichtigsten Metriken der drei Szenarien zusammengefasst#footnote[Ausführliche Übersicht unter ./doc/scenarios/0-overview.md].
 
 Alle Szenarien wurden auf dem gleichen System durchgeführt.
-Das System 64GB RAM, einen Intel Core Ultra 7 Prozessor und hat ein TUXEDO OS mit Ubuntu als Betriebssystem.
+Dieses System ist ein Laptop mit 64 GB RAM, einem Intel Core Ultra 7 Prozessor und TUXEDO OS auf Basis von Ubuntu als Betriebssystem.
+
+=== Konsistenz der Aggregate und Projektionen
+
+Ein zentrales Ziel der Evaluierung ist die Überprüfung der Konsistenz und Korrektheit der Aggregate sowie der daraus abgeleiteten Projektionen unter hoher Last.
+Gerade im Kontext von Event Sourcing und asynchroner Ereignisverarbeitung ist sicherzustellen, dass auch bei einer großen Anzahl parallel ablaufender Vorgänge ein konsistenter Systemzustand erreicht wird.
+
+In den realistischen Testszenarien werden für jedes simulierte Fahrzeug genau sechs Sensor-Events erzeugt, die den vollständigen Parkvorgang abbilden:
+
+1. Erreichen des Eingangstors
+2. Durchfahren des Eingangstors
+3. Parken auf einem Parkplatz
+4. Verlassen des Parkplatzes
+5. Erreichen des Ausgangstors
+6. Durchfahren des Ausgangstors
+
+Diese Sensor-Events werden asynchron über RabbitMQ an die Anwendung übermittelt und dort verarbeitet.
+Für jedes Szenario ergibt sich somit eine erwartete Gesamtanzahl von Sensor-Events, die dem Produkt aus der Anzahl der Fahrzeuge und der Anzahl der Events pro Fahrzeug (sechs) entspricht.
+
+In allen drei realistischen Testszenarien konnte festgestellt werden, dass die tatsächlich verarbeiteten Sensor-Events exakt der erwarteten Anzahl entsprachen.
+Es traten weder fehlende noch doppelt verarbeitete Events auf.
+Dies zeigt, dass die Ereignisverarbeitung auch unter hoher Last zuverlässig und vollständig erfolgt.
+
+Neben der reinen Event-Zählung wurde zudem die Konsistenz der Projektionen überprüft.
+Die Parkflow-Anwendung erzeugt für jedes Fahrzeug eine sogenannte Vehicle History, die als Read Model alle relevanten Aktionen des Fahrzeugs während seines Aufenthalts im Parkhaus dokumentiert.
+Dieses Read Model wird ausschließlich auf Basis der verarbeiteten Events aufgebaut und stellt somit einen zentralen Indikator für die korrekte Funktionsweise des Event-Sourcing-Ansatzes dar.
+
+Am Ende jedes Szenarios wurde überprüft, ob für jedes Fahrzeug eine vollständige und korrekte Vehicle History vorliegt und ob die Reihenfolge der einzelnen Zustandsänderungen dem erwarteten Ablauf entspricht.
+Auch hierbei konnten in keinem der Szenarien Abweichungen festgestellt werden.
+Insbesondere zeigte sich, dass trotz der asynchronen Verarbeitung der Events und der hohen Anzahl gleichzeitig aktiver Fahrzeuge ein konsistenter Endzustand der Projektionen erreicht wurde.
+
+Zusammenfassend lässt sich festhalten, dass sowohl die Aggregate als auch die daraus abgeleiteten Projektionen in allen Testszenarien konsistent blieben.
+Die Ergebnisse belegen, dass der implementierte Event-Sourcing-Ansatz auch bei einer hohen Anzahl gleichzeitiger Parkvorgänge eine korrekte und zuverlässige Verarbeitung der Ereignisse gewährleistet.
+Damit konnte die funktionale Korrektheit und Konsistenz der Architektur unter realistischen Lastbedingungen erfolgreich validiert werden.
+
+=== Skalierbarkeit der Architektur
+
+Ein wesentliches Ziel der Evaluierung ist die Untersuchung der Skalierbarkeit der implementierten Architektur unter steigender Last.
+Im Kontext ereignisgetriebener Systeme ist Skalierbarkeit insbesondere davon abhängig, wie sich eine zunehmende Anzahl von Ereignissen auf den Ressourcenverbrauch, den Event-Durchsatz sowie die Stabilität der Anwendung auswirkt.
+
+Zur Analyse der Skalierbarkeit wurden drei realistische Testszenarien mit unterschiedlich großen Parkhäusern durchgeführt.
+Dabei wurde die Last schrittweise erhöht, indem sowohl die Anzahl der Parkplätze als auch die Anzahl der gleichzeitig aktiven Fahrzeuge vergrößert wurde.
+Zwischen den Szenarien small, medium und large stieg die Anzahl der Fahrzeuge jeweils um ungefähr einen Faktor zehn.
+Da für jedes Fahrzeug ein vollständiger Parkvorgang simuliert wird, erhöhte sich entsprechend auch die Anzahl der verarbeiteten Events proportional zur Fahrzeuganzahl.
+
+In allen drei Szenarien zeigte sich eine nahezu lineare Beziehung zwischen der Anzahl der Fahrzeuge und der Anzahl der erzeugten sowie verarbeiteten Events.
+Diese Entwicklung bestätigt, dass das System in der Lage ist, mit einer stark wachsenden Anzahl von Ereignissen umzugehen, ohne dass es zu einem unverhältnismäßigen Anstieg der Verarbeitungszeiten oder zu Ausfällen kommt.
+
+Auch der Event-Durchsatz skaliert mit zunehmender Last.
+Während im small-Szenario im Mittel etwa 0,35 Events pro Sekunde veröffentlicht wurden, stieg dieser Wert im medium-Szenario auf durchschnittlich 0,93 Events pro Sekunde und im large-Szenario auf etwa 3,82 Events pro Sekunde.
+Ein ähnliches Bild zeigt sich bei der Event-Konsumierung.
+Hier erhöhte sich der durchschnittliche Durchsatz von 0,85 Events pro Sekunde im small-Szenario auf 2,26 Events pro Sekunde im medium-Szenario und schließlich auf 9,28 Events pro Sekunde im large-Szenario.
+
+Der gemessene Event-Durchsatz Konsumenten in allen Szenarien fällt höher aus als der der Produzenten.
+Dieser Effekt ist darauf zurückzuführen, dass ein einzelnes veröffentlichtes Event von mehreren Event-Listenern verarbeitet wird.
+Ein veröffentlichtes Ereignis führt somit zu mehreren Konsumvorgängen, die jeweils unterschiedlichen Bounded Contexts oder Komponenten zugeordnet sind.
+
+Der gemessene Event-Durchsatz auf der Konsumentenseite stellt daher nicht die Anzahl eindeutiger Events dar, sondern die Gesamtanzahl der Event-Verarbeitungen über alle Listener hinweg.
+Ein höherer Wert auf der Konsumentenseite ist folglich ein erwartetes und gewünschtes Verhalten innerhalb der gewählten Architektur.
+
+Die Ergebnisse zeigen, dass die asynchrone Event-Verarbeitung auch bei mehreren parallel arbeitenden Konsumenten stabil funktioniert und keine Engpässe entstehen.
+Durch die Entkopplung der Bounded Contexts über Messaging können einzelne Module unabhängig voneinander auf Ereignisse reagieren, ohne sich gegenseitig zu blockieren.
+Dies ermöglicht eine effektive Lastverteilung und trägt maßgeblich zur Skalierbarkeit der Architektur bei, da zusätzliche Konsumenten bei Bedarf ergänzt werden können, ohne bestehende Komponenten zu beeinträchtigen.
 
 === Ressourcenverbrauch
 
-Der Speicherverbrauch von parkflow bleibt auch bei einer hohen Anzahl von gleichzeitigen Parkvorgängen stabil.
-Obwohl die Anzahl der verarbeiteten Events steigt, bleibt der Speicherverbrauch konstant.
+Ein zentraler Aspekt der Evaluierung ist die Analyse des Ressourcenverbrauchs der Anwendung unter steigender Last.
+Ziel ist es, zu prüfen, ob der Event-Sourcing-Ansatz in Kombination mit der modularen DDD-Architektur auch bei einer stark wachsenden Anzahl von gleichzeitig ablaufenden Parkvorgängen stabil bleibt und die Systemressourcen effizient genutzt werden.
 
-Der CPU-Verbrauch ist bei allen Szenarien relativ niedrig.
-Bis auf wenige kleine Spitzen ist der CPU verbrauch sehr niedrig.
-Auch bei einer hohen Anzahl von verarbeiteten Events bleibt der CPU-Verbrauch im ähnlichen Bereich.
+Die Laststeigerung wurde durch eine zunehmende Anzahl gleichzeitig aktiver Fahrzeuge erreicht.
+Zwischen den Szenarien small, medium und large stieg die Fahrzeuganzahl jeweils um ungefähr einen Faktor zehn.
+Da für jedes Fahrzeug ein vollständiger Parkvorgang simuliert wird, erhöhte sich die Anzahl der verarbeiteten Events proportional.
+Damit lässt sich eine lineare Beziehung zwischen Fahrzeuganzahl und Event-Aufkommen beobachten.
 
-Auch die Anzahl der Threads bleibt bei steigt bei moderat an.
-Ein Thread-Leak konnte nicht festgestellt werden.
+*Speicherverbrauch*
+Der JVM-Speicherverbrauch blieb insgesamt stabil, obwohl im small-Szenario mit 505 MiB ein leicht höherer Maximalwert gemessen wurde als in den Szenarien medium (464 MiB) und large (485 MiB).
+Die mittleren und medianen Speicherwerte zeigen jedoch, dass sich der Speicherverbrauch über die Szenarien hinweg kaum verändert.
 
-Der in der Datenbank benötigte Speicherplatz steigt mit der Anzahl der verarbeiteten Events linear an.
-Dies ist zu erwarten, da bei jedem Event ein neuer Eintrag in der Event-Store-Datenbanktabelle erstellt wird.
-Insgesamt bleibt der Speicherplatzverbrauch beherrschbar, auch bei einer hohen Anzahl von verarbeiteten Events.
-Dies zeigt, dass die Event-Sourcing-Architektur auch in Bezug auf den Speicherplatzverbrauch effizient ist.
+Die Aggregate werden bei Bedarf aus den gespeicherten Events aufgebaut, während Snapshots dazu beitragen, die notwendigen Daten für wiederholte Vorgänge effizient bereitzustellen.
+Damit bleibt der Speicherverbrauch auch bei hoher Last kontrollierbar.
 
-Der Durchsatz der Events steigt um das 10 Fache bei 100 fachen steigerung der Last.
-Dies zeigt, dass die Anwendung gut skaliert und in der Lage ist, eine hohe Anzahl von Events zu verarbeiten.
-Damit ist das Eventsystem kein Bottleneck für die Anwendung.
+*CPU-Auslastung*
+Die mittleren und medianen CPU-Werte zeigen, dass die CPU-Last über alle Szenarien hinweg sehr niedrig und stabil bleibt:
 
-Die Evaluierung zeigt, dass der implementierte Event-Sourcing-Ansatz auch unter stark wachsender Last stabile Laufzeiteigenschaften aufweist.
-Insbesondere der konstante Speicherverbrauch, die niedrige CPU-Auslastung sowie der linear skalierende Event-Durchsatz sprechen für die Eignung des Ansatzes in realistischen Anwendungsszenarien.
-Die hohe nutztung von asynchronen und nicht-blockierenden Komponenten trägt maßgeblich zu dieser Performance bei.
+Median Prozess-CPU: 0,0#footnote[Ich gehe daovn aus, dass es sich hierbei um einen niedirgen Wert handelt der von Grafana auf 0.0% abgerundet wurde] % (small), 0,1 % (medium), 0,1 % (large)
+Mittelwert Prozess-CPU: 0,1 %, 0,2 %, 0,3 %
+
+Selbst bei stark steigender Event-Anzahl treten nur kurzfristige Spitzen auf, die jedoch im Kontext der mehrstündigen Simulation vernachlässigbar sind.
+Die niedrige CPU-Auslastung ist darauf zurückzuführen, dass die Anwendung stark nebenläufig und asynchron ausgelegt ist.
+Coroutines ermöglichen es, in Lücken zwischen wartenden Operationen andere Aktionen auszuführen, wodurch die verfügbare Rechenkapazität effizient genutzt wird.
+Der geringe Overhead der bei den Coroutine Wechseln entsteht, trägt ebenfalls dazu bei, dass die CPU-Last niedrig bleibt.
+
+*Threads*
+Die Anzahl der Threads steigt moderat mit der Last:
+
+Max. Live Threads: 117 (small), 120 (medium), 134 (large)
+
+Ein Thread-Leak konnte nicht festgestellt werden, sodass die Parallelität kontrolliert und skalierbar bleibt.
+
+*Datenbank-Speicherverbrauch*
+Der Speicherbedarf im Event-Store steigt linear mit der Anzahl der verarbeiteten Events:
+
+Events: 1.000 kB (small), 6.704 kB (medium), 64 MB (large)
+
+Snapshots: 200 kB, 272 kB, 1.416 kB
+
+Die Snapshots wachsen nur moderat, was zeigt, dass die Anwendung die für die Aggregate notwendigen Daten effizient verwaltet.
+Insgesamt bleibt der Speicherbedarf auch bei hoher Last beherrschbar.
+
+*Zusammenfassung*
+Die Evaluierung des Ressourcenverbrauchs zeigt, dass die implementierte Architektur stabile Laufzeiteigenschaften auch bei stark steigender Last aufweist.
+Der Speicherverbrauch bleibt kontrolliert, die CPU-Last niedrig, die Thread-Anzahl moderat, und der Datenbankverbrauch steigt linear mit der Ereignisanzahl.
+Die asynchrone, nebenläufige Verarbeitung in Kombination mit der Nutzung von Coroutines trägt entscheidend dazu bei, dass die Last effizient verteilt wird.
+Damit eignet sich die Architektur auch für realistische Anwendungsszenarien mit hoher Ereignisdichte und großer Anzahl gleichzeitig aktiver Domänenobjekte.
+
+=== Entkopplung und asynchrone Kommunikation
+
+Ein wesentlicher Vorteil der in dieser Arbeit implementierten Architektur liegt in der klaren Entkopplung der Module durch asynchrone Kommunikation.
+Die Anwendung ist in verschiedene Bounded Contexts unterteilt – insbesondere ParkingInventory, CustomerAccess und ParkingOperation.
+Jeder Context ist für bestimmte Geschäftslogik-Verantwortlichkeiten zuständig und kommuniziert mit den anderen Contexts ausschließlich über Ereignisse, die über RabbitMQ veröffentlicht werden.
+
+Durch diese Entkopplung können die einzelnen Module unabhängig voneinander arbeiten.
+Änderungen oder Lastspitzen in einem Bounded Context wirken sich nicht unmittelbar auf andere Module aus, da die Verarbeitung der Events asynchron erfolgt.
+Dies ermöglicht eine effektive Lastverteilung: Während ein Context auf eingehende Events wartet, kann er andere Aufgaben ausführen, und gleichzeitig verarbeiten andere Contexts parallel ihre eigenen Event-Ströme.
+
+Die Messwerte aus den realistischen Szenarien bestätigen die Effektivität dieses Ansatzes.
+Trotz stark steigender Event-Anzahl – von 1.302 Events im small-Szenario bis zu 106.010 Events im large-Szenario – bleiben die Systemressourcen stabil und die Verarbeitungszeiten konsistent.
+Die Konsistenz der Aggregate und Projektionen wird dabei nicht beeinträchtigt, selbst wenn mehrere Listener gleichzeitig auf dasselbe Event reagieren.
+Dies zeigt, dass die asynchrone Eventverarbeitung zuverlässig funktioniert und die Entkopplung der Module keine Inkonsistenzen erzeugt.
+
+Ein weiterer Vorteil der asynchronen Kommunikation ist die Skalierbarkeit der Architektur.
+Neue Listener oder Bounded Contexts können hinzugefügt werden, ohne die bestehenden Module zu verändern, da Events in einer Publish/Subscribe-Struktur verteilt werden.
+Dadurch lässt sich das System einfach erweitern und an wachsende Anforderungen anpassen, beispielsweise wenn zusätzliche Services für Zahlungsabwicklung oder Reporting integriert werden sollen.
+
+Zusammenfassend zeigt die Evaluierung, dass die Kombination aus Entkopplung und asynchroner Kommunikation:
+
+1. Konsistenz gewährleistet, auch bei hoher Last.
+2. Ressourcen effizient nutzt, da keine Blockaden zwischen Modulen entstehen.
+3. Skalierbarkeit ermöglicht, sowohl horizontal (mehr Events/mehr Fahrzeuge) als auch funktional (neue Module).
+4. Praktikabilität für reale Systeme unterstützt, da Module unabhängig voneinander entwickelt, getestet und betrieben werden können.
+
+Die Ergebnisse bestätigen somit, dass die gewählte Architektur den Grundprinzipien modularer DDD-Architekturen entspricht und die Vorteile von Event Sourcing und asynchroner Verarbeitung optimal ausnutzt.
+
+== Diskussion der Ergebnisse
+
+Die Evaluierung zeigt, dass die implementierte Event-Sourcing-Architektur mit modularer DDD-Struktur die geplanten Anforderungen erfüllt. Die Kernfunktionen des Systems, Konsistenz der Aggregate, korrekte Event-Verarbeitung und Projektionserstellung, konnten in allen Szenarien erfolgreich validiert werden. Auch unter steigender Last bleiben die Aggregate konsistent, und die VehicleHistory sowie andere Read Models entsprechen den erwarteten Zuständen.
+
+Die Skalierbarkeit des Ansatzes innerhalb des Moduliths konnte ebenfalls bestätigt werden. Durch die asynchrone Verarbeitung und die Nebenläufigkeit der Komponenten lassen sich Lastspitzen effizient abfangen, und die Event-Durchsatzraten steigen nahezu linear mit der Anzahl der Fahrzeuge. Gleichzeitig bleibt der Speicherverbrauch stabil und die CPU-Last niedrig, was auf eine effiziente Ressourcennutzung hinweist. Die Entkopplung der Bounded Contexts über Messaging hat sich als vorteilhaft erwiesen, da Module unabhängig voneinander arbeiten können und somit die Gesamtsystemlast besser verteilt wird.
+
+Trotz dieser positiven Ergebnisse zeigen sich einige Limitationen des Ansatzes:
+
+- *Begrenzte modulare Entkopplung*: Innerhalb des Moduliths sind die einzelnen Module nicht vollständig unabhängig voneinander. Für sehr große Anwendungen, die echte Microservice-Entkopplung erfordern, müsste eine weitere Auftrennung der Module erfolgen. Vorteilhaft ist jedoch, dass Modulithe sich besonders gut in der frühen Phase der Entwicklung eignen, da sie eine modulare Struktur ermöglichen, ohne den zusätzlichen Aufwand einer vollständigen Microservice-Architektur zu erzeugen.
+- *Skalierung einzelner Module*: Im aktuellen Aufbau lässt sich jedes Modul nicht isoliert skalieren. Die Lasten der einzelnen Module werden unterschiedlich verteilt, und diese Unterschiede können innerhalb des Moduliths nicht gezielt adressiert werden. Eine gezielte horizontale Skalierung einzelner Module ist nur in einer Microservice-Architektur möglich. Bei extrem hoher Last muss das gesamte Modulith skaliert werden, wodurch die feingranulare Lastverteilung einzelner Module nicht berücksichtigt werden kann.
+- *Datenhaltung und redundante Speicherung*: In einem Event-Sourcing-Ansatz werden die Ereignisse sowohl im Event Store als auch in den Read Models gehalten. Dadurch existieren dieselben Informationen mehrfach an verschiedenen Stellen. Dieser Overhead ist bewusst in Kauf genommen, da er sicherstellt, dass jeder Service unabhängig über die benötigten Daten verfügt und somit autonom arbeiten kann. Die redundante Speicherung in den Read Models ermöglicht schnelle Abfragen, entkoppelt die Komponenten voneinander und verbessert die Wartbarkeit des Systems, führt jedoch zu einer Mehrfachhaltung von Informationen.
+- *Konsistenz durch Entkopplung*: Durch die Entkopplung der Bounded Contexts über asynchrone Kommunikation kann es zu zeitlichen Inkonsistenzen zwischen den Read Models der einzelnen Module kommen. In der Arbeit wurden Maßnahmen vorgestellt, um diese Konsistenzprobleme zu minimieren, z.B. durch Eventual Consistency-Prinzipien oder gezielte Kompensationslogiken. Dennoch muss beachtet werden: Wenn strikte Konsistenz in einem System zwingend erforderlich ist, eignet sich dieser Ansatz möglicherweise nicht uneingeschränkt.
+- *Simulation vs. reale Bedingungen*: Die Ergebnisse basieren auf simulierten Szenarien und nicht auf echten Parkhäusern. Faktoren wie Netzwerk-Latenzen, Hardware-Limits oder unerwartete Sensorverhalten wurden nicht getestet. Die Performance unter realen Bedingungen könnte daher abweichen.
+
+Insgesamt zeigen die Ergebnisse, dass der entwickelte Event-Sourcing-Ansatz in Kombination mit modularer DDD-Architektur für mittlere bis große Anwendungsszenarien zuverlässig und effizient funktioniert. Die Limitationen verdeutlichen jedoch, dass bei noch größeren oder kritisch skalierenden Systemen zusätzliche Maßnahmen, wie die Umstellung auf echte Microservices oder gezielte Konsistenzstrategien, notwendig wären.
+
+= Fazit und Ausblick
+
+Ziel dieser Arbeit war die Implementierung und Evaluierung eines Event-Sourcing-Ansatzes in einer modularen DDD-Architektur unter Verwendung von Spring Boot und Kotlin. Die Arbeit zeigt, wie Geschäftslogik, Event-Verarbeitung und Read Models in einem modulithischen System korrekt umgesetzt und unter Last stabil betrieben werden können.
+
+Die funktionalen und realistischen Testszenarien haben gezeigt, dass die grundlegende Geschäftslogik zuverlässig funktioniert. Aggregate werden konsistent aus Events rekonstruiert, Logiken der Bounded Contexts werden korrekt ausgeführt, und Race Conditions werden wie geplant gelöst. Die Read Models spiegeln am Ende der Szenarien erwartungsgemäß den korrekten Zustand wider, was die Konsistenz der Daten innerhalb der Anwendung bestätigt.
+
+
+Die modulithische Architektur erweist sich in dieser Arbeit als besonders geeigneter Ansatz, da sie die Vorteile von Monolithen und Microservices vereint. Wie gezeigt, wird die Anwendung als eine einzige, gemeinsam deployte Einheit bereitgestellt, intern jedoch in klar abgegrenzte, fachlich motivierte Module strukturiert, die häufig den Bounded Contexts der Domäne entsprechen. Dadurch entsteht ein ausgewogener Mix:
+
+- Vom Monolithen übernimmt der Modulith die einfache Bereitstellung und den geringen infrastrukturellen Overhead.
+- Durch die interne Modularisierung wird eine klare, disziplinierte Struktur geschaffen, die Wartbarkeit, Erweiterbarkeit und langfristige Stabilität deutlich verbessert.
+- Gleichzeitig spiegeln die Module in vielen Fällen die Grenzen wider, die in einer Microservice-Architektur eigenständigen Diensten entsprechen würden.
+
+Der Modulith eignet sich daher besonders für Projekte mit moderater Komplexität oder in frühen Entwicklungsphasen, in denen die fachliche Domäne sauber modelliert werden soll, ohne dass das Team frühzeitig durch die Komplexität verteilter Systeme belastet wird. Gleichzeitig bleibt der Weg zu einer späteren Microservice-Architektur offen: Module können später gezielt extrahiert und unabhängig deployt oder skaliert werden, sodass eine schrittweise Evolution möglich ist.
+
+
+Ein zentrales Ergebnis der Arbeit ist die Bestätigung, dass Events ein exzellentes Modellierungsinstrument für Software darstellen. Durch Event-Sourcing wird die Anwendung nicht als statischer Zustand, sondern als Abfolge von Ereignissen in der Domäne beschrieben: „Zuerst ist dies geschehen, anschließend jenes, dann folgendes.“ Auf diese Weise lassen sich Vorgänge und Abläufe in der realen Welt sehr präzise abbilden. Jede Änderung wird nachvollziehbar dokumentiert, und der vollständige Verlauf der Domäne wird erfasst – nicht nur der aktuelle Zustand.
+
+Dieses Vorgehen ergänzt Domain-Driven Design ideal. Während DDD die fachliche Domäne strukturiert und in Bounded Contexts, Aggregates und Entities übersetzt, liefert Event-Sourcing das Werkzeug, um die zeitliche Abfolge und die Dynamik der Domäne zu erfassen. Die Kernlogik der Anwendung bleibt dabei zentral und konsistent, während die Events gleichzeitig die Kommunikation zwischen Modulen erleichtern und eine historische Rückverfolgbarkeit sicherstellen.
+
+Ein praktisches Werkzeug in diesem Zusammenhang ist Event Storming, das in dieser Arbeit genutzt wurde, um die Domäne systematisch zu explorieren. Durch die Visualisierung der Events konnten Abläufe und Zusammenhänge klar identifiziert und in Aggregate überführt werden. So wird die reale Welt nicht nur logisch, sondern auch operational in der Software abgebildet – ein entscheidender Vorteil für die Verständlichkeit, Wartbarkeit und Erweiterbarkeit der Anwendung.
+
+Darüber hinaus erzeugt die Speicherung von Events einen wertvollen Datenschatz. Künftige Anforderungen oder Analysen, die heute noch nicht absehbar sind, können direkt aus den bestehenden Events abgeleitet werden. Inkonsistenzen lassen sich jederzeit beheben, da Events unveränderlich sind und Aggregate jederzeit wieder korrekt rekonstituiert werden können. Somit schafft Event-Sourcing nicht nur eine robuste technische Basis, sondern auch ein strategisches Asset für die Weiterentwicklung der Software.
 
 #bibliography("literatur.bib")
 
