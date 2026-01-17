@@ -2789,10 +2789,51 @@ Mit der wachsenden Anzahl von Fahrzeugen im Parkhaus steigt auch die Anzahl der 
 
 === Auswertung der Szenarien
 
-In Abbildung realistic-scenario-metrics sind die wichtigsten Metriken der drei Szenarien zusammengefasst#footnote[Ausführliche Übersicht unter ./doc/scenarios/0-overview.md].
+In Abbildung @realistic-scenario-metrics sind die wichtigsten Metriken der drei Szenarien zusammengefasst#footnote[Ausführliche Übersicht unter ./doc/scenarios/0-overview.md].
 
 Alle Szenarien wurden auf dem gleichen System durchgeführt.
 Dieses System ist ein Laptop mit 64 GB RAM, einem Intel Core Ultra 7 Prozessor und TUXEDO OS auf Basis von Ubuntu als Betriebssystem.
+#figure(
+table(
+    columns: (auto, auto, auto, auto, auto),
+    inset: 6pt,
+    align: horizon,
+    
+    table.header([*Kategorie*], [*Wert*], [*Small*], [*Meidum*], [*Large*]),
+
+    "JVM Memory", "", "", "", "", 
+    "", "max. used", "505 MiB", "464 MiB", "485 MiB",
+    "", "median used", "361 MiB", "343 MiB", "359 MiB",
+    "", "mean used", "367 MiB", "344 MiB", "359 MiB",
+    "CPU Usage", "", "", "", "",
+    "", "max. process", "1,6%", "11,1%", "3,2%",
+    "", "median process", "0,0%", "0,1%", "0,1%",
+    "", "mean process", "0,1%", "0,2%", "0,3%",
+    "Threads", "", "", "", "",
+    "", "max. live", "117", "120", "134",
+    "Database Storage", "", "", "", "",
+    "", "Events", "1.000 kB", "6.704 kB", "64 MB",
+    "", "Snapshots", "200 kB", "272 kB", "1.416 kB",
+    "Events Published", "", "", "", "",
+    "", "Total", "1.302", "10.604", "106.010",
+    "", "Maximal", "0,8 events/sec", "1,78 events/sec", "7,76 events/sec",
+    "", "Median", "0,333 events/sec", "1,0 events/sec", "3,44 events/sec",
+    "", "Mean", "0,349 events/sec", "0,929 events/sec", "3,82 events/sec",
+    "Events Consumed", "", "", "", "",
+    "", "Total", "3.557", "29.213", "292.031",
+    "", "Maximal", "1,89 events/sec", "4,33 events/sec", "19,2 events/sec",
+    "", "Median", "0,8 events/sec", "2,38 events/sec", "8,44 events/sec",
+    "", "Mean", "0,851 events/sec", "2,26 events/sec", "9,28 events/sec",
+    "Events RabbitMQ", "", "", "", "",
+    "", "Total", "900", "7.200", "72.000",
+    "", "Maximal", "0,689 events/sec", "1,56 events/sec", "6,76 events/sec",
+    "", "Median", "0,289 events/sec", "0,822 events/sec", "3,0 events/sec",
+    "", "Mean", "0,301 events/sec", "0,797 events/sec", "3,28 events/sec",
+),
+caption: [
+    Gemessene Daten der Testszenarios.
+  ],
+) <realistic-scenario-metrics>
 
 === Konsistenz der Aggregate und Projektionen
 
@@ -2951,29 +2992,61 @@ Trotz dieser positiven Ergebnisse zeigen sich einige Limitationen des Ansatzes:
 
 Insgesamt zeigen die Ergebnisse, dass der entwickelte Event-Sourcing-Ansatz in Kombination mit modularer DDD-Architektur für mittlere bis große Anwendungsszenarien zuverlässig und effizient funktioniert. Die Limitationen verdeutlichen jedoch, dass bei noch größeren oder kritisch skalierenden Systemen zusätzliche Maßnahmen, wie die Umstellung auf echte Microservices oder gezielte Konsistenzstrategien, notwendig wären.
 
-= Fazit und Ausblick
+= Fazit
 
-Ziel dieser Arbeit war die Implementierung und Evaluierung eines Event-Sourcing-Ansatzes in einer modularen DDD-Architektur unter Verwendung von Spring Boot und Kotlin. Die Arbeit zeigt, wie Geschäftslogik, Event-Verarbeitung und Read Models in einem modulithischen System korrekt umgesetzt und unter Last stabil betrieben werden können.
+Ziel dieser Arbeit war die Implementierung und Evaluierung eines Event-Sourcing-Ansatzes in einer modularen DDD-Architektur unter Verwendung von Spring Boot und Kotlin.
+Die Arbeit zeigt, wie Geschäftslogik, Event-Verarbeitung und Event-Persistierung in einem modulithischen System korrekt umgesetzt und unter Last stabil betrieben werden können.
 
-Die funktionalen und realistischen Testszenarien haben gezeigt, dass die grundlegende Geschäftslogik zuverlässig funktioniert. Aggregate werden konsistent aus Events rekonstruiert, Logiken der Bounded Contexts werden korrekt ausgeführt, und Race Conditions werden wie geplant gelöst. Die Read Models spiegeln am Ende der Szenarien erwartungsgemäß den korrekten Zustand wider, was die Konsistenz der Daten innerhalb der Anwendung bestätigt.
+Die modulithische Architektur erweist sich dabei als besonders geeigneter Ansatz, da sie die Vorteile von Monolithen und Microservices vereint.
+Die Anwendung wird als eine einzige, gemeinsam deployte Einheit bereitgestellt, intern jedoch in klar abgegrenzte, fachlich motivierte Module strukturiert, die häufig den Bounded Contexts der Domäne entsprechen.
+Die Module spiegeln häufig die Grenzen wider, die in einer Microservice-Architektur eigenständigen Diensten entsprechen würden.
 
+Der Modulith eignet sich besonders für Projekte, in denen einzelne Systemteile nicht hochgradig unabhängig skaliert werden müssen.
+Für sehr große Anwendungen oder Szenarien, in denen bestimmte Module unabhängig voneinander stark belastet werden, stößt der Ansatz an seine Grenzen.
+Gleichzeitig bietet der modulithische Aufbau eine ideale Grundlage für die Umsetzung von DDD-Konzepten.
+Es konnten selbstständige, fachlich isolierte Einheiten geschaffen werden, deren interne Logik konsistent bleibt und die klar definierte Schnittstellen besitzen.
 
-Die modulithische Architektur erweist sich in dieser Arbeit als besonders geeigneter Ansatz, da sie die Vorteile von Monolithen und Microservices vereint. Wie gezeigt, wird die Anwendung als eine einzige, gemeinsam deployte Einheit bereitgestellt, intern jedoch in klar abgegrenzte, fachlich motivierte Module strukturiert, die häufig den Bounded Contexts der Domäne entsprechen. Dadurch entsteht ein ausgewogener Mix:
+Ein zentrales Ergebnis der Arbeit ist, dass Events ein exzellentes Modellierungsinstrument für Software darstellen.
+Ereignisse beschreiben fachliche Veränderungen in der Domäne und folgen dabei einer natürlichen zeitlichen Abfolge.
+Zuerst geschieht etwas, anschließend hat dieses Ereignis Konsequenzen, aus denen weitere Vorgänge entstehen. 
+Reale Abläufe lassen sich auf diese Weise sehr intuitiv und präzise als Kette fachlicher Ereignisse beschreiben. 
+Die Domäne wird nicht als statischer Zustand verstanden, sondern als dynamischer Prozess, der sich kontinuierlich weiterentwickelt.
 
-- Vom Monolithen übernimmt der Modulith die einfache Bereitstellung und den geringen infrastrukturellen Overhead.
-- Durch die interne Modularisierung wird eine klare, disziplinierte Struktur geschaffen, die Wartbarkeit, Erweiterbarkeit und langfristige Stabilität deutlich verbessert.
-- Gleichzeitig spiegeln die Module in vielen Fällen die Grenzen wider, die in einer Microservice-Architektur eigenständigen Diensten entsprechen würden.
+Domain-Driven Design ermöglicht es, die reale Welt präzise in der Software abzubilden. 
+Kern der Anwendung ist die fachliche Logik, die als das wertvollste Element im Zentrum geschützt wird, während sich alle weiteren Komponenten konsequent an ihr ausrichten. 
+Durch die Trennung von Fachlichkeit und technischer Umsetzung bleibt die Logik unabhängig von Infrastrukturentscheidungen und bildet die Grundlage für verständliche, wartbare und erweiterbare Software.
 
-Der Modulith eignet sich daher besonders für Projekte mit moderater Komplexität oder in frühen Entwicklungsphasen, in denen die fachliche Domäne sauber modelliert werden soll, ohne dass das Team frühzeitig durch die Komplexität verteilter Systeme belastet wird. Gleichzeitig bleibt der Weg zu einer späteren Microservice-Architektur offen: Module können später gezielt extrahiert und unabhängig deployt oder skaliert werden, sodass eine schrittweise Evolution möglich ist.
+Event Storming hat sich dabei als nützliches Werkzeug erwiesen, um die Domäne systematisch zu explorieren und fachlich kohärente Aggregate zu definieren.
+Durch diese Visualisierung wird die Komplexität der realen Welt greifbar, und die Software erhält eine klare, nachvollziehbare Struktur.
 
+Aufbauend auf diesem Event-basierten Modell wurde ein eigener Event-Sourcing-Mechanismus entwickelt, der es ermöglicht, Aggregate aus einem Event-Stream zu speichern und wiederherzustellen.
+Anders als bei herkömmlicher Persistenz wird nicht nur der aktuelle Zustand festgehalten, sondern die gesamte Entwicklung der Domäne dokumentiert. 
+Da Events unveränderlich gespeichert werden, bleibt die historische Wahrheit der Domäne erhalten, während neue Interpretationen jederzeit möglich sind. 
+Inkonsistenzen lassen sich nachträglich korrigieren, und zukünftige Anforderungen können bereits durch die vorhandenen Daten berücksichtigt werden. 
+Diese Fähigkeit, die Vergangenheit vollständig zu bewahren und gleichzeitig flexibel auf die Zukunft zu reagieren, verdeutlicht den enormen Mehrwert von Event-Sourcing.
 
-Ein zentrales Ergebnis der Arbeit ist die Bestätigung, dass Events ein exzellentes Modellierungsinstrument für Software darstellen. Durch Event-Sourcing wird die Anwendung nicht als statischer Zustand, sondern als Abfolge von Ereignissen in der Domäne beschrieben: „Zuerst ist dies geschehen, anschließend jenes, dann folgendes.“ Auf diese Weise lassen sich Vorgänge und Abläufe in der realen Welt sehr präzise abbilden. Jede Änderung wird nachvollziehbar dokumentiert, und der vollständige Verlauf der Domäne wird erfasst – nicht nur der aktuelle Zustand.
+Kotlin und Spring Boot bilden die technologische Basis, auf der diese Konzepte umgesetzt werden konnten. 
+Spring Boot liefert eine Vielzahl asynchron arbeitender Bibliotheken, während Kotlin native Sprachkonzepte für Nebenläufigkeit und asynchrones Verhalten bereitstellt. 
+Dank dieser Synergie war es möglich, die Anwendung durchgängig von den äußeren Schichten der Controller und Listener über die fachliche Logik bis hin zur Persistenz vollständig asynchron und nebenläufig zu gestalten. 
+Selbst Herausforderungen, die durch Nebenläufigkeit entstehen, konnten mit den bereits enthaltenen Werkzeugen zuverlässig gelöst werden.
 
-Dieses Vorgehen ergänzt Domain-Driven Design ideal. Während DDD die fachliche Domäne strukturiert und in Bounded Contexts, Aggregates und Entities übersetzt, liefert Event-Sourcing das Werkzeug, um die zeitliche Abfolge und die Dynamik der Domäne zu erfassen. Die Kernlogik der Anwendung bleibt dabei zentral und konsistent, während die Events gleichzeitig die Kommunikation zwischen Modulen erleichtern und eine historische Rückverfolgbarkeit sicherstellen.
+Insgesamt zeigt die Arbeit, dass die Kombination aus Modulith-Architektur, DDD, Event-Modellierung, Event-Sourcing und der technischen Basis aus Kotlin und Spring Boot eine robuste, nachvollziehbare und flexible Plattform für die Umsetzung komplexer Geschäftslogik bietet. 
+Sie vereint Struktur, Skalierbarkeit und Nachvollziehbarkeit, bewahrt gleichzeitig die Integrität und Historie der Domäne und eröffnet neue Möglichkeiten für Analyse, Weiterentwicklung und zukünftige Anforderungen.
 
-Ein praktisches Werkzeug in diesem Zusammenhang ist Event Storming, das in dieser Arbeit genutzt wurde, um die Domäne systematisch zu explorieren. Durch die Visualisierung der Events konnten Abläufe und Zusammenhänge klar identifiziert und in Aggregate überführt werden. So wird die reale Welt nicht nur logisch, sondern auch operational in der Software abgebildet – ein entscheidender Vorteil für die Verständlichkeit, Wartbarkeit und Erweiterbarkeit der Anwendung.
+= Ausblick
 
-Darüber hinaus erzeugt die Speicherung von Events einen wertvollen Datenschatz. Künftige Anforderungen oder Analysen, die heute noch nicht absehbar sind, können direkt aus den bestehenden Events abgeleitet werden. Inkonsistenzen lassen sich jederzeit beheben, da Events unveränderlich sind und Aggregate jederzeit wieder korrekt rekonstituiert werden können. Somit schafft Event-Sourcing nicht nur eine robuste technische Basis, sondern auch ein strategisches Asset für die Weiterentwicklung der Software.
+Die in dieser Arbeit vorgestellten Konzepte eröffnen interessante Perspektiven für zukünftige Entwicklungen in der Softwaretechnik.
+Besonders im Bereich Künstliche Intelligenz gewinnt die Qualität der zugrunde liegenden Daten zunehmend an Bedeutung. 
+Da Event-Sourcing nicht nur den aktuellen Zustand, sondern die vollständige Historie der Domäne erfasst, bietet es eine besonders wertvolle Datenbasis für Trainings- und Analyseverfahren. 
+Modelle, die auf solchen zeitlich aufgelösten Daten trainiert werden, könnten deutlich präzisere Vorhersagen und Analysen ermöglichen als Systeme, die lediglich den aktuellen Zustand berücksichtigen.
+
+Ein weiteres wachsendes Anwendungsfeld ist das Internet of Things (IoT), in dem Ereignisse zentral sind.
+Sensoren liefern kontinuierlich Daten, die als Events erfasst und verarbeitet werden. 
+In dieser Arbeit wurde mit den Sensor-Events bereits ein kleiner Einblick in dieses Gebiet gegeben. 
+Die vorgestellten Konzepte lassen sich hier nahtlos anwenden, sodass die modulithische Architektur, Event-Sourcing und Read-Modelle eine solide Grundlage für die Verarbeitung, Analyse und Visualisierung von IoT-Daten bilden.
+
+Insgesamt zeigt sich, dass Events nicht nur für die Domänenmodellierung und Softwarearchitektur wertvoll sind, sondern auch in angrenzenden Technologien wie KI und IoT eine wichtige Rolle spielen können. 
+Die hier vorgestellte Lösung bietet damit eine zukunftsorientierte Basis, auf der sich diese Konzepte weiterentwickeln und neue Anwendungsszenarien erschließen lassen.
 
 #bibliography("literatur.bib")
 
