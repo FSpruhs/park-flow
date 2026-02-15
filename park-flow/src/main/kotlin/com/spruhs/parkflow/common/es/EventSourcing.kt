@@ -7,6 +7,15 @@ import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
+import com.spruhs.parkflow.common.es.EventSourcingConstants.AGGREGATE_ID
+import com.spruhs.parkflow.common.es.EventSourcingConstants.AGGREGATE_TYPE
+import com.spruhs.parkflow.common.es.EventSourcingConstants.DATA
+import com.spruhs.parkflow.common.es.EventSourcingConstants.EVENT_ID
+import com.spruhs.parkflow.common.es.EventSourcingConstants.EVENT_TYPE
+import com.spruhs.parkflow.common.es.EventSourcingConstants.METADATA
+import com.spruhs.parkflow.common.es.EventSourcingConstants.SNAPSHOT_ID
+import com.spruhs.parkflow.common.es.EventSourcingConstants.TIMESTAMP
+import com.spruhs.parkflow.common.es.EventSourcingConstants.VERSION
 import com.spruhs.parkflow.common.helper.generateId
 import com.spruhs.parkflow.common.helper.getLogger
 import io.r2dbc.spi.Row
@@ -183,8 +192,8 @@ class AggregateStoreImpl(
     ): MutableIterable<Event> {
         return withContext(Dispatchers.IO) {
             dbClient.sql(LOAD_EVENTS_QUERY)
-                .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
-                .bind(EventSourcingConstants.VERSION, version)
+                .bind(AGGREGATE_ID, aggregateId)
+                .bind(VERSION, version)
                 .map { row, meta -> eventFromRow(row, meta) }
                 .all()
                 .toIterable()
@@ -227,14 +236,14 @@ class AggregateStoreImpl(
 
     private suspend fun saveEvent(event: Event) {
         return dbClient.sql(SAVE_EVENT_QUERY)
-            .bind(EventSourcingConstants.EVENT_ID, event.id ?: "")
-            .bind(EventSourcingConstants.AGGREGATE_ID, event.aggregateId)
-            .bind(EventSourcingConstants.AGGREGATE_TYPE, event.aggregateType)
-            .bind(EventSourcingConstants.EVENT_TYPE, event.type)
-            .bind(EventSourcingConstants.VERSION, event.version)
-            .bind(EventSourcingConstants.DATA, event.data)
-            .bind(EventSourcingConstants.METADATA, event.metadata)
-            .bind(EventSourcingConstants.TIMESTAMP, event.timeStamp)
+            .bind(EVENT_ID, event.id ?: "")
+            .bind(AGGREGATE_ID, event.aggregateId)
+            .bind(AGGREGATE_TYPE, event.aggregateType)
+            .bind(EVENT_TYPE, event.type)
+            .bind(VERSION, event.version)
+            .bind(DATA, event.data)
+            .bind(METADATA, event.metadata)
+            .bind(TIMESTAMP, event.timeStamp)
             .await()
     }
 
@@ -262,7 +271,7 @@ class AggregateStoreImpl(
     private suspend fun loadSnapshot(aggregateId: String): Snapshot? {
         return try {
             dbClient.sql(LOAD_SNAPSHOT_QUERY)
-                .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
+                .bind(AGGREGATE_ID, aggregateId)
                 .map { row, meta -> snapshotFromRow(row, meta) }
                 .awaitOne()
         } catch (e: EmptyResultDataAccessException) {
@@ -272,7 +281,7 @@ class AggregateStoreImpl(
 
     private suspend fun handleConcurrency(aggregateId: String) {
         dbClient.sql(HANDLE_CONCURRENCY_QUERY)
-            .bind(EventSourcingConstants.AGGREGATE_ID, aggregateId)
+            .bind(AGGREGATE_ID, aggregateId)
             .await()
     }
 
@@ -280,13 +289,13 @@ class AggregateStoreImpl(
         val snapshot = EventSourcingUtils.snapshotFromAggregate(aggregate)
 
         dbClient.sql(SAVE_SNAPSHOT_QUERY)
-            .bind(EventSourcingConstants.SNAPSHOT_ID, snapshot.id)
-            .bind(EventSourcingConstants.AGGREGATE_ID, aggregate.aggregateId)
-            .bind(EventSourcingConstants.AGGREGATE_TYPE, aggregate.aggregateType)
-            .bind(EventSourcingConstants.DATA, snapshot.data)
-            .bind(EventSourcingConstants.METADATA, snapshot.metaData)
-            .bind(EventSourcingConstants.VERSION, snapshot.version)
-            .bind(EventSourcingConstants.TIMESTAMP, snapshot.timeStamp)
+            .bind(SNAPSHOT_ID, snapshot.id)
+            .bind(AGGREGATE_ID, aggregate.aggregateId)
+            .bind(AGGREGATE_TYPE, aggregate.aggregateType)
+            .bind(DATA, snapshot.data)
+            .bind(METADATA, snapshot.metaData)
+            .bind(VERSION, snapshot.version)
+            .bind(TIMESTAMP, snapshot.timeStamp)
             .await()
     }
 
@@ -335,26 +344,26 @@ class AggregateStoreImpl(
             meta: RowMetadata,
         ) = Snapshot(
             id = UUID.randomUUID(),
-            aggregateId = row.get(EventSourcingConstants.AGGREGATE_ID, String::class.java) ?: "",
-            aggregateType = row.get(EventSourcingConstants.AGGREGATE_TYPE, String::class.java) ?: "",
-            data = row.get(EventSourcingConstants.DATA, ByteArray::class.java) ?: byteArrayOf(),
-            metaData = row.get(EventSourcingConstants.METADATA, ByteArray::class.java) ?: byteArrayOf(),
-            version = row.get(EventSourcingConstants.VERSION, Int::class.java) ?: 0,
-            timeStamp = row.get(EventSourcingConstants.TIMESTAMP, LocalDateTime::class.java) ?: LocalDateTime.now(),
+            aggregateId = row[AGGREGATE_ID, String::class.java] ?: "",
+            aggregateType = row[AGGREGATE_TYPE, String::class.java] ?: "",
+            data = row[DATA, ByteArray::class.java] ?: byteArrayOf(),
+            metaData = row[METADATA, ByteArray::class.java] ?: byteArrayOf(),
+            version = row[VERSION, Int::class.java] ?: 0,
+            timeStamp = row[TIMESTAMP, LocalDateTime::class.java] ?: LocalDateTime.now(),
         )
 
         private fun eventFromRow(
             row: Row,
             meta: RowMetadata,
         ) = Event(
-            type = row.get(EventSourcingConstants.EVENT_TYPE, String::class.java) ?: "",
-            aggregateId = row.get(EventSourcingConstants.AGGREGATE_ID, String::class.java) ?: "",
-            aggregateType = row.get(EventSourcingConstants.AGGREGATE_TYPE, String::class.java) ?: "",
-            id = row.get(EventSourcingConstants.EVENT_ID, String::class.java) ?: "",
-            version = row.get(EventSourcingConstants.VERSION, Int::class.java) ?: 0,
-            data = row.get(EventSourcingConstants.DATA, ByteArray::class.java) ?: byteArrayOf(),
-            metadata = row.get(EventSourcingConstants.METADATA, ByteArray::class.java) ?: byteArrayOf(),
-            timeStamp = row.get(EventSourcingConstants.TIMESTAMP, LocalDateTime::class.java) ?: LocalDateTime.now(),
+            type = row[EVENT_TYPE, String::class.java] ?: "",
+            aggregateId = row[AGGREGATE_ID, String::class.java] ?: "",
+            aggregateType = row[AGGREGATE_TYPE, String::class.java] ?: "",
+            id = row[EVENT_ID, String::class.java] ?: "",
+            version = row[VERSION, Int::class.java] ?: 0,
+            data = row[DATA, ByteArray::class.java] ?: byteArrayOf(),
+            metadata = row[METADATA, ByteArray::class.java] ?: byteArrayOf(),
+            timeStamp = row[TIMESTAMP, LocalDateTime::class.java] ?: LocalDateTime.now(),
         )
     }
 }
