@@ -90,9 +90,9 @@
 
 = Einleitung
 
-Events spielen in der modernen Softwareentwicklung eine immer grössere Rolle.
-Anwendungen werden zunehmend reaktiver, ereignisgetrieben und asynchron gestaltet.
-In dieser Arbeit sollen verschiedene Techniken, die auf Events basieren miteinander kombiniert und praktisch umgesetzt werden.
+In dieser Arbeit sollen verschiedene Techniken, die auf Events basieren, miteinander kombiniert und praktisch umgesetzt werden.
+
+== Motivation
 
 Events sind Zustandsänderungen oder Nachrichten, die innerhalb eines Systems auftreten.
 Anwendungen, die auf Events basieren, unterscheiden sich deutlich von klassischen, imperativen Anwendungen.
@@ -111,26 +111,39 @@ Vorteile sind unter anderem:
 - Unterstützung von asynchronen Architekturen und CQRS(Command Query Responsibility Segregation)
 
 Durch Event Sourcing entsteht eine wertvolle Ereignishistorie.
-Solche historischen Daten können in der modernen Informationsverarbeitung vielfältig genutzt werden.
-Beispielsweise für Analysen, Prognosen oder Machine-Learning-Anwendungen.
+Solche historischen Daten können in der modernen Informationsverarbeitung vielfältig genutzt werden, beispielsweise für Analysen, Prognosen oder Machine-Learning-Anwendungen.
 
-Kombiniert bieten DDD, und Event Sourcing klare Vorteile.
-Modularität durch Entkoppelung der komponenten, asynchrone Verarbeitung von Ereignissen sowie Flexibilität und Erweiterbarkeit der Software.
+Kombiniert bieten DDD und Event Sourcing klare Vorteile.
+Modularität durch Entkoppelung der Komponenten, asynchrone Verarbeitung von Ereignissen sowie Flexibilität und Erweiterbarkeit der Software.
 
-In dieser Arbeit werden die Konzepte an einer beispielhaften Anwendung umgesetzt.
-Als Technologien werden Kotlin und Spring Boot verwendet:
+== Ziel der Arbeit
 
-- *Kotlin*: Moderne Sprache für die JVM, hohe Lesbarkeit, null-sichere Typen und gute Unterstützung für funktionale Programmierung.
- Im Vergleich zu Java bietet Kotlin eine deutlich bessere Unterstützung für Nebenläufigkeit, was für ereignisgetriebene Architekturen entscheidend ist.
-- *Spring Boot*: Starke Unterstützung für modulare Anwendungen, einfache Konfiguration von Microservices oder modularen Monolithen sowie ein reichhaltiges Ökosystem für Event-Verarbeitung.
- Spring bietet darüber hinaus ein eigenes internes Event-System, das die Kommunikation zwischen Komponenten erleichtert, und unterstützt sowohl auf der Controller- als auch auf der Persistenz-Ebene reactive Programmierung.
-- *Modularer Monolith*: Vereint die Vorteile der Modularität mit einer einfacheren Deployment-Strategie.
-- *Eigener Event Store*: Ermöglicht die vollständige Kontrolle über Persistierung und Event-Verarbeitung.
+In dieser Arbeit werden die vorgestellten Konzepte anhand einer beispielhaften Anwendung umgesetzt.
+Als Programmiersprache kommt Kotlin zum Einsatz, während Spring Boot als Framework verwendet wird.
+Die Architektur basiert auf einem modularen Monolithen, und die Persistierung erfolgt über einen eigenen Event Store.
+
+- *Kotlin* ist eine moderne Programmiersprache für die JVM, die sich durch hohe Lesbarkeit, null-sichere Typen und eine sehr gute Unterstützung für funktionale Programmierung auszeichnet. Im Vergleich zu Java bietet Kotlin zudem eine deutlich bessere Unterstützung für Nebenläufigkeit, was insbesondere für ereignisgetriebene Architekturen von Bedeutung ist.
+- *Spring Boot* bietet eine starke Unterstützung für modulare Anwendungen und ermöglicht eine einfache Konfiguration von Microservices oder modularen Monolithen. Darüber hinaus stellt Spring ein reichhaltiges Ökosystem für die Event-Verarbeitung bereit, verfügt über ein eigenes internes Event-System zur vereinfachten Kommunikation zwischen Komponenten und unterstützt reaktive Programmierung sowohl auf der Controller- als auch auf der Persistenz-Ebene.
+- Ein *modularer Monolith* vereint die Vorteile einer klaren Modularisierung mit einer im Vergleich zu Microservices einfacheren Deployment-Strategie.
+- Ein *eigener Event Store* ermöglicht die vollständige Kontrolle über die Persistierung von Events sowie über deren Verarbeitung.
 
 Die Evaluierung soll zeigen, inwiefern der Event-Sourcing-Ansatz mit DDD und Spring Boot/Kotlin die erwarteten Vorteile realisiert.
-Die Evaluationskriterien sind die Performance der Event-Verarbeitung, die Modularität und Entkopplung der Komponenten, die Fehler- und Wiederherstellbarkeit aus dem Event Store sowie die Nachvollziehbarkeit und Konsistenz der Ereignisprotokollierung.
+Die Evaluationskriterien sind:
 
-Die Arbeit gliedert sich in die Vorstellung der theoretischen Grundlagen, die Umsetzung in einer Beispielanwendung und die Evaluierung der gewählten Architektur.-
+ - Performance der Event-Verarbeitung
+ - Modularität und Entkopplung der Komponenten
+ - Wiederherstellbarkeit aus dem Event Store
+ - Nachvollziehbarkeit und Konsistenz der Ereignisprotokollierung
+
+== Übersicht über die Arbeit
+
+Die Arbeit gliedert sich in drei Teile.
+
+1. Im ersten Teil werden die theoretischen Grundlagen vorgestellt. 
+
+2. Im zweiten Teil werden die zuvor erläuterten Grundlagen in einer exemplarischen Softwarelösung umgesetzt. Dabei handelt es sich um ein fiktives Parkplatzverwaltungssystem, das die Kernfunktionen eines solchen Systems abbildet und die Anwendung der vorgestellten Konzepte demonstriert.
+
+3. Im dritten Teil wird die entwickelte Anwendung systematisch evaluiert. Hierzu werden verschiedene Szenarien definiert, anhand derer die zuvor festgelegten Evaluationskriterien überprüft und die Funktionsfähigkeit sowie die Qualität der Umsetzung beurteilt werden.
 
 == Verwandte Arbeiten
 
@@ -152,30 +165,7 @@ Ich werde in dieser Arbeit untersuchen, inwiefern sich die Konzepte aus Stacks B
 = Theoretische Grundlagen
 
 In diesem Kapitel werden die theoretischen Grundlagen vorgestellt, die für die Umsetzung der in dieser Arbeit entwickelten Softwarelösung relevant sind.
-Ziel ist es, ein solides Verständnis der zentralen Konzepte und Technologien zu vermitteln, die im anschließenden Kapitel gemeinsam in einer konkreten Anwendung praktisch umgesetzt werden.
-
-Die Wahl dieser Konzepte basiert auf der Notwendigkeit, komplexe Software domänenspezifisch, wartbar und erweiterbar zu gestalten. Insbesondere in modernen Anwendungen mit hohen Anforderungen an Skalierbarkeit und Fehlertoleranz bieten die kombinierten Ansätze aus EDA, DDD und modularen Architekturen deutliche Vorteile.
-Dabei wird aufgezeigt, wie die einzelnen Ansätze ineinandergreifen und sich gegenseitig ergänzen, um flexible, skalierbare und gut strukturierte Software zu entwickeln.
-
-Ein zentrales Thema dieses Kapitels sind Events und event-getriebene Architekturen (EDA).
-Hierzu gehören sowohl die Grundlagen von Events und Event-Streams als auch weiterführende Konzepte wie Event Sourcing und Command Query Responsibility Segregation (CQRS).
-Diese Architekturmuster ermöglichen eine lose Kopplung von Komponenten, eine klare Trennung von Lese- und Schreiboperationen sowie die Nachvollziehbarkeit von Systemzuständen.
-Diese Eigenschaften eignen sich besonders für moderne Softwarearchitekturen.
-
-Eng verbunden mit event-getriebenen Ansätzen ist das Konzept des Domain-Driven Design (DDD).
-DDD bietet sowohl strategische als auch taktische Werkzeuge, um komplexe Domänen zu modellieren.
-Konzepte wie Bounded Contexts, Aggregates und Event Storming liefern eine klare Struktur und erleichtern die Identifikation relevanter Events.
-Dadurch lässt sich DDD nahtlos mit EDA, Event Sourcing und CQRS kombinieren.
-
-Auf der architektonischen Ebene werden zudem Modulithen und hexagonale Architekturen betrachtet.
-Modulithen ermöglichen eine modulare und gut wartbare Struktur innerhalb einer Anwendung, während die hexagonale Architektur die Interaktion zwischen Kernlogik und externen Systemen sauber trennt.
-Beide Konzepte ergänzen die zuvor eingeführten Patterns und tragen dazu bei, die in DDD und EDA identifizierten Strukturen konsequent umzusetzen.
-
-Abschließend werden die eingesetzten Technologien betrachtet, insbesondere Kotlin als Programmiersprache und Spring Boot als Framework für die Entwicklung moderner, modularer Anwendungen.
-Die Kombination dieser Technologien mit den vorgestellten Konzepten zeigt, wie sich die theoretischen Ansätze effizient in einer Softwarelösung umsetzen lassen.
-
-Zusammenfassend legt dieses Kapitel die Grundlage für die Implementierung im folgenden Abschnitt, indem es die zentralen Konzepte, Patterns und Technologien beschreibt und deren Zusammenspiel aufzeigt.
-Auf dieser Basis können flexible, wartbare und skalierbare Softwarelösungen entwickelt werden.
+Dabei wird aufgezeigt wie EDA, DDD und modulare Architektur ineinandergreifen und sich gegenseitig ergänzen, um flexible, skalierbare und gut strukturierte Software zu entwickeln.
 
 == Events
 
@@ -187,8 +177,7 @@ Events sind unveränderbare Fakten über vergangene Zustände oder Aktionen @sta
 Sie dienen dazu, Veränderungen in einem System zu dokumentieren und anderen Systemen mitzuteilen.
 
 Dabei gibt es mehrere Beteiligte: \
-Der *Producer* erzeugt das Event und veröffentlicht es über einen *Event-Queue*#footnote[Auch bekannt als Event-Bus, Publisher oder Broker].
-In dieser Arbeit wird der Begriff Event-Queue verwendet.
+Der *Producer* erzeugt das Event und veröffentlicht es über einen *Event-Queue*#footnote[Auch bekannt als Event-Bus, Publisher oder Broker. In dieser Arbeit wird der Begriff Event-Queue verwendet.].
 Eine Queue ist dabei eine Warteschlange nach dem First-In-First-Out-Prinzip, in der Events gespeichert werden, bis sie von einem *Consumer* verarbeitet werden.
 Ein Event kann von einem oder mehreren Consumern empfangen werden @stack2022[p.~8-11].
 
@@ -199,9 +188,9 @@ Dies führt zu einer zeitlichen und referenziellen Entkopplung, die die Flexibil
 
 === Event Driven Architecture
 
-Unter einer *Event-Driven Architecture (EDA)* versteht man ein Architekturmuster, das auf der Verarbeitung und Weitergabe von Events basiert.
+Unter einer *EDA* versteht man ein Architekturmuster, das auf der Verarbeitung und Weitergabe von Events basiert.
 Dabei werden die Vorteile der losen Kopplung genutzt, um Systeme zu entwickeln, die weitgehend unabhängig voneinander funktionieren.
-EDA ist eng mit Domain-Driven Design (DDD) verbunden, da Events in DDD eine zentrale Rolle einnehmen @khononov2022[p.~263].
+EDA ist eng mit DDD verbunden, da Events in DDD eine zentrale Rolle einnehmen @khononov2022[p.~263].
 
 Zu den Vorteilen einer EDA gehören:
 
@@ -248,7 +237,7 @@ So können beispielsweise neue Berichte oder Analysen erstellt werden, ohne dass
 
 === Command Query Responsibility Segregation
 
-Command Query Responsibility Segregation (CQRS) ist ein Architekturpattern, das die Verantwortlichkeiten für das Schreiben (Commands) und Lesen (Queries) von Daten strikt trennt.
+CQRS ist ein Architekturpattern, das die Verantwortlichkeiten für das Schreiben (Commands) und Lesen (Queries) von Daten strikt trennt.
 Dadurch werden fachliche Aktionen klar von Abfragen getrennt, was sowohl die Skalierbarkeit als auch das Verständnis der Domäne fördert.
 
 Für das Schreiben von Daten wird ein separates System verwendet, das als *Write Model* bezeichnet wird.
@@ -271,7 +260,7 @@ Auf diese Weise entsteht eine saubere Trennung von Fachlogik und Datenzugriff, d
 
 == Domain Driven Design
 
-Domain Driven Design (DDD) ist eine Methodik zur Entwicklung von Software, die ein hochwertiges, fachlich getreues Modell der zugrunde liegenden Domäne ermöglicht.
+DDD ist eine Methodik zur Entwicklung von Software, die ein hochwertiges, fachlich getreues Modell der zugrunde liegenden Domäne ermöglicht.
 Ziel ist es, die Software so zu gestalten, dass sie die fachlichen Anforderungen der Domäne bestmöglich abbildet @vernon2013[p.~1].
 
 Eine zentrale Herausforderung bei der Entwicklung komplexer Software liegt weniger in den technischen Aspekten, sondern vielmehr in der Beherrschung der fachlichen Komplexität.
@@ -415,7 +404,7 @@ Die Modellierung sinnvoller Aggregate ist eine der anspruchsvollsten Aufgaben im
 Domain Events sind Ereignisse, die eine bedeutsame Zustandsänderung innerhalb der Domäne repräsentieren.
 Sie spiegeln fachliche Ereignisse wider, die für die Geschäftsprozesse relevant sind, und dienen als Kommunikationsmittel zwischen verschiedenen Teilen des Systems @vernon2013[p.~285].
 
-Domain Events spielen insbesondere in Event-Driven Architekturen (EDA) eine zentrale Rolle.
+Domain Events spielen insbesondere in EDA eine zentrale Rolle.
 Wie im vorherigen Abschnitt beschrieben, dürfen Aggregates nicht direkt auf andere Aggregates zugreifen.
 Wenn jedoch eine Zustandsänderung eines Aggregates für andere Aggregates relevant ist, wird diese Änderung über ein Domain Event mitgeteilt @khononov2022[p.~119].
 
@@ -692,7 +681,7 @@ Event Storming unterstützt diesen Ansatz, indem es die Zusammenarbeit zwischen 
 Die vorgestellten Architekturen, insbesondere Modulithen und die hexagonale Architektur, ergänzen DDD ideal. Sie sorgen dafür, dass die einzelnen Domänenmodule klar strukturiert, gut wartbar und von technischen Details isoliert sind.
 Ports und Adapters stellen sicher, dass die Domänenlogik unabhängig von externen Systemen entwickelt und getestet werden kann.
 
-Event-Driven Architecture (EDA) sorgt dafür, dass diese Einheiten asynchron und strukturiert miteinander kommunizieren.
+EDA sorgt dafür, dass diese Einheiten asynchron und strukturiert miteinander kommunizieren.
 Event Sourcing erweitert diesen Ansatz, indem es Zustandsänderungen als unveränderbare Events modelliert.
 Ein Event repräsentiert dabei einen Fakt, der tatsächlich eingetreten ist und nicht rückgängig gemacht werden kann.
 Man kann sich ein System, das auf Events basiert, als eine Art Fortschreiten der Zeit vorstellen.
@@ -704,7 +693,7 @@ In Kombination mit CQRS entsteht eine saubere Trennung von Lese- und Schreiboper
 
 Auf technischer Ebene bieten Kotlin und insbesondere seine Coroutines eine leistungsfähige Basis für nebenläufige und asynchrone Verarbeitung.
 Zusammen mit Spring Boot ergeben sich konkrete Werkzeuge und Frameworks, um die theoretischen Konzepte praktisch umzusetzen.
-Spring Boot unterstützt modulare Anwendungen, interne Event-Systeme und reactive Programmierung, wodurch die Umsetzung von EDA, Event Sourcing und modularem Aufbau vereinfacht wird.
+Spring Boot unterstützt modulare Anwendungen, interne Event-Systeme und reaktive Programmierung, wodurch die Umsetzung von EDA, Event Sourcing und modularem Aufbau vereinfacht wird.
 
 Insgesamt zeigt sich, dass die vorgestellten Konzepte und Technologien auf mehreren Ebenen ineinandergreifen:
 
@@ -713,7 +702,8 @@ Insgesamt zeigt sich, dass die vorgestellten Konzepte und Technologien auf mehre
 - EDA und Event Sourcing ermöglichen nachvollziehbare, asynchrone Kommunikation und Zustandsverwaltung.
 - Kotlin und Spring Boot bieten die technische Grundlage für effiziente Implementierung, Nebenläufigkeit und Skalierbarkeit.
 
-Durch diese Kombination entsteht eine Softwarearchitektur, die sowohl fachlich präzise als auch technisch robust ist, leicht erweiterbar, wartbar und skalierbar und damit den Herausforderungen moderner, komplexer Anwendungen gerecht wird.
+Durch diese Kombination entsteht eine Softwarearchitektur, die sowohl fachlich präzise als auch technisch robust ist, eine lose Kopplung der Komponenten ermöglicht und leicht erweiterbar, wartbar sowie skalierbar bleibt.
+Damit wird eine belastbare Grundlage geschaffen, auf der die im folgenden Abschnitt vorgestellte Implementierung aufbaut und die den Anforderungen moderner, komplexer Softwarearchitekturen gerecht wird.
 
 #pagebreak()
 
@@ -790,7 +780,9 @@ Auch wenn die fehlende Perspektivenvielfalt den Prozess einschränkt, ist es den
 Um die Übersichtlichkeit zu wahren, werden nicht alle Schritte grafisch dargestellt.
 Sämtliche Abbildungen zum Workshop sind in der Dokumentation von Parkflow verfügbar#footnote("/doc/eventstorming").
 
-=== Schritt 1: Unstrukturiertes Erforschen
+=== Eventstorming Workshop
+
+*Schritt 1: Unstrukturiertes Erforschen*
 
 Im ersten Schritt notieren die Teilnehmer ausschließlich die Namen von Ereignissen, die ihnen zur Domain einfallen, auf orangefarbenen Klebezetteln und platzieren diese zunächst unstrukturiert an einer Wand#footnote[Workshops können auch mit entsprechenden digitalen Tools durchgeführt werden.].
 
@@ -803,7 +795,7 @@ Bei den Ereignissen handelt es sich um fachliche Ereignisse in der Vergangenheit
   ],
 ) <unstrukturiertes-erforschen>
 
-=== Schritt 2: Zeitache
+*Schritt 2: Zeitache*
 
 Im zweiten Schritt werden die Events auf einer horizontalen Zeitachse angeordnet.
 Dabei beginnt die Darstellung mit dem frühesten Event links und endet mit dem aktuellsten Event rechts.
@@ -830,7 +822,7 @@ Im Falle des Parkens auf einem nicht zugewiesenen Parkplatz werden zusätzliche 
 
 Die fünfte Zeitachse stellt den Bezahlvorgang dar.
 
-=== Schritt 3: Pain Points
+*Schritt 3: Pain Points*
 
 Im dritten Schritt werden Pain Points identifiziert und markiert.
 Dabei handelt es sich um Stellen im Prozess, die problematisch, ineffizient oder fehleranfällig sein können.
@@ -839,13 +831,13 @@ Pain Points werden mit rautenförmigen, pinkfarbenen Klebezetteln dargestellt @k
 Für Parkflow wird ein Pain Point bei den Events ParkedOn und ParkedOnWrong identifiziert.
 Dies verdeutlicht die potenzielle Gefahr einer unkontrollierten Dynamik, die entstehen kann, wenn Fahrzeuge einander die zugewiesenen Parkplätze „wegnehmen“ und die neu zugewiesenen Parkplätze nicht korrekt beim jeweiligen Fahrzeug ankommen.
 
-=== Schritt 4: Pivotal Events
+*Schritt 4: Pivotal Events*
 
 Im vierten Schritt werden Pivotal Events identifiziert und markiert.
 Dabei handelt es sich um Events, die einen Übergang des Prozesses in eine andere Phase auslösen.
 Pivotal Events werden mit einem vertikalen Strich dargestellt @khononov2022[p.~219-220].
 
-=== Schritt 5: Commands
+*Schritt 5: Commands*
 
 Im fünften Schritt werden Commands identifiziert.
 Bei Commands handelt es sich um Anweisungen, die eine Aktion innerhalb des Systems auslösen.
@@ -867,7 +859,7 @@ Der Kunde ist für die Registrierung seiner Fahrzeuge sowie das Mieten von Parkp
   ],
 ) <commands>
 
-=== Schritt 6: Policies
+*Schritt 6: Policies*
 
 Im sechsten Schritt werden Policies identifiziert.
 Policies sind Regeln oder Bedingungen, die festlegen, wie das System auf bestimmte Events reagieren soll.
@@ -877,7 +869,7 @@ Policies werden auf lilafarbenen Klebezetteln dargestellt und zwischen dem ausl�
 Für Parkflow existieren beispielsweise folgende Policies.
 Wird ein Fahrzeug an einem Eingang erkannt, löst das System automatisch den Command `ProvideParkingSpot` aus, um dem Fahrzeug einen Parkplatz zuzuweisen. Ebenso wird durch eine Policy automatisch eine Rechnung erstellt, sobald das Fahrzeug den Parkplatz verlässt.
 
-=== Schritt 7: Read Models
+*Schritt 7: Read Models*
 
 Im siebten Schritt werden Read Models identifiziert.
 Read Models werden von einem Actor verwendet, um Entscheidungen über das Ausführen von Commands zu treffen.
@@ -895,7 +887,7 @@ Bei Parkflow ergeben sich folgende Read Models:
 - *FeeCatalog*: Bietet eine Übersicht über die verschiedenen Parkgebühren und deren Berechnungsgrundlagen. Dieses Read Model ermöglicht dem System, die korrekten Gebühren für die Parkdauer zu berechnen.
 - *VehicleHistory*: Dokumentiert die Aktionen eines Fahrzeugs im System. Dieses Read Model unterstützt die Erstellung einer Rechnung, sobald das Fahrzeug den Parkplatz verlässt.
 
-=== Schritt 8: Externe Systeme
+*Schritt 8: Externe Systeme*
 
 Im achten Schritt werden externe Systeme identifiziert.
 Externe Systeme sind Systeme außerhalb der eigenen Domäne, mit denen das System interagiert.
@@ -904,7 +896,7 @@ Externe Systeme werden auf pinkfarbenen Klebezetteln dargestellt und an den Stel
 
 Für Parkflow wird ein externes Zahlungssystem genutzt, um die Parkgebühren automatisch vom hinterlegten Zahlungsmittel des Kunden abzubuchen, sobald das Fahrzeug den Parkplatz verlässt.
 
-=== Schritt 9: Aggregates
+*Schritt 9: Aggregates*
 
 Im neunten Schritt werden Aggregates identifiziert.
 Aggregates werden auf großen gelben Klebezetteln dargestellt.
@@ -913,7 +905,7 @@ Auf diese Weise wird ersichtlich, welche Commands und Events zu welchem Aggregat
 
 Für Parkflow ergeben sich nach diesem Schritt die Aggregates `ParkingSpot`, `Gate`, `Customer`, `ParkingOperator` und `Invoice`.
 
-=== Schritt 10: Bounded Contexts
+*Schritt 10: Bounded Contexts*
 
 Im zehnten und letzten Schritt werden Bounded Contexts identifiziert.
 Bounded Contexts sind klar abgegrenzte Bereiche innerhalb der Domain, die jeweils eine eigene Sprache und ein eigenes Modell besitzen @khononov2022[p.~224].
@@ -2580,7 +2572,7 @@ Es definiert verschiedene Attribute, die den Zustand des ParkingOperators reprä
         val gates: MutableMap<GateId, Gate> = mutableMapOf()
         val vehicles: MutableMap<PlateNumber, Vehicle> = mutableMapOf()
 
-        private var parkingSpotProvider: ParkingSpotProvider = 
+        private var parkingSpotProvider: ParkingSpotProvider =
             DefaultParkingSpotProvider()
 
         ...
