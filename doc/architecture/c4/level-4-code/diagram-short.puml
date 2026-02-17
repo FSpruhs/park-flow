@@ -1,0 +1,69 @@
+@startuml
+title Parking Inventory
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "API" as api {
+    [ParkingInventoryAPI] <<interface>>
+    [ParkingInventoryEvents]
+    [ParkingInventoryValueObjects]
+}
+
+package "Common" as common {
+    [AggregateStore] <<interface>>
+    [EventPublisher] <<interface>>
+    [EventPublisherImpl]
+    [AggregateStoreImpl]
+}
+
+package "Core" as core {
+
+    package "Domain" as domain {
+        [ParkingSpotAggregate]
+        [ParkingInventoryProjection]
+    }
+
+    package "Primary Adapters" as inAdapters {
+        [ParkingSpotRestAdapter]
+        [ParkingInventoryRestAdapter]
+        [ParkingInventoryApiAdapter]
+    }
+
+    package "Secondary Adapters" as outAdapters {
+        [ParkingInventoryRepositoryAdapter]
+        [ParkingInventoryRepository]
+    }
+
+    package "Application" as app {
+        [ParkingSpotCommandPort]
+        [ParkingInventoryService]
+        [ParkingInventoryQueryPort]
+        [ParkingInventoryRepositoryPort] <<interface>>
+    }
+}
+
+api -[hidden]-> common
+common -[hidden]-> core
+
+[AggregateStoreImpl] ..|> [AggregateStore] : implements
+[EventPublisherImpl] ..|> [EventPublisher] : implements
+[AggregateStoreImpl] --> [EventPublisher] : uses
+
+[ParkingInventoryApiAdapter] ..|> [ParkingInventoryAPI] : implements
+
+[ParkingInventoryApiAdapter] --> [ParkingInventoryQueryPort] : uses
+[ParkingInventoryRestAdapter] --> [ParkingInventoryQueryPort]
+[ParkingSpotRestAdapter] --> [ParkingSpotCommandPort] : uses
+
+[ParkingInventoryRepositoryAdapter] ..|> [ParkingInventoryRepositoryPort] : implements
+[ParkingInventoryRepositoryAdapter] --> [ParkingInventoryRepository] : uses
+
+[ParkingInventoryService] --> [ParkingInventoryRepositoryPort] : uses
+[ParkingInventoryQueryPort] --> [ParkingInventoryService] : uses
+[ParkingSpotCommandPort] --> [AggregateStore] : uses
+[ParkingSpotCommandPort] --> [ParkingInventoryService] : uses
+
+app --> domain : imports
+
+@enduml

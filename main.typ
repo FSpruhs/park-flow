@@ -139,7 +139,7 @@ Die Evaluationskriterien sind:
 
 Die Arbeit gliedert sich in drei Teile.
 
-1. Im ersten Teil werden die theoretischen Grundlagen vorgestellt. 
+1. Im ersten Teil werden die theoretischen Grundlagen vorgestellt.
 
 2. Im zweiten Teil werden die zuvor erläuterten Grundlagen in einer exemplarischen Softwarelösung umgesetzt. Dabei handelt es sich um ein fiktives Parkplatzverwaltungssystem, das die Kernfunktionen eines solchen Systems abbildet und die Anwendung der vorgestellten Konzepte demonstriert.
 
@@ -204,6 +204,7 @@ Die zentralen Herausforderungen einer EDA sind:
 - *Verteilte und asynchrone Workflows*: Die Koordination von Abläufen über mehrere Komponenten hinweg kann komplex sein.
 
 @stack2022[p.~13–15] und @khononov2022[p.~263].
+Die Herausforderungen werden im Implementierungsteil dieser Arbeit noch genauer untersucht und es werden Strategien vorgestellt, um sie zu adressieren.
 
 EDA benutzt Events auf verschiedene Weise.
 Dazu gehören:
@@ -213,22 +214,18 @@ Dazu gehören:
 - *Event-Carried State Transfer*: Hier werden Events verwendet, die eine Statusänderung samt aller dafür notwendigen Daten enthalten. Der Empfänger kann seinen eigenen Zustand dadurch direkt und ohne zusätzliche Anfragen aktualisieren. Das Event trägt somit den gesamten fachlichen Kontext, der für den State Transfer erforderlich ist.
 @stack2022[p.~4-6]
 
-Diese Ansätze zeigen, wie EDA die Vorteile von losgekoppelten, flexiblen und skalierbaren Systemen praktisch umsetzt, gleichzeitig aber auch die Komplexität in verteilten Systemen adressiert.
-
 === Event Sourcing
 
 Beim *Event Sourcing* wird der Zustand einer Anwendung nicht durch das Speichern der aktuellen Daten, sondern durch eine chronologische Abfolge von Events repräsentiert.
-Diese Events bilden einen unveränderbaren Event Stream. Ein Event selbst ist unveränderlich, es können lediglich neue Events an den Stream angehängt werden @vernon2013[p.~539].
+Diese Events bilden einen unveränderbaren Event Stream.
+Ein Event selbst ist dabei unveränderlich, es können lediglich neue Events an den Stream angehängt werden @vernon2013[p.~539].
 
 Durch das Speichern des Event Streams lässt sich der aktuelle Zustand jederzeit durch das Abspielen (Replay) dieser Events rekonstruieren.
 Event Streams werden in der Regel in einem Event Store persistiert, der die Events zuverlässig speichert und für die Rekonstruktion bereitstellt @vernon2013[p.~539].
 
 Da alle Änderungen als Events gespeichert werden, steht eine vollständige Historie aller Zustandsänderungen zur Verfügung.
-Es ist jederzeit nachvollziehbar, wie ein bestimmter Zustand aus dem Event Store erreicht wurde.
+Es ist jederzeit nachvollziehbar, wie ein bestimmter Zustand erreicht wurde.
 Dies erleichtert das Auffinden von Fehlern und die Rekonstruktion fehlerhafter Daten @vernon2013[p.~539].
-
-Event Sourcing verschiebt den Fokus der Anwendungsentwicklung von der bloßen Verwaltung des aktuellen Datenbestands hin zur Modellierung fachlicher Ereignisse, die im System auftreten.
-Dies fördert ein tieferes Verständnis der Domäne und führt zu einer klareren Modellierung der Geschäftsprozesse @khononov2022[p.~127–132].
 
 Ein weiterer Vorteil ergibt sich aus der langfristigen Flexibilität der Datenbasis.
 Zum Zeitpunkt der Entwicklung ist oft nicht absehbar, welche Anforderungen in der Zukunft auftreten werden und welche Daten dafür benötigt werden.
@@ -245,18 +242,17 @@ Das Lesen von Daten erfolgt über ein separates *Read Model*.
 Beide Modelle können dabei unterschiedliche Datenstrukturen und Technologien nutzen @vernon2013[p.~138–140].
 
 Die Trennung von Schreib- und Leseoperationen ermöglicht eine unabhängige Ausführung beider Prozesse.
-Dies führt zu besserer Skalierbarkeit, da Lese- und Schreiboperationen unterschiedliche Anforderungen an die Performance haben können.
 Das Write Model kann auf Konsistenz und Integrität optimiert werden, während das Read Model auf schnelle Abfragen ausgelegt ist @vernon2013[p.~140–145].
 
-Durch die getrennte Behandlung entsteht eine eventual consistency zwischen Write Model und Read Model.
+Durch die getrennte Behandlung entsteht eine eventual consistency zwischen Write Model und Read Model:
 Das Write Model verarbeitet die Commands und generiert dabei Events, die den aktuellen Zustand des Systems widerspiegeln.
 Das Read Model ist daher nicht zu jedem Zeitpunkt konsistent mit dem Write Model @vernon2013[p.~146–147].
 
-CQRS und Event Sourcing lassen sich gut kombinieren, da CQRS einige Einschränkungen von Event Sourcing ausgleicht.
-Ein typisches Problem beim Event Sourcing ist das Auffinden von Entitäten mit bestimmten Zuständen, da der aktuelle Zustand nicht direkt gespeichert wird.
+CQRS und Event Sourcing lassen sich gut kombinieren, da CQRS Einschränkungen von Event Sourcing ausgleicht.
+Als Beispiel sei hier die Problematik der Abfrage von Entitäten mit bestimmten Zuständen genannt.
+Beim Event Sourcing ist das Auffinden von Entitäten mit bestimmten Zuständen nicht so einfach, da der aktuelle Zustand nicht direkt gespeichert wird.
 Durch das Read Model können solche Abfragen effizient durchgeführt werden, ohne den Event Stream durchsuchen zu müssen.
-Dabei fungiert der Event Stream als Write Model, dessen Events von einem separaten System konsumiert werden, das als Read Model dient.
-Auf diese Weise entsteht eine saubere Trennung von Fachlogik und Datenzugriff, die sowohl die Domäne klarer abbildet als auch die Vorteile von Event Sourcing optimal nutzt @vernon2013[p.~140–145].
+Dabei fungiert der Event Stream als Write Model, dessen Events von einem separaten System konsumiert werden, das als Read Model dient @vernon2013[p.~140–145].
 
 == Domain Driven Design
 
@@ -268,11 +264,21 @@ DDD adressiert diese Herausforderung, indem es den Fokus konsequent auf die Dom�
 
 Durch diese Fokussierung auf die Domäne können Softwarelösungen entwickelt werden, die enger an der Realität der Fachprozesse orientiert sind.
 
+In @ddd-uebersicht sind die wichtigsten Konzepte von DDD und deren Zusammenhänge dargestellt.
+
+#figure(
+  image("./pictures/ddd.svg"),
+  caption: [
+    Übersicht über die DDD-Konzepte und deren Zusammenhänge
+  ],
+) <ddd-uebersicht>
+
+
 === Taktisches und Strategisches Design
 
 DDD lässt sich in zwei Hauptbereiche unterteilen, dem *strategischen* und dem *taktischen* Design.
 
-Das strategische Design beschäftigt sich mit der Analyse und Strukturierung der Domäne auf hoher Ebene.
+Das strategische Design beschäftigt sich mit der Analyse und Strukturierung der Domäne.
 Ziel ist es, herauszuarbeiten, welche Software entwickelt werden soll und warum, und wie die Domäne sinnvoll in fachliche Teilbereiche gegliedert werden kann.
 
 Mit dem strategischen Design soll die Komplexität der Domäne beherrschbar gemacht werden.
@@ -283,53 +289,43 @@ Dafür stehen im strategischen Design verschiedene Werkzeuge und Konzepte zur Ve
 Ein zentraler Aspekt ist die Kommunikation zwischen allen Beteiligten, um ein gemeinsames Verständnis der Domäne sicherzustellen.
 Dieses gemeinsame Wissen dient als Grundlage für Designentscheidungen auf hoher Ebene @khononov2022[p.~26–27].
 
-In diesem Kapitel werde ich die Strategischen Begriffe, Subdomain, Bounded Context und Ubiquitous Language vorstellen die ich auch bei der Implementierung verwenden werde.
+In diesem Kapitel werde ich die strategischen Konzepte Subdomain, Bounded Context und Ubiquitous Language vorstellen.
 
-Das taktische Design setzt eine Ebene darunter an und beschäftigt sich mit der konkreten Umsetzung der Softwarekomponenten.
+Das taktische Design beschäftigt sich mit der konkreten Umsetzung der Softwarekomponenten.
 Es beschreibt, wie das im strategischen Design entwickelte Domänenmodell technisch realisiert wird @khononov2022[p.~89].
-In diesem Kapitel werde ich die Taktischen Begriffe, Entities, Value Objects, Aggregates, Domain Events und Modules
+In diesem Kapitel werde ich die taktischen Konzepte, Entities, Value Objects, Aggregates und Domain Events vorstellen.
 
 === Subdomain
 
 Als Domain wird alles bezeichnet, womit sich eine Organisation #footnote[z.B. Unternehmen oder öffentliche Institutionen] beschäftigt und in welchem fachlichen Kontext sie tätig ist @vernon2013[p.~43].
-Die Domain beschreibt somit den fachlichen Kontext, in dem die Software operiert, und umfasst die Geschäftsprozesse, Regeln und Anforderungen, die für die Organisation relevant sind.
+Die Domain beschreibt somit die Geschäftsprozesse, Regeln und Anforderungen, die für die Organisation relevant sind.
 
-Damit die Ziele der Domain erreicht werden können, wird sie in mehrere Subdomains unterteilt.
+Um diese fachlichen Anforderungen strukturiert zu adressieren, wird die Domain in mehrere Subdomains unterteilt.
 Subdomains lassen sich in drei Kategorien einordnen:
 
-- *Core Subdomain*: Die Core Subdomain stellt die Haupttätigkeit der Organisation dar. Sie definiert, wodurch sich die Organisation von ihren Wettbewerbern abhebt, und repräsentiert das, was die Organisation besonders macht. Die Hauptentwicklung sollte sich auf die Core Subdomain konzentrieren, da hier der größte Mehrwert liegt.
-- *Supporting Subdomain*: Supporting Subdomains unterstützen die Core Subdomain dabei, ihre Ziele zu erreichen, bilden aber nicht das Hauptbetätigungsfeld der Organisation. Sie sind für den Gesamterfolg wichtig, liefern jedoch keinen direkten Wettbewerbsvorteil.
-- *Generic Subdomain*: Generic Subdomains sind allgemeine, standardisierte Bereiche, die viele Organisationen ebenfalls besitzen. Sie sind nicht spezifisch für die Organisation und bieten keinen Wettbewerbsvorteil. Solche Domains können häufig durch Standardlösungen oder Drittanbieter abgedeckt werden.
+- Die *Core Subdomain* stellt die Haupttätigkeit der Organisation dar. Sie definiert, wodurch sich die Organisation von ihren Wettbewerbern abhebt, und repräsentiert das, was die Organisation besonders macht. Die Hauptentwicklung sollte sich auf die Core Subdomain konzentrieren, da hier der größte Mehrwert liegt.
+- *Supporting Subdomains* unterstützen die Core Subdomain dabei, ihre Ziele zu erreichen, bilden aber nicht das Hauptbetätigungsfeld der Organisation. Sie sind für den Gesamterfolg wichtig, liefern jedoch keinen direkten Wettbewerbsvorteil.
+- *Generic Subdomains* sind allgemeine, standardisierte Bereiche, die viele Organisationen ebenfalls besitzen. Sie sind nicht spezifisch für die Organisation und bieten keinen Wettbewerbsvorteil. Solche Domains können häufig durch Standardlösungen oder Drittanbieter abgedeckt werden.
 @khononov2022[p.~30-33]
-
-Subdomains helfen nicht nur, die Komplexität der Softwareentwicklung zu reduzieren, sondern fördern auch die Fokussierung auf die fachlich relevanten Bereiche.
-Sie schaffen klare Abgrenzungen, die es erleichtern, Verantwortlichkeiten zu definieren, Zuständigkeiten nachvollziehbar zu machen und langfristig stabile Software zu entwickeln.
 
 === Ubiquitous Language
 
 Ein zentrales Element von DDD ist die Ubiquitous Language („allgegenwärtige Sprache“).
-Sie besagt, dass alle Beteiligten #footnote[z.B. Entwickler, Fachexperten, Architekten und weitere Stakeholder] eine gemeinsame Sprache verwenden, die sich aus der Domain ableitet.
+Eine gemeinsame Sprache für alle Beteiligten #footnote[z.B. Entwickler, Fachexperten, Architekten und weitere Stakeholder], die sich aus der Domain ableitet.
 
-Die Ubiquitous Language dient mehreren Zwecken:
+Die Ubiquitous Language dient den folgenden Zwecken:
 
 - Sie erleichtert die Verständigung zwischen allen Beteiligten und stellt sicher, dass fachliche Anforderungen klar, präzise und einheitlich kommuniziert werden können.
 - Sie verhindert Übersetzungen zwischen unterschiedlichen Begrifflichkeiten, die in der Softwareentwicklung häufig zu Missverständnissen führen. In Projekten, in denen Entwickler, Product Owner und Fachexperten unterschiedliche Worte für dasselbe Konzept verwenden, entstehen oft Fehler, unklare Anforderungen oder ungenaue Implementierungen.
 - Sie bindet technische Begriffe nur insoweit ein, wie sie die fachliche Sprache unterstützen, und verhindert, dass technisches Vokabular die fachliche Sicht überlagert.
 @khononov2022[p.~50–51]
 
-Darüber hinaus ist die Ubiquitous Language ein entscheidendes Werkzeug, um ein konsistentes Domänenmodell zu entwickeln.
-Jedes Modell-Element sollte mit einem Begriff aus der Ubiquitous Language benannt werden.
-Auf diese Weise kann präzise beschrieben werden, was entwickelt werden soll, und alle Beteiligten verstehen dasselbe Konzept auf dieselbe Weise.
-
 === Bounded Context
 
 Ein zentrales Ziel von DDD ist es, verschiedene Modelle zu entwickeln, die unterschiedliche Aspekte der Domain abbilden und dabei helfen, das reale System besser zu verstehen.
 Jedes Modell soll nur die Elemente enthalten, die für seinen Zweck erforderlich sind, während unnötige Details bewusst ausgeklammert werden.
-Auf diese Weise wird die Komplexität des Modells auf ein Minimum reduziert @khononov2022[p.~53–54].
-
-In der Praxis kann dasselbe fachliche Konzept in unterschiedlichen Teilen der Organisation unterschiedliche Rollen einnehmen.
-Wird versucht, ein einziges Modell für alle Anwendungsfälle zu verwenden, entsteht schnell ein sehr großes, komplexes Modell, das schwer verständlich und fehleranfällig ist.
-DDD adressiert diese Herausforderung, indem es Modelle aufteilt und klar abgegrenzte Bereiche definiert.
+Auf diese Weise soll die Komplexität des Modells reduziert werden @khononov2022[p.~53–54].
+Da fachliche Konzepte in unterschiedlichen Teilen einer Organisation unterschiedliche Bedeutungen und Verantwortlichkeiten haben können, adressiert DDD diese Herausforderung durch die Aufteilung der Modelle in klar abgegrenzte Bereiche, anstatt ein einziges, übergreifendes Modell für alle Anwendungsfälle zu verwenden.
 
 Ein Bounded Context bezeichnet einen abgegrenzten Bereich, in dem ein Modell gültig, konsistent und eindeutig definiert ist.
 Das gleiche fachliche Modell kann somit in mehreren Bounded Contexts existieren, unterscheidet sich dort jedoch in Bedeutung und Verwendung @khononov2022[p.~63–64].
@@ -340,7 +336,7 @@ Sie dienen als Schnittstellen zwischen verschiedenen Modellen und verhindern, da
 Die Ubiquitous Language wird innerhalb eines Bounded Contexts festgelegt. Gleichlautende Begriffe müssen dabei nicht zwingend die gleiche Bedeutung in anderen Contexts haben.
 So kann ein und dasselbe Wort in verschiedenen Bounded Contexts unterschiedliche Bedeutungen besitzen @khononov2022[p.~65].
 
-Durch die Kombination von Subdomains, Bounded Contexts und Ubiquitous Language wird die Komplexität der Domäne beherrschbar.
+Durch die Kombination von Subdomains, Bounded Contexts und Ubiquitous Language soll die Komplexität der Domäne beherrschbar werden.
 Jedes Modell bleibt auf seinen Zweck fokussiert, ist leichter verständlich und langlebiger, während gleichzeitig die konsistente Kommunikation zwischen allen Beteiligten gesichert wird.
 
 === Entities
@@ -359,19 +355,14 @@ Value Objects sind Domain-Konzepte, die nicht über eine eigene Identität defin
 Zwei Value Objects gelten als gleich, wenn alle ihre relevanten Eigenschaften übereinstimmen.
 Ihre Identität ergibt sich, im Gegensatz zu Entities, also vollständig aus ihren Werten, deren Identität unabhängig vom aktuellen Zustand bleibt @vernon2013[p.~219-220].
 
-Value Objects repräsentieren häufig kleine, unveränderliche Werte oder Konzepte, die in der Domäne eine klare fachliche Bedeutung haben.
+Value Objects repräsentieren Werte oder Konzepte, die in der Domäne eine klare fachliche Bedeutung haben.
 Sie sollen präzise ausdrücken, was ein bestimmter Wert fachlich bedeutet, und stellen sicher, dass dieser Wert nur in gültigen Kombinationen vorkommt.
-
-Ein wesentliches Merkmal von Value Objects ist ihre Unveränderlichkeit (Immutability).
 Statt ihren Zustand zu verändern, wird bei einer Änderung ein neues Objekt erzeugt.
 Dadurch bleiben Value Objects jederzeit konsistent und können gefahrlos gemeinsam verwendet, verglichen oder wiederverwendet werden.
-
-Die Verwendung von Value Objects fördert sauberen Code, da fachliche Regeln zentral in der Konstruktion des Objekts umgesetzt werden können.
 
 === Aggregates
 
 Ein Aggregate ist eine besondere Form der Entity.
-Es besitzt ebenfalls eine eigene Identität, ist langlebig und repräsentiert ein fachlich bedeutungsvolles Konzept innerhalb der Domäne.
 Im Gegensatz zu einzelnen Entities besteht ein Aggregate jedoch aus mehreren miteinander verbundenen Entities und Value Objects, die gemeinsam eine Konsistenzeinheit bilden @khononov2022[p.~112].
 
 Die zentrale Aufgabe eines Aggregates besteht darin, die Konsistenzregeln und Invarianten aller zugehörigen Objekte sicherzustellen.
@@ -383,7 +374,7 @@ Auf diese Weise wird verhindert, dass Außenstehende direkt auf interne Entities
 
 Aggregates stehen zueinander in einem losen Kopplungsverhältnis.
 Sie dürfen einander weder direkt aufrufen noch auf internem Wege referenzieren @khononov2022[p.~117].
-Durch diese Entkopplung wird die Modularität erhöht und die Komplexität des Gesamtsystems beherrschbar gehalten.
+Durch diese Entkopplung wird die Modularität erhöht.
 
 Aggregates gehören zu den zentralen Bausteinen von DDD.
 Sie spielen eine grundlegende Rolle, weil sie:
@@ -397,12 +388,12 @@ Sie spielen eine grundlegende Rolle, weil sie:
 Die Modellierung sinnvoller Aggregate ist eine der anspruchsvollsten Aufgaben im DDD @vernon2013[p.~347]. Typische Herausforderungen sind:
 
 - *Das richtige Granularitätsniveau finden*: Ein Aggregate darf nicht zu groß sein, da sonst Transaktionen schwerfällig werden. Ist es zu klein, gehen Konsistenzregeln verloren oder müssen außerhalb des Aggregats kontrolliert werden.
-- *Konsistenz vs. Performance ausbalancieren*: Zu viele invariantenbedingte Abhängigkeiten führen zu unnötig großen Aggregaten. Zu wenige führen zu verteilten, schwer kontrollierbaren Geschäftsregeln.
+- *Konsistenz und Performance ausbalancieren*: Zu große Aggregate stellen zwar eine starke Konsistenz sicher, können jedoch die Performance beeinträchtigen. Zu kleine Aggregate verteilen fachliche Invarianten, was die Konsistenz erschwert und Geschäftsregeln schwer kontrollierbar macht.
 
 === Domain Events
 
-Domain Events sind Ereignisse, die eine bedeutsame Zustandsänderung innerhalb der Domäne repräsentieren.
-Sie spiegeln fachliche Ereignisse wider, die für die Geschäftsprozesse relevant sind, und dienen als Kommunikationsmittel zwischen verschiedenen Teilen des Systems @vernon2013[p.~285].
+Domain Events sind Ereignisse, die ein relevantes, fachlich bedeutendes Geschehen in der Domäne darstellen, das für die Geschäftsprozesse von Bedeutung ist.
+Sie spiegeln somit tatsächlich eingetretene Vorgänge wider und dienen als Kommunikationsmittel zwischen verschiedenen Teilen des Systems @vernon2013[p.~285].
 
 Domain Events spielen insbesondere in EDA eine zentrale Rolle.
 Wie im vorherigen Abschnitt beschrieben, dürfen Aggregates nicht direkt auf andere Aggregates zugreifen.
@@ -415,23 +406,7 @@ Domain Events haben zudem eine fachliche Bedeutung über die reine technische Um
 
 - Sie dokumentieren, dass etwas tatsächlich geschehen ist, und machen Zustandsänderungen nachvollziehbar.
 - Sie fördern die Nachvollziehbarkeit und Transparenz innerhalb der Domäne, da jedes Event einen konkreten fachlichen Sachverhalt beschreibt.
-- Sie erleichtern die Kommunikation zwischen Entwicklern und Fachexperten, da sie direkt auf die Ubiquitous Language der Domäne abgebildet werden können.
-
-Durch diese Eigenschaften tragen Domain Events wesentlich zur Skalierbarkeit, Flexibilität und Wartbarkeit von Systemen bei, da sie die Domänenlogik klar strukturieren und gleichzeitig eine Erweiterbarkeit ermöglichen, ohne bestehende Aggregate direkt zu beeinflussen.
-
-=== Modules
-
-Ein Module ist eine logische Zusammenfassung eng verwandter Domänenelemente innerhalb eines Bounded Contexts.
-Innerhalb eines Moduls herrscht hohe Kohäsion.
-Die enthaltenen Klassen, Konzepte und Regeln stehen in einem klaren fachlichen Zusammenhang und tragen gemeinsam zur Lösung einer spezifischen Teilaufgabe der Domäne bei.
-
-Zwischen Modulen sollte hingegen eine möglichst geringe Kopplung bestehen.
-Diese Trennung fördert die Verständlichkeit, Wartbarkeit und Weiterentwicklung des Systems, da Änderungen innerhalb eines Moduls keine oder nur geringe Auswirkungen auf andere Module haben.
-
-Wichtig ist, dass Module fachlich und nicht technisch geschnitten werden.
-Sie orientieren sich also an der Problem- und Begriffswelt der Domäne und nicht an technischen Strukturen @vernon2013[p.~333–334].
-
-Durch die Verwendung von Modulen können komplexe Systeme wie Modulithen klar strukturiert werden. Jedes Modul bildet dabei eine in sich geschlossene Einheit, die sowohl die fachliche Kohärenz als auch die organisatorische Trennung unterstützt.
+- Sie erleichtern die Kommunikation zwischen Entwicklern und Fachexperten, da sie in der Sprache der Domäne formuliert werden und die Begriffe der Ubiquitous Language direkt widerspiegeln.
 
 === Event Storming
 
@@ -1145,7 +1120,7 @@ Auf diese Weise unterstützt die modulare Paketstruktur eine klare Trennung von 
 
 
 #figure(
-  image("./doc/architecture/c4/level-4-code/level-4-0.svg"),
+  image("./doc/architecture/c4/level-4-code/level-4-0-short.svg"),
   caption: [
     Code
   ],
