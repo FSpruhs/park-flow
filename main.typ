@@ -81,6 +81,7 @@
     "DDD", "Domain driven design",
     "EDA", "Event Driven Architecture",
     "ES", "Event Sourcing",
+    "JVM", "Java Virtual Machine",
     "R2DBC", "Reactive Relational Database Connectivity",
     "REST", "Representational State Transfer",
 
@@ -176,7 +177,7 @@ Der Name eines Events besteht in der Regel aus einem Verb in der Vergangenheitsf
 Events sind unveränderbare Fakten über vergangene Zustände oder Aktionen @stack2022[p.~8].
 Sie dienen dazu, Veränderungen in einem System zu dokumentieren und anderen Systemen mitzuteilen.
 
-Dabei gibt es mehrere Beteiligte: \
+Dabei gibt es mehrere Beteiligte die in @eda-übersicht dargestellt sind: \
 Der *Producer* erzeugt das Event und veröffentlicht es über einen *Event-Queue*#footnote[Auch bekannt als Event-Bus, Publisher oder Broker. In dieser Arbeit wird der Begriff Event-Queue verwendet.].
 Eine Queue ist dabei eine Warteschlange nach dem First-In-First-Out-Prinzip, in der Events gespeichert werden, bis sie von einem *Consumer* verarbeitet werden.
 Ein Event kann von einem oder mehreren Consumern empfangen werden @stack2022[p.~8-11].
@@ -185,6 +186,13 @@ Beim Veröffentlichen eines Events muss der Producer den Consumer weder kennen n
 Diese Form der Verarbeitung, bei der der Producer nicht durch den Consumer blockiert wird, wird als asynchron bezeichnet.
 Wird die Event-Queue persistent gespeichert, müssen Producer und Consumer nicht gleichzeitig aktiv sein.
 Dies führt zu einer zeitlichen und referenziellen Entkopplung, die die Flexibilität und Skalierbarkeit des Systems erhöht @distributed2023[p.~69–73].
+
+#figure(
+  image("./pictures/eda.svg"),
+  caption: [
+    Übersicht über die Komponenten und Abläufe in einer Event Driven Architecture
+  ],
+) <eda-übersicht>
 
 === Event Driven Architecture
 
@@ -421,22 +429,20 @@ Diese Elemente werden in Beziehung zueinander gesetzt, um ein umfassendes Verst�
 
 Die Modellierung erfolgt typischerweise an einem großen Whiteboard, auf dem die verschiedenen Bestandteile mithilfe farbcodierter Post-its visualisiert werden @khononov2022[p.~235–236].
 
-Event Storming fördert die gemeinsame Sprache (Ubiquitous Language), weil alle Beteiligten dieselben Begriffe verwenden, um die Domäne zu beschreiben.
-Zudem erleichtert es das Erkennen von Engpässen, Abhängigkeiten und komplexen Abläufen frühzeitig, bevor diese in Code umgesetzt werden.
+Durch den Event Storming Workshop soll ein gemeinsames Verständnis und Sprache (Ubiquitous Language) der Domäne geschaffen werden, das alle Beteiligten teilen.
+Zudem erleichtert es das frühzeitige Erkennen von Engpässen, Abhängigkeiten und komplexen Abläufen, bevor diese in Code umgesetzt werden.
 Durch diese Sichtbarkeit der Prozesse lassen sich Softwaremodelle entwickeln, die stärker an der Realität der Domäne ausgerichtet sind.
 
 == Architektur
 
 Bei der Umsetzung von Softwarelösungen stehen verschiedene Architekturmuster zur Verfügung, die jeweils unterschiedliche Herausforderungen adressieren und eigene Stärken besitzen.
-In dieser Arbeit werde ich mich auf den Modulithen konzentrieren.
-Dabei handelt es sich um eine Architektur, die die Vorteile von Monolithen und Microservices miteinander kombiniert.
+In dieser Arbeit werde ich mich auf den Modulithen konzentrieren, eine Architektur, die die Vorteile von Monolithen und Microservices miteinander kombiniert.
 
-Um die Bedeutung des Modulithen besser einordnen zu können, werden zunächst die beiden grundlegenden Architekturstile Monolith und Microservices vorgestellt.
-Beide bilden die konzeptionelle Grundlage für das Verständnis des Modulithen.
+Um diese Bedeutung besser einordnen zu können, werden zunächst die beiden Architekturstile Monolith und Microservices vorgestellt.
 
 Zusätzlich wird in diesem Kapitel die hexagonale Architektur betrachtet.
 Sie spielt eine wichtige Rolle für die interne Strukturierung von Modulen und Bounded Contexts.
-Die hexagonale Architektur stellt sicher, dass Domänenlogik von technischen Details getrennt wird und erleichtert damit langfristige Wartbarkeit, Testbarkeit und eine klare Ausrichtung an der fachlichen Domäne.
+Sie stellt sicher, dass Domänenlogik von technischen Details getrennt wird und erleichtert damit langfristige Wartbarkeit, Testbarkeit und eine klare Ausrichtung an der fachlichen Domäne.
 
 === Monolith
 
@@ -471,7 +477,7 @@ Microservices passen konzeptionell gut zu den Prinzipien des Domain-Driven Desig
 Häufig bildet ein Microservice einen oder mehrere Bounded Contexts ab und kapselt dadurch einen geschlossenen fachlichen Verantwortungsbereich.
 Zudem kann jeder Service genau die Technologien, Datenbanken und Programmiersprachen verwenden, die für seine spezifische Aufgabe am besten geeignet sind @khononov2022[p.~255–256].
 
-Microservices bieten mehrere Vorteile:
+Microservices bieten insbesondere die Vorteile:
 
 - Unabhängiges Deployment: Jeder Dienst kann getrennt entwickelt, veröffentlicht und aktualisiert werden, ohne dass andere Dienste neu ausgerollt werden müssen.
 - Skalierbarkeit: Dienste können individuell horizontal skaliert werden — dort, wo Last anfällt.
@@ -481,14 +487,11 @@ Diese Vorteile gehen jedoch mit erheblichen Herausforderungen einher.
 Da eine Anwendung nicht mehr in einem einzelnen Prozess läuft, steigt die Komplexität der Gesamtarchitektur wesentlich an.
 Dienste müssen orchestriert, überwacht und abgesichert werden. Die Kommunikation erfolgt zwangsläufig über ein Netzwerk, was neue Fehlerquellen eröffnet.
 
-Damit einhergehen weitere Herausforderungen wie der Netzwerklatenz, der Fehlertoleranz, der Sicherheit und der Datenkonsistenz @distributed2023[p.~53].
-
-Microservices ermöglichen also hohe Flexibilität und Skalierbarkeit, erfordern jedoch gleichzeitig eine deutlich komplexere Infrastruktur.
-Ohne klare Domänengrenzen, ein durchdachtes Deployment-Konzept und ausgereifte Betriebsprozesse führt ein Microservice-System schnell zu unnötigem Overhead und sinkender Produktivität.
+Damit einhergehen weitere Herausforderungen wie die Netzwerklatenz, die Fehlertoleranz, die Sicherheit und die Datenkonsistenz @distributed2023[p.~53].
 
 === Modulith
 
-Ein Modulith ist ein Architekturmuster, das die Vorteile von Monolithen und Microservices vereint.
+Ein Modulith ist ein Architekturmuster, das sowohl Vorteile von Monolithen als auch von Microservices übernehmen soll.
 Die Anwendung wird als eine einzige, gemeinsam deployte Einheit bereitgestellt, ist intern jedoch in klar abgegrenzte, fachlich motivierte Module strukturiert @stack2022[p.~41].
 Diese Module habe eine konkrete Schnittstelle und kommunizieren untereinander über diese Schnittstellen.
 Diese Module bilden eigenständige Verantwortungsbereiche ab und orientieren sich häufig an Bounded Contexts aus dem Domain-Driven Design.
@@ -512,8 +515,8 @@ Teams können zunächst die fachliche Domäne sauber modellieren, ohne frühzeit
 
 In Abbildung @modulith-diagram ist der Unterschied zwischen Monolithen, Modulithen und Microservices dargestellt.
 Bei a) ist ein Monoloth dargestellt, es handelt sich um eine einzige Anwendung ohne klare Strukturierung.
-Bei c) sind Microservices dargestellt, die als unabhängige Dienste agieren und über ein Netzwerk kommunizieren.
-Die Komplexität wird hierbei innerhalb eines Services abgebildet.
+Bei c) sind Microservices dargestellt, die als unabhängige Dienste deployt werden und über ein Netzwerk kommunizieren.
+Die Komplexität wird hierbei innerhalb eines Services abgebildet und von den anderen Servicen abgegrenzt.
 In b) ist ein Modulith dargestellt, der die Vorteile beider Architekturmuster vereint.
 Es ist eine einzige Anwendung, die jedoch in klar abgegrenzte Module unterteilt ist.
 
@@ -527,29 +530,30 @@ Es ist eine einzige Anwendung, die jedoch in klar abgegrenzte Module unterteilt 
 
 === Hexagonale Architektur
 
-Während die Modulith-Architektur die Strukturierung auf der Ebene der gesamten Anwendung adressiert, konzentriert sich die hexagonale Architektur auf die Strukturierung innerhalb einzelner Softwarekomponenten.
-BZiel ist es, die Domänenlogik klar von technischen Details und externen Systemen zu isolieren. Die Domäne befindet sich dabei im Zentrum der Architektur und sollte möglichst wenige Abhängigkeiten zu außenliegenden Systemen haben.
-Technische Aspekte wie werden nicht direkt innerhalb der Domäne implementiert.
+Während die Modulith-Architektur die Strukturierung auf der Ebene der gesamten Anwendung adressiert, konzentriert sich die hexagonale Architektur #footnote[Die Bezeichnung hexagonal hat keinen Bezug zur Funktionsweise der Architektur selbst. Sie geht auf den ursprünglichen Artikel von Alistair Cockburn zurück, in dem Hexagone als grafisches Darstellungsmittel verwendet wurden. Die Architektur wird daher auch häufig als Ports-and-Adapters-Architektur bezeichnet @portsAndAdapters.] auf die Strukturierung innerhalb einzelner Softwarekomponenten.
+Ziel ist es, die Domänenlogik klar von technischen Details und externen Systemen zu isolieren.
+Die Domäne befindet sich dabei im Zentrum der Architektur und sollte möglichst wenige Abhängigkeiten zu außenliegenden Systemen haben.
+Technische Aspekte werden nicht direkt innerhalb der Domäne implementiert.
 
-Damit die Domäne mit der Außenwelt kommunizieren kann, werden sogenannte Ports und Adapters #footnote[Deswegen wird die Hexagonale Architektur auch als Ports and Adapters Architektur bezeichnet].
+Damit die Domäne mit der Außenwelt kommunizieren kann, werden sogenannte Ports und Adapters verwendet.
 Ports definieren dabei die Schnittstellen, über die die Domäne mit externen Systemen interagiert.
 Dabei gibt es zwei Arten von Ports:
 
 - *Primary Ports* #footnote[Auch bekannt als Driving, Aktive oder Inbound Ports]: Diese Ports werden von externen Systemen aufgerufen, um Aktionen innerhalb der Domäne auszulösen. Sie repräsentieren die Eingangsseite der Domäne.
 - *Secondary Ports* #footnote[Auch bekannt als Driven oder Outbound Ports]: Diese Ports werden von der Domäne verwendet, um auf externe Systeme zuzugreifen. Sie repräsentieren die Ausgangsseite der Domäne.
 
-Die Ports können dann von Adaptern implementiert werden, die die eigentliche Kommunikation mit den externen Systemen übernehmen.
-Adapter sind konkrete Implementierungen der Ports und können verschiedene Technologien und Protokolle verwenden, um mit der Außenwelt zu interagieren.
+Die Ports definieren die Schnittstellen zur Außenwelt und können von Adaptern implementiert werden, die die konkrete Kommunikation mit externen Systemen übernehmen.
+Diese Adapter kapseln dabei die verwendeten Technologien und Protokolle und ermöglichen es, unterschiedliche technische Anbindungen umzusetzen, ohne die Kernlogik zu beeinflussen.
 
 Durch die Trennung von Domänenlogik und technischen Aspekten wird die Wartbarkeit und Testbarkeit der Software verbessert.
 Die Domäne kann unabhängig von den äußeren Systemen entwickelt und getestet werden, was die Flexibilität und Anpassungsfähigkeit der Software erhöht.
 Dieser Ansatz schützt die Domänenlogik vor Änderungen in der technischen Infrastruktur und erleichtert die Integration neuer Technologien.
 Auch diese Architektur lässt sich gut mit DDD kombinieren, da sie zum einen die Domaine in den Mittelpunkt stellt und die Prinzipien der klaren Abgrenzung und der losen Kopplung unterstützt @vernon2013[p.~125-130].
 
-In Abbildung @hexagonal-diagram ist die hexagonale Architektur dargestellt.
+In @hexagonal-diagram ist die hexagonale Architektur dargestellt.
 Im Zentrum befindet sich die Domainlogik der Anwendung.
-Auf der Linken Seite wird ein Rest-Controller übere einen Adapter mit einem Primary Port der Domäne verbunden.
-Auf der Rechten Seite ist eine Datenbank dargestellt.
+Auf der linken Seite wird ein Rest-Controller übere einen Adapter mit einem Primary Port der Domäne verbunden.
+Auf der rechten Seite ist eine Datenbank dargestellt.
 Über einen Secondary Port kann die Domäne auf die Datenbank zugreifen.
 
 #figure(
@@ -571,17 +575,17 @@ Die zentralen Vorteile des C4-Modells sind:
 
 - *Mehrstufige Abstraktion*: Unterschiedliche Zielgruppen (Stakeholder, Architekten, Entwickler) erhalten jeweils die für sie relevante Detailtiefe.
 - *Konsistenz*: Alle Diagramme bauen logisch aufeinander auf und beschreiben dasselbe System aus unterschiedlichen Perspektiven.
-- *Gute Verständlichkeit*: Fokus auf Struktur und Verantwortlichkeiten statt auf technische Details.
-- *Technologieunabhängigkeit*: Das Modell beschreibt was ein System ist und wie es strukturiert ist – nicht zwingend wie es implementiert wurde.
-
-Gerade in domänengetriebenen und modularen Architekturen unterstützt das C4-Modell dabei, fachliche und technische Strukturen klar zu kommunizieren, ohne sich frühzeitig auf Implementierungsdetails festzulegen @c4model.
+- *Gute Verständlichkeit*: Der Fokus liegt auf der Struktur und den Verantwortlichkeiten anstatt auf technischen Details.
+- *Technologieunabhängigkeit*: Das Modell beschreibt, was ein System ist und wie es strukturiert ist, ohne zwingend festzulegen, wie es implementiert wurde.
 
 Das C4-Modell besteht aus vier aufeinander aufbauenden Diagrammtypen, die jeweils eine spezifische Abstraktionsebene abdecken @c4diagrams.
 
 - *Context Diagram (System Context)*: Das Context Diagram bietet die höchste Abstraktionsebene. Es zeigt das betrachtete Softwaresystem als Ganzes und stellt dessen Beziehungen zu externen Akteuren und Systemen dar. Ziel dieses Diagramms ist es, ein gemeinsames Verständnis darüber zu schaffen, welche Rolle das System im Gesamtkontext spielt und mit wem oder was es interagiert.
-- *Container Diagram*: Das Container Diagram zoomt eine Ebene tiefer in das System hinein. Es zeigt, aus welchen Containern das System besteht und wie diese miteinander kommunizieren.
+- *Container Diagram*: Das Container-Diagramm stellt eine detailliertere Ebene des Systems dar. Es zeigt, aus welchen Containern das System besteht und wie diese miteinander kommunizieren.
 - *Component Diagram*: Das Component Diagram beschreibt die innere Struktur eines einzelnen Containers. Es zeigt, aus welchen Komponenten dieser besteht und wie diese zusammenarbeiten.
 - *Code Diagram (optional)*: Das Code Diagram stellt die detaillierteste Ebene dar und zeigt die konkrete Implementierung. Im C4-Modell ist dieses Diagramm optional. Der Grund dafür ist, dass der Quellcode selbst bereits eine sehr detaillierte und oft automatisch generierbare Dokumentation darstellt. Zudem ändern sich Code-Strukturen in der Regel häufiger als architektonische Konzepte.
+
+Gerade in domänengetriebenen und modularen Architekturen unterstützt das C4-Modell dabei, fachliche und technische Strukturen klar zu kommunizieren, ohne sich frühzeitig auf Implementierungsdetails festzulegen @c4model.
 
 == Kotlin
 
@@ -593,13 +597,13 @@ Bei Java handel es sich um eine weit verbreitete und etablierte Programmiersprac
 Bei der Entwicklung von Kotlin hat JetBrains bewusst aus den Designfehlern von Java gelernt.
 Gleichzeitig wurden essenzielle Eigenschaften, die zur Popularität von Java beigetragen haben, beibehalten @kotlinHandbuch[p.~20].
 
-Ich werde in dieser Arbeit zentrale Feautres von Kotlin vorstellen, die sich sehr gut mit den anderen Technologien und Patterns dieser Arbeit kombinieren lassen.
+Ich werde in dieser Arbeit zentrale Feautres von Kotlin vorstellen, die sich gut mit den anderen Technologien und Patterns dieser Arbeit kombinieren lassen.
 Darüber hinaus bietet Kotlin eine Vielzahl moderner Sprachfeatures, die die Entwicklung von Software erleichtern und beschleunigen.
 
 
 === Interpolarität Java
 
-Java Code wird in Bytecode kompiliert der dann auch einer entsprechenden Laufzeitumgebung, häufig die Java Virtual Machine (JVM) genannt, ausgeführt wird.
+Java Code wird in Bytecode kompiliert der dann auf einer entsprechenden Laufzeitumgebung, häufig die Java Virtual Machine (JVM), ausgeführt wird.
 Auch Kotlin Code wird in Bytecode kompiliert, der auf der JVM ausgeführt werden kann.
 Beide Sprachen teilen sich somit die gleiche Laufzeitumgebung und können nahtlos miteinander interagieren.
 Dies bietet den großen Vorteil, dass Kotlin-Programme überall dort lauffähig sind, wo auch Java-Code ausgeführt werden kann.
@@ -614,21 +618,17 @@ Ein wesentlicher Grund dafür liegt in der stagnierenden Entwicklung der CPU-Ges
 Während in früheren Jahren Leistungssteigerungen hauptsächlich durch höhere Taktfrequenzen erzielt wurden, liegt der Fokus heute verstärkt auf Mehrkernprozessoren.
 Daraus ergibt sich die Möglichkeit, Programme parallel auszuführen, um die vorhandenen Ressourcen effizient zu nutzen.
 Die funktionale Programmierung eignet sich besonders gut für Parallelisierungskonzepte, da sie auf Zustandslosigkeit und Nebenwirkungsfreiheit basiert.
-Diese Eigenschaften vereinfachen die Ausführung von Code und machen sie zugleich sicherer @kotlinPatterns[p.~129].
+Diese Eigenschaften vereinfachen die Ausführung von Code und macht diesen zugleich sicherer @kotlinPatterns[p.~129].
 
 Kotlin wurde von Beginn an mit dem Ziel entwickelt, eine moderne Programmiersprache bereitzustellen, die sowohl objektorientierte als auch funktionale Paradigmen unterstützt.
 
 
 === Coroutines
 
-In modernen Anwendungen, insbesondere in solchen mit hoher Benutzerinteraktion oder paralleler Datenverarbeitung, spielt effiziente Nebenläufigkeit eine zentrale Rolle.
-Wie im vorherigen Kapitel beschrieben eignet sich sich die Funktionale Programmierung, um die nebenläufige Logik deklarativ und fehlerarm zu beschreiben.
-Die tatsächliche technische Ausführung von Nebenläufigkeit wird in Java durch Threads realisiert und in Kotlin durch die Coroutines.
-
 Kotlin bietet mit Coroutines eine leichtgewichtige Lösung um Nebenläufigkeit zu implementieren.
-Coroutines ermöglichen eine effizientere und zugleich einfachere Umsetzung von paralleler und asynchroner Programmierung.
+Coroutines ermöglichen eine effizientere und zugleich einfachere Umsetzung von paralleler und asynchroner Programmierung als es mit traditionellen Java-Threads möglich ist.
 Sie sind nicht an einen bestimmten System-Thread gebunden und können flexibel zwischen Threads wechseln.
-Die Verwaltung der Coroutines übernimmt der Kotlin-Compiler in Verbindung mit dem Dispatcher, der auch den Overhead von Kontextwechseln reduziert.
+Die Verwaltung der Coroutines übernimmt der Kotlin-Compiler in Verbindung mit dem Dispatcher.
 Selbst bei einer blockierenden Coroutine bleibt der zugrunde liegende Thread frei und kann andere Coroutines verarbeiten.
 So lässt sich eine deutlich bessere Ausnutzung der verfügbaren Ressourcen erzielen @kotlinPatterns[p.~195].
 
@@ -637,11 +637,10 @@ So lässt sich eine deutlich bessere Ausnutzung der verfügbaren Ressourcen erzi
 Spring Boot ist ein Framework zur Entwicklung moderner Java- und Kotlin-Anwendungen und basiert auf dem Spring-Framework.
 Es wurde entwickelt, um den Einstieg in Spring-basierte Projekte zu vereinfachen und typische Konfigurationsaufwände drastisch zu reduzieren.
 Durch Konventionen und automatisierte Konfiguration ermöglicht Spring Boot das Erstellen produktionsreifer Anwendungen mit minimalem Setup.
+Spring Boot bietet eine große Auswahl an sogenannten Starter Dependencies, die es erlauben, unterschiedliche Technologien mit minimalem Konfigurationsaufwand einzubinden.
 
 Ein zentrales Ziel von Spring Boot ist es, Entwicklerinnen und Entwicklern eine schlanke, modulare und gut strukturierbare Grundlage für unterschiedlichste Softwarearchitekturen zu bieten.
 Dabei fügt es sich nahtlos in gängige moderne Architekturansätze wie Domain-Driven Design, hexagonale Architektur und modulare Monolithen ein.
-
-Spring Boot bietet eine große Auswahl an sogenannten Starter Dependencies, die es erlauben, unterschiedliche Technologien mit minimalem Konfigurationsaufwand einzubinden.
 
 == Zusammenfassung
 
