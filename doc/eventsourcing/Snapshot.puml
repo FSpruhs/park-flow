@@ -5,7 +5,7 @@
     + aggregateType : String
     + data : ByteArray
     + metaData : ByteArray
-    + version : Int = 0
+    + version : Int
     + timeStamp : LocalDateTime
   }
 @enduml
