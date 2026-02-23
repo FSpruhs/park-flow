@@ -185,13 +185,13 @@ So lassen sich reale Sachverhalte nachvollziehbar abbilden, und die Software kan
 
 Dabei gibt es mehrere Beteiligte die in @eda-übersicht dargestellt sind: \
 Der *Producer* erzeugt das Event und veröffentlicht es über einen *Event-Queue*#footnote[Auch bekannt als Event-Bus, Publisher oder Broker. In dieser Arbeit wird der Begriff Event-Queue verwendet.].
-Eine Queue ist dabei eine Warteschlange nach dem First-In-First-Out-Prinzip, in der Events gespeichert werden, bis sie von einem *Consumer* verarbeitet werden.
+Eine Event-Queue ist dabei eine Warteschlange nach dem First-In-First-Out-Prinzip, in der Events gespeichert werden, bis sie von einem *Consumer* verarbeitet werden.
 Ein Event kann von einem oder mehreren Consumern empfangen werden @stack2022[p.~8-11].
 
 Beim Veröffentlichen eines Events muss der Producer den Consumer weder kennen noch auf dessen Verarbeitung warten.
 Diese Form der Verarbeitung, bei der der Producer nicht durch den Consumer blockiert wird, wird als asynchron bezeichnet.
 Wird die Event-Queue persistent gespeichert, müssen Producer und Consumer nicht gleichzeitig aktiv sein.
-Dies führt zu einer zeitlichen und referenziellen Entkopplung, die die Flexibilität und Skalierbarkeit des Systems erhöht @distributed2023[p.~69–73].
+Damit wird eine zeitlichen und referenziellen Entkopplung ermöglicht, die die Flexibilität und Skalierbarkeit des Systems erhöht @distributed2023[p.~69–73].
 
 #figure(
   image("./pictures/eda.svg"),
@@ -204,7 +204,7 @@ Dies führt zu einer zeitlichen und referenziellen Entkopplung, die die Flexibil
 
 Unter einer *EDA* versteht man ein Architekturmuster, das auf der Verarbeitung und Weitergabe von Events basiert.
 Dabei werden die Vorteile der losen Kopplung genutzt, um Systeme zu entwickeln, die weitgehend unabhängig voneinander funktionieren.
-EDA ist eng mit DDD verbunden, da Events in DDD eine zentrale Rolle einnehmen @khononov2022[p.~263].
+EDA ist eng mit DDD verbunden, da Events in DDD ebenfalls eine zentrale Rolle einnehmen @khononov2022[p.~263].
 
 Zu den Vorteilen einer EDA gehören:
 
@@ -561,7 +561,7 @@ Es ist eine einzige Anwendung, die jedoch in klar abgegrenzte Module unterteilt 
 === Hexagonale Architektur
 
 Während die Modulith-Architektur die Strukturierung auf der Ebene der gesamten Anwendung adressiert, konzentriert sich die hexagonale Architektur #footnote[Die Bezeichnung hexagonal hat keinen Bezug zur Funktionsweise der Architektur selbst. Sie geht auf den ursprünglichen Artikel von Alistair Cockburn zurück, in dem Hexagone als grafisches Darstellungsmittel verwendet wurden. Die Architektur wird daher auch häufig als Ports-and-Adapters-Architektur bezeichnet @portsAndAdapters.] auf die Strukturierung innerhalb einzelner Softwarekomponenten.
-Ziel ist es, die Domänenlogik klar von technischen Details und externen Systemen zu isolieren.
+#text(font: "New Computer Modern")[Das zentrale Ziel der Ports & Adapter (gemeint Hexagonale) Architektur ist das Entkoppeln der Business-Logik des Systens von seinen Infrastrukturkomponenten] @khononov2022[p.~155].
 Die Domäne befindet sich dabei im Zentrum der Architektur und sollte möglichst wenige Abhängigkeiten zu außenliegenden Systemen haben.
 Technische Aspekte werden nicht direkt innerhalb der Domäne implementiert.
 
@@ -627,7 +627,7 @@ Gerade in domänengetriebenen und modularen Architekturen unterstützt das C4-Mo
 == Kotlin
 
 Kotlin ist eine Programmiersprache, die 2011 von JetBrains entwickelt wurde.
-Ziel der Entwicklung war es, eine verbesserte Alternative zu Java zu schaffen @kotlinHandbuch[p.~19].
+#text(font: "New Computer Modern")["JetBrains hat Kotlin mit dem Anspruch entworfen ein besseres Java zu schaffen"] @kotlinHandbuch[p.~19].
 
 Bei Java handel es sich um eine weit verbreitete und etablierte Programmiersprache, die seit 1995 existiert und für ihre Plattformunabhängigkeit und Stabilität bekannt ist.
 
@@ -1851,7 +1851,7 @@ Für die Bounded Contexts ParkingInventory und CustomerAccess werden über die R
 Dabei werden auch Edge Cases und fehlerhafte Anfragen getestet, um zu prüfen, ob das System Fehler korrekt abfängt und gemäß den definierten Regeln kommuniziert.
 Am Ende jedes Szenarios wird überprüft, ob die Projektionen (Read Models) den erwarteten Zustand erreicht haben.
 
-Im Bounded Context ParkingOperation werden Parkvorgänge simuliert. 
+Im Bounded Context ParkingOperation werden Parkvorgänge simuliert.
 Für jedes Fahrzeug werden die Ankunft am Eingangstor, das Durchfahren des Tors, das Parken auf einem Parkplatz und das Verlassen des Parkplatzes abgebildet, indem die entsprechenden Sensor-Events veröffentlicht werden.
 Nach Abschluss der Simulation wird kontrolliert, ob die `VehicleHistory` jedes Fahrzeugs den erwarteten Verlauf enthält.
 
