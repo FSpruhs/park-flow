@@ -28,7 +28,10 @@
     #v(4cm)
 
     #set text(size: 18pt, weight: "bold")
-    Implementierung und Evaluierung eines Event-Sourcing-Ansatzes mit Spring Boot und Kotlin in einer modularen DDD-Architektur \
+    Implementierung und Evaluierung \
+    eines Event-Sourcing-Ansatzes \
+    mit Spring Boot und Kotlin \
+    in einer modularen DDD-Architektur \
 
     #v(4cm)
     #set text(size: 14pt, weight: "regular")
